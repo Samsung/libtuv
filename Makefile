@@ -42,7 +42,6 @@ call:
 
 clean:
 	rm -rf $(OUTPUT_ROOT)
-	rm testbin
 
 #
 # make option
