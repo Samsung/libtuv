@@ -170,6 +170,57 @@ void uv_mutex_unlock(uv_mutex_t* mutex) {
 
 
 //-----------------------------------------------------------------------------
+// semaphore
+
+int uv_sem_init(uv_sem_t* sem, unsigned int value) {
+  if (sem_init(sem, 0, value))
+    return -errno;
+  return 0;
+}
+
+
+void uv_sem_destroy(uv_sem_t* sem) {
+  if (sem_destroy(sem))
+    abort();
+}
+
+
+void uv_sem_post(uv_sem_t* sem) {
+  if (sem_post(sem))
+    abort();
+}
+
+
+void uv_sem_wait(uv_sem_t* sem) {
+  int r;
+
+  do
+    r = sem_wait(sem);
+  while (r == -1 && errno == EINTR);
+
+  if (r)
+    abort();
+}
+
+
+int uv_sem_trywait(uv_sem_t* sem) {
+  int r;
+
+  do
+    r = sem_trywait(sem);
+  while (r == -1 && errno == EINTR);
+
+  if (r) {
+    if (errno == EAGAIN)
+      return -EAGAIN;
+    abort();
+  }
+
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
 // condition
 
 int uv_cond_init(uv_cond_t* cond) {

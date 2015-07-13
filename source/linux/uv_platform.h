@@ -69,6 +69,7 @@ uint64_t uv__hrtime(uv_clocktype_t type);
 typedef pthread_t uv_thread_t;
 typedef pthread_once_t uv_once_t;
 typedef pthread_mutex_t uv_mutex_t;
+typedef sem_t uv_sem_t;
 typedef pthread_cond_t uv_cond_t;
 
 #endif // __uv__platform_header__

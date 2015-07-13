@@ -68,6 +68,16 @@ void uv_mutex_unlock(uv_mutex_t* handle);
 
 
 //-----------------------------------------------------------------------------
+// uv_sem
+
+int uv_sem_init(uv_sem_t* sem, unsigned int value);
+void uv_sem_destroy(uv_sem_t* sem);
+void uv_sem_post(uv_sem_t* sem);
+void uv_sem_wait(uv_sem_t* sem);
+int uv_sem_trywait(uv_sem_t* sem);
+
+
+//-----------------------------------------------------------------------------
 // uv_cond
 
 int uv_cond_init(uv_cond_t* cond);

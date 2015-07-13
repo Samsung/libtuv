@@ -19,7 +19,6 @@ set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.cpp"
                     "${SOURCE_ROOT}/uv_idle.cpp"
                     "${SOURCE_ROOT}/uv_run.cpp"
                     "${SOURCE_ROOT}/uv_timer.cpp"
-                    "${SOURCE_ROOT}/uv_threadpool.cpp"
                     )
 
 set(LIB_TUV_SRCFILES
