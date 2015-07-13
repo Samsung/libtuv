@@ -17,6 +17,18 @@ cmake_minimum_required(VERSION 2.8)
 # platform name in lower case
 string(TOLOWER ${CMAKE_SYSTEM_NAME} PLATFORM_NAME_L)
 
+#
+set(PATH_ROOT ${CMAKE_SOURCE_DIR})
+
+set(SOURCE_ROOT  ${PATH_ROOT}/source)
+set(INCLUDE_ROOT ${PATH_ROOT}/include)
+set(TEST_ROOT    ${PATH_ROOT}/test)
+
+set(BIN_ROOT ${CMAKE_BINARY_DIR})
+set(LIB_OUT "${BIN_ROOT}/../lib")
+set(BIN_OUT "${BIN_ROOT}/../bin")
+
+
 # path for platform depends files, use full name for default
 # (e.g, i686-linux-generic)
 set(TUV_PLATFORM_PATH ${TARGET_PLATFORM})

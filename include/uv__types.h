@@ -57,5 +57,6 @@ typedef void (*uv_timer_cb)(uv_timer_t* handle);
 typedef void (*uv_idle_cb)(uv_idle_t* handle);
 typedef void (*uv_close_cb)(uv_handle_t* handle);
 
+typedef void (*uv_thread_cb)(void* arg);
 
 #endif // __uv_types_header__

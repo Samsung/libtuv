@@ -14,18 +14,13 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(ROOT ${CMAKE_SOURCE_DIR})
-
-set(SOURCE_ROOT ${ROOT}/source)
-set(INCLUDE_ROOT ${ROOT}/include)
-set(TEST_ROOT ${ROOT}/test)
-
-set(BIN_ROOT ${CMAKE_BINARY_DIR})
-set(LIB_OUT "${BIN_ROOT}/../lib")
-set(BIN_OUT "${BIN_ROOT}/../bin")
-
-file(GLOB COMMON_SRCFILES "${SOURCE_ROOT}/*.cpp")
-file(GLOB PLATFORM_SRCFILES "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}/*.cpp")
+set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.cpp"
+                    "${SOURCE_ROOT}/uv_loop.cpp"
+                    "${SOURCE_ROOT}/uv_idle.cpp"
+                    "${SOURCE_ROOT}/uv_run.cpp"
+                    "${SOURCE_ROOT}/uv_timer.cpp"
+                    "${SOURCE_ROOT}/uv_threadpool.cpp"
+                    )
 
 set(LIB_TUV_SRCFILES
     ${COMMON_SRCFILES}

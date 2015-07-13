@@ -34,18 +34,46 @@
  * IN THE SOFTWARE.
  */
 
+#ifndef __uv__thread_header__
+#define __uv__thread_header__
 
-#include <uv.h>
-#include "uv_platform.h"
-
-int uv__platform_loop_init(uv_loop_t* loop) {
-  // libuv creates backend_fd of loop
-  // currenrly don't need it
-  return 0;
-}
+#ifndef __uv_header__
+#error Please include with uv.h
+#endif
 
 
+//-----------------------------------------------------------------------------
+// uv_thread
 
-void uv__platform_loop_delete(uv_loop_t* loop) {
+int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
+uv_thread_t uv_thread_self(void);
+int uv_thread_join(uv_thread_t *tid);
+int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
 
-}
+
+//-----------------------------------------------------------------------------
+// uv_once
+
+void uv_once(uv_once_t* guard, void (*callback)(void));
+
+
+//-----------------------------------------------------------------------------
+// uv_mutex
+
+int uv_mutex_init(uv_mutex_t* handle);
+void uv_mutex_destroy(uv_mutex_t* handle);
+void uv_mutex_lock(uv_mutex_t* handle);
+int uv_mutex_trylock(uv_mutex_t* handle);
+void uv_mutex_unlock(uv_mutex_t* handle);
+
+
+//-----------------------------------------------------------------------------
+// uv_cond
+
+int uv_cond_init(uv_cond_t* cond);
+void uv_cond_destroy(uv_cond_t* cond);
+void uv_cond_signal(uv_cond_t* cond);
+void uv_cond_broadcast(uv_cond_t* cond);
+
+
+#endif //__uv__thread_header__

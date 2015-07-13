@@ -14,6 +14,7 @@
  */
 
 /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -37,6 +38,7 @@
 
 #include <uv.h>
 #include "uv_platform.h"
+
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
   static clock_t fast_clock_id = -1;

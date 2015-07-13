@@ -12,24 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# linux common
+include("cmake/option/option_linux_common.cmake")
+
+# rpi2 specific
 set(FLAGS_COMMON
+      "${FLAGS_COMMON}"
+      "-D__arm__"
       "-mcpu=cortex-a7"
       "-mfloat-abi=hard"
       "-mfpu=neon-vfpv4"
-      "-D__LINUX__"
-      "-D__arm__"
-      "-fno-builtin")
-
-set(FLAGS_CXXONLY
-      "-fpermissive"
-      "-fno-exceptions"
-      "-fno-rtti")
-
-set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG")
-set(CMAKE_C_FLAGS_RELEASE   "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
-
-# override TUV_PLATFORM_PATH for Linux
-# use "linux" for Linux platform dependent source files
-set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
+      )

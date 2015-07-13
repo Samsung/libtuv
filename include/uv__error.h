@@ -44,10 +44,16 @@
 #include <errno.h>
 
 //-----------------------------------------------------------------------------
-// errorno
+// errorno < uv_errorno.h
 
 #define UV__EOF     (-4095)
 #define UV__UNKNOWN (-4094)
+
+#if defined(ENOMEM)
+# define UV__ENOMEM (-ENOMEM)
+#else
+# define UV__ENOMEM (-4057)
+#endif
 
 #if defined(EBUSY)
 # define UV__EBUSY (-EBUSY)
@@ -55,11 +61,20 @@
 # define UV__EBUSY (-4082)
 #endif
 
+#if defined(EAGAIN)
+# define UV__EAGAIN (-EAGAIN)
+#else
+# define UV__EAGAIN (-4088)
+#endif
+
+
 //-----------------------------------------------------------------------------
-//
+// errno map < uv.h
 
 #define UV_ERRNO_MAP(XX)                                                      \
+  XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
+  XX(ENOMEM, "not enough memory")                                             \
 
 
 //-----------------------------------------------------------------------------
