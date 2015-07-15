@@ -34,72 +34,48 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__thread_header__
-#define __uv__thread_header__
+#ifndef __uv__async_header__
+#define __uv__async_header__
 
 #ifndef __uv_header__
 #error Please include with uv.h
 #endif
 
+struct uv_async_s {
+  UV_HANDLE_FIELDS
+  UV_ASYNC_PRIVATE_FIELDS
+};
 
-//-----------------------------------------------------------------------------
-// uv_thread
-
-int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
-uv_thread_t uv_thread_self(void);
-int uv_thread_join(uv_thread_t *tid);
-int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
-
-
-//-----------------------------------------------------------------------------
-// uv_once
-
-void uv_once(uv_once_t* guard, void (*callback)(void));
+int uv_async_init(uv_loop_t*, uv_async_t* async, uv_async_cb async_cb);
+int uv_async_send(uv_async_t* async);
 
 
 //-----------------------------------------------------------------------------
-// uv_mutex
 
-int uv_mutex_init(uv_mutex_t* handle);
-void uv_mutex_destroy(uv_mutex_t* handle);
-void uv_mutex_lock(uv_mutex_t* handle);
-int uv_mutex_trylock(uv_mutex_t* handle);
-void uv_mutex_unlock(uv_mutex_t* handle);
-
-
-//-----------------------------------------------------------------------------
-// uv_sem
-
-int uv_sem_init(uv_sem_t* sem, unsigned int value);
-void uv_sem_destroy(uv_sem_t* sem);
-void uv_sem_post(uv_sem_t* sem);
-void uv_sem_wait(uv_sem_t* sem);
-int uv_sem_trywait(uv_sem_t* sem);
+struct uv__io_s {
+  uv__io_cb cb;
+  void* pending_queue[2];
+  void* watcher_queue[2];
+  unsigned int pevents; /* Pending event mask i.e. mask at next tick. */
+  unsigned int events;  /* Current event mask. */
+  int fd;
+  UV_IO_PRIVATE_PLATFORM_FIELDS
+};
 
 
-//-----------------------------------------------------------------------------
-// uv_cond
+struct uv__async {
+  uv__async_cb cb;
+  uv__io_t io_watcher;
+  int wfd;
+};
 
-int uv_cond_init(uv_cond_t* cond);
-void uv_cond_destroy(uv_cond_t* cond);
-void uv_cond_signal(uv_cond_t* cond);
-void uv_cond_broadcast(uv_cond_t* cond);
 
-void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
-int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout);
-
+void uv__async_send(struct uv__async* wa);
+void uv__async_init(struct uv__async* wa);
+int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb);
+void uv__async_stop(uv_loop_t* loop, struct uv__async* wa);
 
 //-----------------------------------------------------------------------------
-// uv_rwlock
-
-int uv_rwlock_init(uv_rwlock_t* rwlock);
-void uv_rwlock_destroy(uv_rwlock_t* rwlock);
-void uv_rwlock_rdlock(uv_rwlock_t* rwlock);
-int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock);
-void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
-int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
 
 
-#endif //__uv__thread_header__
+#endif // __uv__async_header__

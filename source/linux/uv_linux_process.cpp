@@ -34,47 +34,61 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include <unistd.h>
 
 #include <uv.h>
-#include "uv_internal.h"
+
+
+#ifndef __NR_pipe2
+# if defined(__x86_64__)
+#  define __NR_pipe2 293
+# elif defined(__i386__)
+#  define __NR_pipe2 331
+# elif defined(__arm__)
+#  define __NR_pipe2 (UV_SYSCALL_BASE + 359)
+# endif
+#endif /* __NR_pipe2 */
 
 
 //-----------------------------------------------------------------------------
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
+int uv__make_pipe(int fds[2], int flags) {
+#if defined(__linux__)
+  static int no_pipe2 = 0;
+
+  if (no_pipe2)
+    goto skip;
+
+  if (uv__pipe2(fds, flags | UV__O_CLOEXEC) == 0)
+    return 0;
+
+  if (errno != ENOSYS)
+    return -errno;
+
+  no_pipe2 = 1;
+
+skip:
+#endif
+
+  if (pipe(fds))
+    return -errno;
+
+  uv__cloexec(fds[0], 1);
+  uv__cloexec(fds[1], 1);
+
+  if (flags & UV__F_NONBLOCK) {
+    uv__nonblock(fds[0], 1);
+    uv__nonblock(fds[1], 1);
+  }
+
+  return 0;
 }
 
 
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
+int uv__pipe2(int pipefd[2], int flags) {
+#if defined(__NR_pipe2)
+  return syscall(__NR_pipe2, pipefd, flags);
+#else
+  return errno = ENOSYS, -1;
+#endif
 }

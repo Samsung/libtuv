@@ -18,7 +18,6 @@ include("cmake/option/option_linux_common.cmake")
 # rpi2 specific
 set(FLAGS_COMMON
       "${FLAGS_COMMON}"
-      "-D__arm__"
       "-mcpu=cortex-a7"
       "-mfloat-abi=hard"
       "-mfpu=neon-vfpv4"

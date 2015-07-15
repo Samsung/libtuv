@@ -16,8 +16,4 @@
 include("cmake/option/option_linux_common.cmake")
 
 # i686 specific
-set(FLAGS_COMMON
-      "${FLAGS_COMMON}"
-      "-D__i686__"
-      )
 

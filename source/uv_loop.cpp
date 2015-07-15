@@ -35,12 +35,12 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 #include <uv.h>
 #include "heap-inl.h"
-#include "uv_platform.h"
 
 
 static uv_loop_t default_loop_struct;
@@ -53,15 +53,24 @@ int uv_loop_init(uv_loop_t* loop) {
   memset(loop, 0, sizeof(uv_loop_t));
   heap_init((struct heap*) &loop->timer_heap);
 
+  QUEUE_INIT(&loop->wq);
   QUEUE_INIT(&loop->active_reqs);
   QUEUE_INIT(&loop->idle_handles);
+  QUEUE_INIT(&loop->async_handles);
   QUEUE_INIT(&loop->handle_queue);
 
   QUEUE_INIT(&loop->pending_queue);
   QUEUE_INIT(&loop->watcher_queue);
 
+  loop->nfds = 0;
+  loop->watchers = NULL;
+  loop->nwatchers = 0;
+  QUEUE_INIT(&loop->pending_queue);
+  QUEUE_INIT(&loop->watcher_queue);
+
   loop->closing_handles = NULL;
   uv__update_time(loop);
+  uv__async_init(&loop->async_watcher);
 
   loop->timer_counter = 0;
   loop->stop_flag = 0;
@@ -70,12 +79,41 @@ int uv_loop_init(uv_loop_t* loop) {
   if (err)
     return err;
 
+  if (uv_rwlock_init(&loop->cloexec_lock))
+    abort();
+
+  if (uv_mutex_init(&loop->wq_mutex))
+    abort();
+
+  if (uv_async_init(loop, &loop->wq_async, uv__work_done))
+    abort();
+
+  uv__handle_unref(&loop->wq_async);
+  loop->wq_async.flags |= UV__HANDLE_INTERNAL;
+
   return 0;
 }
 
 
 void uv__loop_close(uv_loop_t* loop) {
   uv__platform_loop_delete(loop);
+  uv__async_stop(loop, &loop->async_watcher);
+
+  uv_mutex_lock(&loop->wq_mutex);
+  assert(QUEUE_EMPTY(&loop->wq) && "thread pool work queue not empty!");
+  assert(!uv__has_active_reqs(loop));
+  uv_mutex_unlock(&loop->wq_mutex);
+  uv_mutex_destroy(&loop->wq_mutex);
+
+  /*
+   * Note that all thread pool stuff is finished at this point and
+   * it is safe to just destroy rw lock
+   */
+  uv_rwlock_destroy(&loop->cloexec_lock);
+
+  free(loop->watchers);
+  loop->watchers = NULL;
+  loop->nwatchers = 0;
 }
 
 

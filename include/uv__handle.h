@@ -45,6 +45,7 @@
 // uv_handle_t
 
 #define UV_HANDLE_TYPE_MAP(XX)                                                \
+  XX(ASYNC, async)                                                            \
   XX(HANDLE, handle)                                                          \
   XX(IDLE, idle)                                                              \
   XX(TIMER, timer)                                                            \

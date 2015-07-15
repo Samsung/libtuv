@@ -38,7 +38,6 @@
 #include <assert.h>
 
 #include <uv.h>
-#include "uv_platform.h"
 #include "uv_internal.h"
 
 
@@ -120,6 +119,7 @@ static int uv__loop_alive(const uv_loop_t* loop) {
 
 
 int uv_run(uv_loop_t* loop, uv_run_mode mode) {
+  int timeout;
   int r;
 
   r = uv__loop_alive(loop);
@@ -132,6 +132,9 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
     uv__run_pending(loop);
     uv__run_idle(loop);
 
+    timeout = 0;
+
+    uv__io_poll(loop, timeout);
     uv__run_closing_handles(loop);
 
     if (mode == UV_RUN_ONCE) {

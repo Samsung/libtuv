@@ -34,47 +34,59 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
-
-#include <uv.h>
-#include "uv_internal.h"
+#ifndef __uv_syscall_linux_header__
+#define __uv_syscall_linux_header__
 
 
-//-----------------------------------------------------------------------------
+// architectecture dependent
+#define UV__O_CLOEXEC         0x80000
+#define UV__O_NONBLOCK        0x800
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
+#define UV__EFD_CLOEXEC       UV__O_CLOEXEC
+#define UV__EFD_NONBLOCK      UV__O_NONBLOCK
+
+/* epoll flags */
+#define UV__EPOLL_CLOEXEC     UV__O_CLOEXEC
+#define UV__EPOLL_CTL_ADD     1
+#define UV__EPOLL_CTL_DEL     2
+#define UV__EPOLL_CTL_MOD     3
+
+#define UV__EPOLLIN           1
+#define UV__EPOLLOUT          4
+#define UV__EPOLLERR          8
+#define UV__EPOLLHUP          16
+#define UV__EPOLLONESHOT      0x40000000
+#define UV__EPOLLET           0x80000000
 
 
-//-----------------------------------------------------------------------------
+#if defined(__x86_64__)
+struct uv__epoll_event {
+  uint32_t events;
+  uint64_t data;
+} __attribute__((packed));
+#else
+struct uv__epoll_event {
+  uint32_t events;
+  uint64_t data;
+};
+#endif
 
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
 
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
+int uv__eventfd(unsigned int count);
+int uv__eventfd2(unsigned int count, int flags);
 
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
+int uv__epoll_create(int size);
+int uv__epoll_create1(int flags);
+int uv__epoll_ctl(int epfd, int op, int fd, struct uv__epoll_event *ev);
+int uv__epoll_wait(int epfd, struct uv__epoll_event* events,
+                   int nevents, int timeout);
+int uv__epoll_pwait(int epfd, struct uv__epoll_event* events,
+                    int nevents, int timeout, uint64_t sigmask);
 
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
+int uv__pipe2(int pipefd[2], int flags);
 
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
+ssize_t uv__preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+ssize_t uv__pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset);
 
-  default:
-    assert(0);
-  }
 
-  uv__make_close_pending(handle);
-}
+#endif // __uv_syscall_linux_header__

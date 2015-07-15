@@ -35,9 +35,9 @@
  */
 
 #include <stdlib.h> // malloc(), free()
+#include <stdio.h>
 
 #include <uv.h>
-#include "uv_platform.h"
 
 
 #undef NANOSEC
@@ -61,6 +61,7 @@ static void* uv__thread_start(void *arg)
   ctx_p = (struct thread_ctx*)arg;
   ctx = *ctx_p;
   free(ctx_p);
+
   ctx.entry(ctx.arg);
 
   return 0;
@@ -165,6 +166,65 @@ int uv_mutex_trylock(uv_mutex_t* mutex) {
 
 void uv_mutex_unlock(uv_mutex_t* mutex) {
   if (pthread_mutex_unlock(mutex))
+    abort();
+}
+
+
+//-----------------------------------------------------------------------------
+
+int uv_rwlock_init(uv_rwlock_t* rwlock) {
+  return -pthread_rwlock_init(rwlock, NULL);
+}
+
+
+void uv_rwlock_destroy(uv_rwlock_t* rwlock) {
+  if (pthread_rwlock_destroy(rwlock))
+    abort();
+}
+
+
+void uv_rwlock_rdlock(uv_rwlock_t* rwlock) {
+  if (pthread_rwlock_rdlock(rwlock))
+    abort();
+}
+
+
+int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock) {
+  int err;
+
+  err = pthread_rwlock_tryrdlock(rwlock);
+  if (err && err != EBUSY && err != EAGAIN)
+    abort();
+
+  return -err;
+}
+
+
+void uv_rwlock_rdunlock(uv_rwlock_t* rwlock) {
+  if (pthread_rwlock_unlock(rwlock))
+    abort();
+}
+
+
+void uv_rwlock_wrlock(uv_rwlock_t* rwlock) {
+  if (pthread_rwlock_wrlock(rwlock))
+    abort();
+}
+
+
+int uv_rwlock_trywrlock(uv_rwlock_t* rwlock) {
+  int err;
+
+  err = pthread_rwlock_trywrlock(rwlock);
+  if (err && err != EBUSY && err != EAGAIN)
+    abort();
+
+  return -err;
+}
+
+
+void uv_rwlock_wrunlock(uv_rwlock_t* rwlock) {
+  if (pthread_rwlock_unlock(rwlock))
     abort();
 }
 

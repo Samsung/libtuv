@@ -34,72 +34,78 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__thread_header__
-#define __uv__thread_header__
+#ifndef __uv__fs_header__
+#define __uv__fs_header__
 
 #ifndef __uv_header__
 #error Please include with uv.h
 #endif
 
-
-//-----------------------------------------------------------------------------
-// uv_thread
-
-int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
-uv_thread_t uv_thread_self(void);
-int uv_thread_join(uv_thread_t *tid);
-int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
+#include <sys/stat.h>
+#include <fcntl.h>
 
 
 //-----------------------------------------------------------------------------
-// uv_once
 
-void uv_once(uv_once_t* guard, void (*callback)(void));
+typedef enum {
+  UV_FS_UNKNOWN = -1,
+  UV_FS_CUSTOM,
+  UV_FS_OPEN,
+  UV_FS_CLOSE,
+  UV_FS_READ,
+  UV_FS_WRITE,
+  UV_FS_SENDFILE,
+  UV_FS_STAT,
+  UV_FS_LSTAT,
+  UV_FS_FSTAT,
+  UV_FS_FTRUNCATE,
+  UV_FS_UTIME,
+  UV_FS_FUTIME,
+  UV_FS_ACCESS,
+  UV_FS_CHMOD,
+  UV_FS_FCHMOD,
+  UV_FS_FSYNC,
+  UV_FS_FDATASYNC,
+  UV_FS_UNLINK,
+  UV_FS_RMDIR,
+  UV_FS_MKDIR,
+  UV_FS_MKDTEMP,
+  UV_FS_RENAME,
+  UV_FS_SCANDIR,
+  UV_FS_LINK,
+  UV_FS_SYMLINK,
+  UV_FS_READLINK,
+  UV_FS_CHOWN,
+  UV_FS_FCHOWN
+} uv_fs_type;
 
-
-//-----------------------------------------------------------------------------
-// uv_mutex
-
-int uv_mutex_init(uv_mutex_t* handle);
-void uv_mutex_destroy(uv_mutex_t* handle);
-void uv_mutex_lock(uv_mutex_t* handle);
-int uv_mutex_trylock(uv_mutex_t* handle);
-void uv_mutex_unlock(uv_mutex_t* handle);
-
-
-//-----------------------------------------------------------------------------
-// uv_sem
-
-int uv_sem_init(uv_sem_t* sem, unsigned int value);
-void uv_sem_destroy(uv_sem_t* sem);
-void uv_sem_post(uv_sem_t* sem);
-void uv_sem_wait(uv_sem_t* sem);
-int uv_sem_trywait(uv_sem_t* sem);
-
-
-//-----------------------------------------------------------------------------
-// uv_cond
-
-int uv_cond_init(uv_cond_t* cond);
-void uv_cond_destroy(uv_cond_t* cond);
-void uv_cond_signal(uv_cond_t* cond);
-void uv_cond_broadcast(uv_cond_t* cond);
-
-void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
-int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout);
-
-
-//-----------------------------------------------------------------------------
-// uv_rwlock
-
-int uv_rwlock_init(uv_rwlock_t* rwlock);
-void uv_rwlock_destroy(uv_rwlock_t* rwlock);
-void uv_rwlock_rdlock(uv_rwlock_t* rwlock);
-int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock);
-void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
-int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
+/* uv_fs_t is a subclass of uv_req_t. */
+struct uv_fs_s {
+  UV_REQ_FIELDS
+  uv_fs_type fs_type;
+  uv_loop_t* loop;
+  uv_fs_cb cb;
+  ssize_t result;
+  void* ptr;
+  const char* path;
+  uv_stat_t statbuf;  /* Stores the result of uv_fs_stat() and uv_fs_fstat(). */
+  UV_FS_PRIVATE_FIELDS
+};
 
 
-#endif //__uv__thread_header__
+void uv_fs_req_cleanup(uv_fs_t* req);
+int uv_fs_close(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
+int uv_fs_open(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
+                         int mode, uv_fs_cb cb);
+int uv_fs_read(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+               const uv_buf_t bufs[], unsigned int nbufs, int64_t offset,
+               uv_fs_cb cb);
+int uv_fs_write(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+                const uv_buf_t bufs[], unsigned int nbufs, int64_t offset,
+                uv_fs_cb cb);
+
+int uv_fs_fsync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
+int uv_fs_fdatasync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
+
+
+#endif // __uv__fs_header__

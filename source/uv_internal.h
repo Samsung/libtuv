@@ -52,4 +52,32 @@ int uv__next_timeout(const uv_loop_t* loop);
 // in uv_run.cpp
 void uv__make_close_pending(uv_handle_t* handle);
 
+// in uv_threadpool.cpp
+void uv__work_submit(uv_loop_t* loop, struct uv__work *w,
+                     void (*work)(struct uv__work *w),
+                     void (*done)(struct uv__work *w, int status));
+
+// in uf_req.cpp
+void uv__req_init_(uv_loop_t* loop, uv_req_t* req, uv_req_type type);
+
+#define uv__req_init(loop, req, type) \
+  uv__req_init_((loop), (uv_req_t*)(req), (type))
+
+#define uv__req_register(loop, req)                                           \
+  do {                                                                        \
+    QUEUE_INSERT_TAIL(&(loop)->active_reqs, &(req)->active_queue);            \
+  }                                                                           \
+  while (0)
+
+#define uv__req_unregister(loop, req)                                         \
+  do {                                                                        \
+    assert(uv__has_active_reqs(loop));                                        \
+    QUEUE_REMOVE(&(req)->active_queue);                                       \
+  }                                                                           \
+  while (0)
+
+// in uv_fs.cpp
+void uv__fs_scandir_cleanup(uv_fs_t* req);
+
+
 #endif // __uv__internal_header__

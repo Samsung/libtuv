@@ -19,6 +19,11 @@ set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.cpp"
                     "${SOURCE_ROOT}/uv_idle.cpp"
                     "${SOURCE_ROOT}/uv_run.cpp"
                     "${SOURCE_ROOT}/uv_timer.cpp"
+                    "${SOURCE_ROOT}/uv_threadpool.cpp"
+                    "${SOURCE_ROOT}/uv_req.cpp"
+                    "${SOURCE_ROOT}/uv_fs.cpp"
+                    "${SOURCE_ROOT}/uv_async.cpp"
+                    "${SOURCE_ROOT}/uv_util.cpp"
                     )
 
 set(LIB_TUV_SRCFILES
@@ -47,7 +52,8 @@ function(BuildTest testName testFile)
   set(TESTEXENAME ${testName})
   add_executable(${TESTEXENAME} "${TEST_ROOT}/${testFile}")
     target_include_directories(${TESTEXENAME} PUBLIC ${LIB_TUV_INCDIRS})
-    target_link_libraries(${TESTEXENAME} LINK_PUBLIC ${TARGETLIBNAME})
+    target_link_libraries(${TESTEXENAME} LINK_PUBLIC ${TARGETLIBNAME}
+                          ${TUV_LINK_LIBS})
     set_target_properties(${TESTEXENAME} PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${LIB_OUT}"
         LIBRARY_OUTPUT_DIRECTORY "${LIB_OUT}"
@@ -58,4 +64,5 @@ endfunction()
 if(${BUILD_TEST} STREQUAL "YES")
   BuildTest("tuvidle"     "test_idle.cpp")
   BuildTest("tuvtimer"    "test_timer.cpp")
+  BuildTest("tuvfs"       "test_fs.cpp")
 endif()

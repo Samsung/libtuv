@@ -34,47 +34,40 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
 
 #include <uv.h>
-#include "uv_internal.h"
 
 
-//-----------------------------------------------------------------------------
+int uv__platform_loop_init(uv_loop_t* loop) {
+  int fd;
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
+  fd = uv__epoll_create1(UV__EPOLL_CLOEXEC);
 
+  /* epoll_create1() can fail either because it's not implemented (old kernel)
+   * or because it doesn't understand the EPOLL_CLOEXEC flag.
+   */
+  if (fd == -1 && (errno == ENOSYS || errno == EINVAL)) {
+    fd = uv__epoll_create(256);
 
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
+    if (fd != -1)
+      uv__cloexec(fd, 1);
   }
 
-  uv__make_close_pending(handle);
+  loop->backend_fd = fd;
+  loop->inotify_fd = -1;
+  loop->inotify_watchers = NULL;
+
+  if (fd == -1)
+    return -errno;
+
+  return 0;
 }
+
+
+void uv__platform_loop_delete(uv_loop_t* loop) {
+  if (loop->inotify_fd == -1) return;
+  uv__io_stop(loop, &loop->inotify_read_watcher, UV__POLLIN);
+  uv__close(loop->inotify_fd);
+  loop->inotify_fd = -1;
+}
+

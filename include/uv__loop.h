@@ -47,15 +47,10 @@
 struct uv_loop_s {
   /* User data - use this for whatever. */
   void* data;
-
   /* Loop reference counting. */
   uint32_t active_handles;
   void* handle_queue[2];
   void* active_reqs[2];
-
-  void* pending_queue[2];
-  void* watcher_queue[2];
-
   /* Internal flag to signal loop stop. */
   uint32_t stop_flag;
   /* platform dependent fields */

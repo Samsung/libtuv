@@ -34,18 +34,15 @@
  * IN THE SOFTWARE.
  */
 
+#include <errno.h>
+#include <assert.h>
 
 #include <uv.h>
-#include "uv_platform.h"
-
-int uv__platform_loop_init(uv_loop_t* loop) {
-  // libuv creates backend_fd of loop
-  // currenrly don't need it
-  return 0;
-}
 
 
-
-void uv__platform_loop_delete(uv_loop_t* loop) {
-
+uv_buf_t uv_buf_init(char* base, unsigned int len) {
+  uv_buf_t buf;
+  buf.base = base;
+  buf.len = len;
+  return buf;
 }

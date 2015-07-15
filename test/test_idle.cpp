@@ -20,7 +20,7 @@
 
 void idle_callback(uv_idle_t* handle) {
   static int count = 0;
-  printf("idle count = %d\n", count);
+  debugf("idle count = %d\n", count);
   if (count > 10)
     uv_idle_stop(handle);
   count++;
@@ -30,14 +30,6 @@ void idle_callback(uv_idle_t* handle) {
 int main(int argc, char* argv[]) {
   uv_loop_t* loop;
   uv_idle_t idler;
-
-#ifdef DEBUG
-  printf("It's debug\n");
-#endif
-
-#ifdef NDEBUG
-  printf("It's ndebug\n");
-#endif
 
   loop = uv_default_loop();
   uv_idle_init(loop, &idler);

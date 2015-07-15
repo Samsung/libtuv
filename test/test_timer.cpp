@@ -20,10 +20,10 @@
 
 void timer_callback1(uv_timer_t* handle) {
   static int callcount = 0;
-  printf("timer callback1 %d\n", callcount);
+  debugf("timer callback1 %d\n", callcount);
   if (callcount >= 10) {
     uv_timer_stop(handle);
-    printf("timer 1 stop\n");
+    debugf("timer 1 stop\n");
   }
   callcount++;
 }
@@ -31,10 +31,10 @@ void timer_callback1(uv_timer_t* handle) {
 
 void timer_callback2(uv_timer_t* handle) {
   static int callcount = 0;
-  printf("timer callback2 %d\n", callcount);
+  debugf("timer callback2 %d\n", callcount);
   if (callcount >= 5) {
     uv_timer_stop(handle);
-    printf("timer 2 stop\n");
+    debugf("timer 2 stop\n");
   }
   callcount++;
 }
@@ -51,9 +51,9 @@ int main(int argc, char* argv[]) {
   uv_timer_init(loop, &timer2);
   uv_timer_start(&timer2, timer_callback2, 100, 500);
 
-  printf("run loop\n");
+  debugf("run loop\n");
   uv_run(loop, UV_RUN_DEFAULT);
-  printf("end loop\n");
+  debugf("end loop\n");
 
   uv_loop_close(loop);
 }

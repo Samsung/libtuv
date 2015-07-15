@@ -14,7 +14,6 @@
 
 
 set(FLAGS_COMMON
-      "-D__LINUX__"
       "-fno-builtin")
 
 set(FLAGS_CXXONLY
@@ -33,7 +32,16 @@ set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 
 # linux source files
 set(LINUX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
-set(PLATFORM_SRCFILES "${LINUX_PATH}/uv_loop_linux.cpp"
-                      "${LINUX_PATH}/uv_clock.cpp"
-                      "${LINUX_PATH}/uv_thread.cpp"
+
+set(PLATFORM_SRCFILES "${LINUX_PATH}/uv_linux.cpp"
+                      "${LINUX_PATH}/uv_linux_loop.cpp"
+                      "${LINUX_PATH}/uv_linux_clock.cpp"
+                      "${LINUX_PATH}/uv_linux_thread.cpp"
+                      "${LINUX_PATH}/uv_linux_fs.cpp"
+                      "${LINUX_PATH}/uv_linux_async.cpp"
+                      "${LINUX_PATH}/uv_linux_io.cpp"
+                      "${LINUX_PATH}/uv_linux_process.cpp"
+                      "${LINUX_PATH}/uv_linux_syscall.cpp"
                       )
+
+set(TUV_LINK_LIBS "pthread")

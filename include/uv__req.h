@@ -34,8 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__thread_header__
-#define __uv__thread_header__
+#ifndef __uv__req_header__
+#define __uv__req_header__
 
 #ifndef __uv_header__
 #error Please include with uv.h
@@ -43,63 +43,40 @@
 
 
 //-----------------------------------------------------------------------------
-// uv_thread
 
-int uv_thread_create(uv_thread_t* tid, uv_thread_cb entry, void* arg);
-uv_thread_t uv_thread_self(void);
-int uv_thread_join(uv_thread_t *tid);
-int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2);
+#define UV_REQ_TYPE_MAP(XX)                                                   \
+  XX(REQ, req)                                                                \
+  XX(FS, fs)                                                                  \
 
 
-//-----------------------------------------------------------------------------
-// uv_once
+typedef enum {
+  UV_UNKNOWN_REQ = 0,
+#define XX(uc, lc) UV_##uc,
+  UV_REQ_TYPE_MAP(XX)
+#undef XX
+  UV_REQ_TYPE_PRIVATE
+  UV_REQ_TYPE_MAX
+} uv_req_type;
 
-void uv_once(uv_once_t* guard, void (*callback)(void));
-
-
-//-----------------------------------------------------------------------------
-// uv_mutex
-
-int uv_mutex_init(uv_mutex_t* handle);
-void uv_mutex_destroy(uv_mutex_t* handle);
-void uv_mutex_lock(uv_mutex_t* handle);
-int uv_mutex_trylock(uv_mutex_t* handle);
-void uv_mutex_unlock(uv_mutex_t* handle);
 
 
 //-----------------------------------------------------------------------------
-// uv_sem
+// uv_req_t
 
-int uv_sem_init(uv_sem_t* sem, unsigned int value);
-void uv_sem_destroy(uv_sem_t* sem);
-void uv_sem_post(uv_sem_t* sem);
-void uv_sem_wait(uv_sem_t* sem);
-int uv_sem_trywait(uv_sem_t* sem);
+#define UV_REQ_FIELDS                                                         \
+  /* public */                                                                \
+  void* data;                                                                 \
+  /* read-only */                                                             \
+  uv_req_type type;                                                           \
+  /* private */                                                               \
+  void* active_queue[2];                                                      \
+  void* reserved[4];                                                          \
+  UV_REQ_PRIVATE_FIELDS                                                       \
 
-
-//-----------------------------------------------------------------------------
-// uv_cond
-
-int uv_cond_init(uv_cond_t* cond);
-void uv_cond_destroy(uv_cond_t* cond);
-void uv_cond_signal(uv_cond_t* cond);
-void uv_cond_broadcast(uv_cond_t* cond);
-
-void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
-int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout);
+/* Abstract base class of all requests. */
+struct uv_req_s {
+  UV_REQ_FIELDS
+};
 
 
-//-----------------------------------------------------------------------------
-// uv_rwlock
-
-int uv_rwlock_init(uv_rwlock_t* rwlock);
-void uv_rwlock_destroy(uv_rwlock_t* rwlock);
-void uv_rwlock_rdlock(uv_rwlock_t* rwlock);
-int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock);
-void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
-int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
-void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
-
-
-#endif //__uv__thread_header__
+#endif // __uv__req_header__

@@ -34,47 +34,39 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include <time.h> // for clock_xxx functions
 
 #include <uv.h>
-#include "uv_internal.h"
 
 
-//-----------------------------------------------------------------------------
+uint64_t uv__hrtime(uv_clocktype_t type) {
+  static clock_t fast_clock_id = -1;
+  struct timespec t;
+  clock_t clock_id;
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
-
-
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
+  /* Prefer CLOCK_MONOTONIC_COARSE if available but only when it has
+   * millisecond granularity or better.  CLOCK_MONOTONIC_COARSE is
+   * serviced entirely from the vDSO, whereas CLOCK_MONOTONIC may
+   * decide to make a costly system call.
+   */
+  /* TODO(bnoordhuis) Use CLOCK_MONOTONIC_COARSE for UV_CLOCK_PRECISE
+   * when it has microsecond granularity or better (unlikely).
+   */
+  if (type == UV_CLOCK_FAST && fast_clock_id == -1) {
+    if (clock_getres(CLOCK_MONOTONIC_COARSE, &t) == 0 &&
+        t.tv_nsec <= 1 * 1000 * 1000) {
+      fast_clock_id = CLOCK_MONOTONIC_COARSE;
+    } else {
+      fast_clock_id = CLOCK_MONOTONIC;
+    }
   }
 
-  uv__make_close_pending(handle);
+  clock_id = CLOCK_MONOTONIC;
+  if (type == UV_CLOCK_FAST)
+    clock_id = fast_clock_id;
+
+  if (clock_gettime(clock_id, &t))
+    return 0;  /* Not really possible. */
+
+  return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
 }

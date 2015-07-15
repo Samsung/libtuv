@@ -61,6 +61,14 @@
 # define UV__EBUSY (-4082)
 #endif
 
+#if defined(ECANCELED)
+# define UV__ECANCELED (-ECANCELED)
+#else
+# define UV__ECANCELED (-4081)
+#endif
+
+//
+
 #if defined(EAGAIN)
 # define UV__EAGAIN (-EAGAIN)
 #else
@@ -74,6 +82,7 @@
 #define UV_ERRNO_MAP(XX)                                                      \
   XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
+  XX(ECANCELED, "operation canceled")                                         \
   XX(ENOMEM, "not enough memory")                                             \
 
 

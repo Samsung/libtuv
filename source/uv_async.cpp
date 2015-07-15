@@ -34,40 +34,58 @@
  * IN THE SOFTWARE.
  */
 
-#include <time.h> // for clock_xxx functions
+#include <stdlib.h>
+#include <unistd.h>
+#include <assert.h>
 
 #include <uv.h>
-#include "uv_platform.h"
 
 
-uint64_t uv__hrtime(uv_clocktype_t type) {
-  static clock_t fast_clock_id = -1;
-  struct timespec t;
-  clock_t clock_id;
+//-----------------------------------------------------------------------------
+//
 
-  /* Prefer CLOCK_MONOTONIC_COARSE if available but only when it has
-   * millisecond granularity or better.  CLOCK_MONOTONIC_COARSE is
-   * serviced entirely from the vDSO, whereas CLOCK_MONOTONIC may
-   * decide to make a costly system call.
-   */
-  /* TODO(bnoordhuis) Use CLOCK_MONOTONIC_COARSE for UV_CLOCK_PRECISE
-   * when it has microsecond granularity or better (unlikely).
-   */
-  if (type == UV_CLOCK_FAST && fast_clock_id == -1) {
-    if (clock_getres(CLOCK_MONOTONIC_COARSE, &t) == 0 &&
-        t.tv_nsec <= 1 * 1000 * 1000) {
-      fast_clock_id = CLOCK_MONOTONIC_COARSE;
-    } else {
-      fast_clock_id = CLOCK_MONOTONIC;
-    }
+static void uv__async_event(uv_loop_t* loop, struct uv__async* w,
+                            unsigned int nevents) {
+  QUEUE* q;
+  uv_async_t* h;
+
+  QUEUE_FOREACH(q, &loop->async_handles) {
+    h = QUEUE_DATA(q, uv_async_t, queue);
+
+    if (h->pending == 0)
+      continue;
+    h->pending = 0;
+
+    if (h->async_cb == NULL)
+      continue;
+    h->async_cb(h);
   }
+}
 
-  clock_id = CLOCK_MONOTONIC;
-  if (type == UV_CLOCK_FAST)
-    clock_id = fast_clock_id;
+//-----------------------------------------------------------------------------
+//
 
-  if (clock_gettime(clock_id, &t))
-    return 0;  /* Not really possible. */
+int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
+  int err;
 
-  return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
+  err = uv__async_start(loop, &loop->async_watcher, uv__async_event);
+  if (err)
+    return err;
+
+  uv__handle_init(loop, (uv_handle_t*)handle, UV_ASYNC);
+  handle->async_cb = async_cb;
+  handle->pending = 0;
+
+  QUEUE_INSERT_TAIL(&loop->async_handles, &handle->queue);
+  uv__handle_start(handle);
+
+  return 0;
+}
+
+
+int uv_async_send(uv_async_t* handle) {
+  if (uv__async_make_pending(&handle->pending) == 0)
+    uv__async_send(&handle->loop->async_watcher);
+
+  return 0;
 }

@@ -37,23 +37,13 @@
 #ifndef __uv__extenstion_header__
 #define __uv__extenstion_header__
 
+#include <uv_threadpool.h>
 
 //-----------------------------------------------------------------------------
 // linux structure extenstion
 
 #define UV_HANDLE_PRIVATE_FIELDS                                              \
   uv_handle_t* next_closing;                                                  \
-
-
-#define UV_LOOP_PRIVATE_FIELDS                                                \
-  uv_handle_t* closing_handles;                                               \
-  void* idle_handles[2];                                                      \
-  struct {                                                                    \
-    void* min;                                                                \
-    unsigned int nelts;                                                       \
-  } timer_heap;                                                               \
-  uint64_t timer_counter;                                                     \
-  uint64_t time;                                                              \
 
 
 #define UV_IDLE_PRIVATE_FIELDS                                                \
@@ -70,11 +60,124 @@
 
 
 //-----------------------------------------------------------------------------
+//
+
+#define UV_REQ_TYPE_PRIVATE /* empty */
+
+#define UV_REQ_PRIVATE_FIELDS  /* empty */
+
+#define UV_FS_PRIVATE_FIELDS                                                  \
+  uv_file file;                                                               \
+  int flags;                                                                  \
+  mode_t mode;                                                                \
+  unsigned int nbufs;                                                         \
+  uv_buf_t* bufs;                                                             \
+  off_t off;                                                                  \
+  struct uv__work work_req;                                                   \
+  uv_buf_t bufsml[4];                                                         \
+/*
+  const char *new_path;                                                       \
+  uv_file file;                                                               \
+  int flags;                                                                  \
+  mode_t mode;                                                                \
+  unsigned int nbufs;                                                         \
+  uv_buf_t* bufs;                                                             \
+  off_t off;                                                                  \
+  uv_uid_t uid;                                                               \
+  uv_gid_t gid;                                                               \
+  double atime;                                                               \
+  double mtime;                                                               \
+  struct uv__work work_req;                                                   \
+  uv_buf_t bufsml[4];                                                         \
+*/
+
+
+//-----------------------------------------------------------------------------
+
+#define UV_ASYNC_PRIVATE_FIELDS                                               \
+  uv_async_cb async_cb;                                                       \
+  void* queue[2];                                                             \
+  int pending;                                                                \
+
+
+//-----------------------------------------------------------------------------
+//
+
+#define UV_IO_PRIVATE_PLATFORM_FIELDS     /* empty */
+
+#define UV_PLATFORM_LOOP_FIELDS                                               \
+  uv__io_t inotify_read_watcher;                                              \
+  void* inotify_watchers;                                                     \
+  int inotify_fd;                                                             \
+
+//-----------------------------------------------------------------------------
+//
+
+#include "uv__handle.h"
+#include "uv__async.h"
+
+
+//-----------------------------------------------------------------------------
+//
+
+#define UV_LOOP_PRIVATE_FIELDS                                                \
+  unsigned long flags;                                                        \
+  int backend_fd;                                                             \
+  void* pending_queue[2];                                                     \
+  void* watcher_queue[2];                                                     \
+  uv__io_t** watchers;                                                        \
+  unsigned int nwatchers;                                                     \
+  unsigned int nfds;                                                          \
+  void* wq[2];                                                                \
+  uv_mutex_t wq_mutex;                                                        \
+  uv_async_t wq_async;                                                        \
+  uv_rwlock_t cloexec_lock;                                                   \
+  uv_handle_t* closing_handles;                                               \
+  void* idle_handles[2];                                                      \
+  void* async_handles[2];                                                     \
+  struct uv__async async_watcher;                                             \
+  struct {                                                                    \
+    void* min;                                                                \
+    unsigned int nelts;                                                       \
+  } timer_heap;                                                               \
+  uint64_t timer_counter;                                                     \
+  uint64_t time;                                                              \
+  UV_PLATFORM_LOOP_FIELDS                                                     \
+
+/*
+  unsigned long flags;                                                        \
+  int backend_fd;                                                             \
+  void* pending_queue[2];                                                     \
+  void* watcher_queue[2];                                                     \
+  uv__io_t** watchers;                                                        \
+  unsigned int nwatchers;                                                     \
+  unsigned int nfds;                                                          \
+  void* wq[2];                                                                \
+  uv_mutex_t wq_mutex;                                                        \
+  uv_async_t wq_async;                                                        \
+  uv_rwlock_t cloexec_lock;                                                   \
+  uv_handle_t* closing_handles;                                               \
+  void* process_handles[2];                                                   \
+  void* prepare_handles[2];                                                   \
+  void* check_handles[2];                                                     \
+  void* idle_handles[2];                                                      \
+  void* async_handles[2];                                                     \
+  struct uv__async async_watcher;                                             \
+  struct {                                                                    \
+    void* min;                                                                \
+    unsigned int nelts;                                                       \
+  } timer_heap;                                                               \
+  uint64_t timer_counter;                                                     \
+  uint64_t time;                                                              \
+  int signal_pipefd[2];                                                       \
+  uv__io_t signal_io_watcher;                                                 \
+  uv_signal_t child_watcher;                                                  \
+  int emfile_fd;                                                              \
+  UV_PLATFORM_LOOP_FIELDS                                                     \
+*/
+
+//-----------------------------------------------------------------------------
 // should be here for its used inside extension
-
-#define container_of(ptr, type, member) \
-  ((type *) ((char *) (ptr) - offsetof(type, member)))
-
 
 #define UV__HANDLE_INTERNAL  0x80
 #define UV__HANDLE_ACTIVE    0x40

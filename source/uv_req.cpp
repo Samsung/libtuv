@@ -34,47 +34,13 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
 
 #include <uv.h>
 #include "uv_internal.h"
 
 
-//-----------------------------------------------------------------------------
-
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
-
-
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
+void uv__req_init_(uv_loop_t* loop, uv_req_t* req, uv_req_type type) {
+  req->type = type;
+  uv__req_register(loop, req);
 }

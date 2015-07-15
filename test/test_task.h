@@ -34,47 +34,27 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <assert.h>
+#ifndef __tuv_test_task_header__
+#define __tuv_test_task_header__
 
-#include <uv.h>
-#include "uv_internal.h"
-
-
-//-----------------------------------------------------------------------------
-
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
+#include <stdlib.h>
 
 
-//-----------------------------------------------------------------------------
+#define ASSERT(expr)                                      \
+ do {                                                     \
+  if (!(expr)) {                                          \
+    fprintf(stderr,                                       \
+            "Assertion failed in %s on line %d: %s\n",    \
+            __FILE__,                                     \
+            __LINE__,                                     \
+            #expr);                                       \
+    abort();                                              \
+  }                                                       \
+ } while (0)
 
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
 
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
+#define TEST_IMPL(name)                                                       \
+  int run_test_##name(void);                                                  \
+  int run_test_##name(void)
 
-  switch (handle->type) {
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
-}
+#endif // __tuv_test_task_header__
