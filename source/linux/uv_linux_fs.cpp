@@ -115,19 +115,21 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_gid = src->st_gid;
   dst->st_rdev = src->st_rdev;
   dst->st_ino = src->st_ino;
+
   dst->st_mode = src->st_mode;
   dst->st_size = src->st_size;
   dst->st_blksize = src->st_blksize;
   dst->st_blocks = src->st_blocks;
 
-  dst->st_atim.tv_sec = src->st_atime;
-  dst->st_atim.tv_nsec = 0;
-  dst->st_mtim.tv_sec = src->st_mtime;
-  dst->st_mtim.tv_nsec = 0;
-  dst->st_ctim.tv_sec = src->st_ctime;
-  dst->st_ctim.tv_nsec = 0;
-  dst->st_birthtim.tv_sec = src->st_ctime;
-  dst->st_birthtim.tv_nsec = 0;
+  dst->st_atim.tv_sec = src->st_atim.tv_sec;
+  dst->st_atim.tv_nsec = src->st_atim.tv_nsec;
+  dst->st_mtim.tv_sec = src->st_mtim.tv_sec;
+  dst->st_mtim.tv_nsec = src->st_mtim.tv_nsec;
+  dst->st_ctim.tv_sec = src->st_ctim.tv_sec;
+  dst->st_ctim.tv_nsec = src->st_ctim.tv_nsec;
+
+  dst->st_birthtim.tv_sec = src->st_ctim.tv_sec;
+  dst->st_birthtim.tv_nsec = src->st_ctim.tv_nsec;
   dst->st_flags = 0;
   dst->st_gen = 0;
 }
@@ -137,6 +139,15 @@ static int uv__fs_fstat(int fd, uv_stat_t *buf) {
   struct stat pbuf;
   int ret;
   ret = fstat(fd, &pbuf);
+  uv__to_stat(&pbuf, buf);
+  return ret;
+}
+
+
+static int uv__fs_stat(const char *path, uv_stat_t *buf) {
+  struct stat pbuf;
+  int ret;
+  ret = stat(path, &pbuf);
   uv__to_stat(&pbuf, buf);
   return ret;
 }
@@ -323,7 +334,7 @@ static void uv__fs_work(struct uv__work* w) {
     //X(RENAME, rename(req->path, req->new_path));
     //X(RMDIR, rmdir(req->path));
     //X(SENDFILE, uv__fs_sendfile(req));
-    //X(STAT, uv__fs_stat(req->path, &req->statbuf));
+    X(STAT, uv__fs_stat(req->path, &req->statbuf));
     //X(UNLINK, unlink(req->path));
     //X(UTIME, uv__fs_utime(req));
     X(WRITE, uv__fs_write(req));
@@ -386,6 +397,44 @@ int uv_fs_open(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
   PATH;
   req->flags = flags;
   req->mode = mode;
+  POST;
+}
+
+
+int uv_fs_read(uv_loop_t* loop, uv_fs_t* req,
+               uv_file file,
+               const uv_buf_t bufs[],
+               unsigned int nbufs,
+               int64_t off,
+               uv_fs_cb cb) {
+  INIT(READ);
+  req->file = file;
+
+  req->nbufs = nbufs;
+  req->bufs = req->bufsml;
+  if (nbufs > ARRAY_SIZE(req->bufsml))
+    req->bufs = malloc(nbufs * sizeof(*bufs));
+
+  if (req->bufs == NULL)
+    return -ENOMEM;
+
+  memcpy(req->bufs, bufs, nbufs * sizeof(*bufs));
+
+  req->off = off;
+  POST;
+}
+
+
+int uv_fs_stat(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb) {
+  INIT(STAT);
+  PATH;
+  POST;
+}
+
+
+int uv_fs_fstat(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb) {
+  INIT(FSTAT);
+  req->file = file;
   POST;
 }
 

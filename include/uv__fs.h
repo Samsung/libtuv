@@ -104,6 +104,9 @@ int uv_fs_write(uv_loop_t* loop, uv_fs_t* req, uv_file file,
                 const uv_buf_t bufs[], unsigned int nbufs, int64_t offset,
                 uv_fs_cb cb);
 
+int uv_fs_stat(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
+int uv_fs_fstat(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
+
 int uv_fs_fsync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 int uv_fs_fdatasync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 

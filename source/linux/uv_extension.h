@@ -39,8 +39,10 @@
 
 #include <uv_threadpool.h>
 
-//-----------------------------------------------------------------------------
-// linux structure extenstion
+//
+// structure extension for linux
+//
+
 
 #define UV_HANDLE_PRIVATE_FIELDS                                              \
   uv_handle_t* next_closing;                                                  \
@@ -59,12 +61,11 @@
   uint64_t start_id;
 
 
-//-----------------------------------------------------------------------------
-//
-
 #define UV_REQ_TYPE_PRIVATE /* empty */
 
+
 #define UV_REQ_PRIVATE_FIELDS  /* empty */
+
 
 #define UV_FS_PRIVATE_FIELDS                                                  \
   uv_file file;                                                               \
@@ -92,33 +93,30 @@
 */
 
 
-//-----------------------------------------------------------------------------
-
 #define UV_ASYNC_PRIVATE_FIELDS                                               \
   uv_async_cb async_cb;                                                       \
   void* queue[2];                                                             \
   int pending;                                                                \
 
 
-//-----------------------------------------------------------------------------
-//
-
 #define UV_IO_PRIVATE_PLATFORM_FIELDS     /* empty */
+
 
 #define UV_PLATFORM_LOOP_FIELDS                                               \
   uv__io_t inotify_read_watcher;                                              \
   void* inotify_watchers;                                                     \
   int inotify_fd;                                                             \
 
+
 //-----------------------------------------------------------------------------
-//
+// as loop uses async, handle and async needs to be included here
 
 #include "uv__handle.h"
 #include "uv__async.h"
 
 
 //-----------------------------------------------------------------------------
-//
+// loop, this needs to be at the bottom
 
 #define UV_LOOP_PRIVATE_FIELDS                                                \
   unsigned long flags;                                                        \
