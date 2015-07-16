@@ -54,6 +54,8 @@ static void uv__finish_close(uv_handle_t* handle) {
 
   switch (handle->type) {
     case UV_IDLE:
+    case UV_ASYNC:
+    case UV_TIMER:
       break;
 
     default:
@@ -111,6 +113,23 @@ static int uv__run_pending(uv_loop_t* loop) {
 
 //-----------------------------------------------------------------------------
 
+int uv_backend_timeout(const uv_loop_t* loop) {
+  if (loop->stop_flag != 0)
+    return 0;
+
+  if (!uv__has_active_handles(loop) && !uv__has_active_reqs(loop))
+    return 0;
+
+  if (!QUEUE_EMPTY(&loop->idle_handles))
+    return 0;
+
+  if (loop->closing_handles)
+    return 0;
+
+  return uv__next_timeout(loop);
+}
+
+
 static int uv__loop_alive(const uv_loop_t* loop) {
   return (uv__has_active_handles(loop) ||
           uv__has_active_reqs(loop) ||
@@ -121,6 +140,7 @@ static int uv__loop_alive(const uv_loop_t* loop) {
 int uv_run(uv_loop_t* loop, uv_run_mode mode) {
   int timeout;
   int r;
+  int ran_pending;
 
   r = uv__loop_alive(loop);
   if (!r)
@@ -129,10 +149,12 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
   while (r != 0 && loop->stop_flag == 0) {
     uv__update_time(loop);
     uv__run_timers(loop);
-    uv__run_pending(loop);
+    ran_pending = uv__run_pending(loop);
     uv__run_idle(loop);
 
     timeout = 0;
+    if ((mode == UV_RUN_ONCE && !ran_pending) || mode == UV_RUN_DEFAULT)
+      timeout = uv_backend_timeout(loop);
 
     uv__io_poll(loop, timeout);
     uv__run_closing_handles(loop);

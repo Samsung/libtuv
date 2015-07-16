@@ -78,3 +78,20 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
 
   uv__make_close_pending(handle);
 }
+
+
+//-----------------------------------------------------------------------------
+
+int uv_is_active(const uv_handle_t* handle) {
+  return uv__is_active(handle);
+}
+
+
+void uv_ref(uv_handle_t* handle) {
+  uv__handle_ref(handle);
+}
+
+
+void uv_unref(uv_handle_t* handle) {
+  uv__handle_unref(handle);
+}

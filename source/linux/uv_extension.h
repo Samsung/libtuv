@@ -177,10 +177,12 @@
 //-----------------------------------------------------------------------------
 // should be here for its used inside extension
 
-#define UV__HANDLE_INTERNAL  0x80
-#define UV__HANDLE_ACTIVE    0x40
-#define UV__HANDLE_REF       0x20
-#define UV__HANDLE_CLOSING   0x01
+enum {
+  UV__HANDLE_INTERNAL = 0x8000,
+  UV__HANDLE_ACTIVE   = 0x4000,
+  UV__HANDLE_REF      = 0x2000,
+  UV__HANDLE_CLOSING  = 0 /* no-op on unix */
+};
 
 #define uv__handle_platform_init(h) ((h)->next_closing = NULL)
 

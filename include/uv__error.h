@@ -49,10 +49,10 @@
 #define UV__EOF     (-4095)
 #define UV__UNKNOWN (-4094)
 
-#if defined(ENOMEM)
-# define UV__ENOMEM (-ENOMEM)
+#if defined(EAGAIN)
+# define UV__EAGAIN (-EAGAIN)
 #else
-# define UV__ENOMEM (-4057)
+# define UV__EAGAIN (-4088)
 #endif
 
 #if defined(EBUSY)
@@ -67,13 +67,18 @@
 # define UV__ECANCELED (-4081)
 #endif
 
-//
-
-#if defined(EAGAIN)
-# define UV__EAGAIN (-EAGAIN)
+#if defined(EINVAL)
+# define UV__EINVAL (-EINVAL)
 #else
-# define UV__EAGAIN (-4088)
+# define UV__EINVAL (-4071)
 #endif
+
+#if defined(ENOMEM)
+# define UV__ENOMEM (-ENOMEM)
+#else
+# define UV__ENOMEM (-4057)
+#endif
+
 
 
 //-----------------------------------------------------------------------------
@@ -83,6 +88,7 @@
   XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \
+  XX(EINVAL, "invalid argument")                                              \
   XX(ENOMEM, "not enough memory")                                             \
 
 

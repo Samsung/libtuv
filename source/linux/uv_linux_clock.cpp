@@ -70,3 +70,11 @@ uint64_t uv__hrtime(uv_clocktype_t type) {
 
   return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
 }
+
+void uv_update_time(uv_loop_t* loop) {
+  uv__update_time(loop);
+}
+
+uint64_t uv_now(const uv_loop_t* loop) {
+  return loop->time;
+}

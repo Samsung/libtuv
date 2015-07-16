@@ -34,59 +34,15 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv_linux_syscall_header__
-#define __uv_linux_syscall_header__
+#ifndef __uv__datetime_header__
+#define __uv__datetime_header__
 
-
-// architectecture dependent
-#define UV__O_CLOEXEC         0x80000
-#define UV__O_NONBLOCK        0x800
-
-#define UV__EFD_CLOEXEC       UV__O_CLOEXEC
-#define UV__EFD_NONBLOCK      UV__O_NONBLOCK
-
-/* epoll flags */
-#define UV__EPOLL_CLOEXEC     UV__O_CLOEXEC
-#define UV__EPOLL_CTL_ADD     1
-#define UV__EPOLL_CTL_DEL     2
-#define UV__EPOLL_CTL_MOD     3
-
-#define UV__EPOLLIN           1
-#define UV__EPOLLOUT          4
-#define UV__EPOLLERR          8
-#define UV__EPOLLHUP          16
-#define UV__EPOLLONESHOT      0x40000000
-#define UV__EPOLLET           0x80000000
-
-
-#if defined(__x86_64__)
-struct uv__epoll_event {
-  uint32_t events;
-  uint64_t data;
-} __attribute__((packed));
-#else
-struct uv__epoll_event {
-  uint32_t events;
-  uint64_t data;
-};
+#ifndef __uv_header__
+#error Please include with uv.h
 #endif
 
-
-int uv__eventfd(unsigned int count);
-int uv__eventfd2(unsigned int count, int flags);
-
-int uv__epoll_create(int size);
-int uv__epoll_create1(int flags);
-int uv__epoll_ctl(int epfd, int op, int fd, struct uv__epoll_event *ev);
-int uv__epoll_wait(int epfd, struct uv__epoll_event* events,
-                   int nevents, int timeout);
-int uv__epoll_pwait(int epfd, struct uv__epoll_event* events,
-                    int nevents, int timeout, uint64_t sigmask);
-
-int uv__pipe2(int pipefd[2], int flags);
-
-ssize_t uv__preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset);
-ssize_t uv__pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset);
+void uv_update_time(uv_loop_t*);
+uint64_t uv_now(const uv_loop_t*);
 
 
-#endif // __uv_linux_syscall_header__
+#endif // __uv__datetime_header__

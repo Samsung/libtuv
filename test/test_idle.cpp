@@ -13,27 +13,34 @@
  * limitations under the License.
  */
 
+#include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
-
+#include <unistd.h>
 #include <uv.h>
 
+#include "runner.h"
+
+
+static uv_idle_t idle_handle;
+static int idle_cb_called = 0;
 
 void idle_callback(uv_idle_t* handle) {
-  static int count = 0;
-  debugf("idle count = %d\n", count);
-  if (count > 10)
-    uv_idle_stop(handle);
-  count++;
+  uv_idle_stop(handle);
+  idle_cb_called++;
 }
 
 
-int main(int argc, char* argv[]) {
+TEST_IMPL(idle_basic) {
   uv_loop_t* loop;
-  uv_idle_t idler;
 
   loop = uv_default_loop();
-  uv_idle_init(loop, &idler);
-  uv_idle_start(&idler, idle_callback);
+  uv_idle_init(loop, &idle_handle);
+  uv_idle_start(&idle_handle, idle_callback);
   uv_run(loop, UV_RUN_DEFAULT);
   uv_loop_close(loop);
+
+  WARN(idle_cb_called==1);
+
+  return 0;
 }

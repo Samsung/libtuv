@@ -413,7 +413,7 @@ int uv_fs_read(uv_loop_t* loop, uv_fs_t* req,
   req->nbufs = nbufs;
   req->bufs = req->bufsml;
   if (nbufs > ARRAY_SIZE(req->bufsml))
-    req->bufs = malloc(nbufs * sizeof(*bufs));
+    req->bufs = (uv_buf_t*)malloc(nbufs * sizeof(*bufs));
 
   if (req->bufs == NULL)
     return -ENOMEM;

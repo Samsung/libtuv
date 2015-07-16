@@ -20,3 +20,6 @@ set(LIBTUV_VERSION_MINOR 1)
 
 include(cmake/options.cmake)
 include(cmake/libtuv.cmake)
+if(${BUILD_TEST} STREQUAL "YES" AND ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  include(cmake/tuvtest.cmake)
+endif()

@@ -66,6 +66,7 @@
 #include "uv__req.h"
 #include "uv__fs.h"
 
+#include "uv__datetime.h"
 #include "uv__util.h"
 
 
