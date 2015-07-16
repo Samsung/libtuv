@@ -58,9 +58,22 @@ struct uv_loop_s {
 };
 
 
+typedef enum {
+    UV_RUN_DEFAULT = 0,
+    UV_RUN_ONCE,
+    UV_RUN_NOWAIT
+} uv_run_mode;
+
+
+//-----------------------------------------------------------------------------
+
 int uv_loop_init(uv_loop_t* loop);
 int uv_loop_close(uv_loop_t* loop);
 uv_loop_t* uv_default_loop(void);
 
+void uv_update_time(uv_loop_t*);
+uint64_t uv_now(const uv_loop_t*);
+
+int uv_run(uv_loop_t* loop, uv_run_mode mode);
 
 #endif // __uv__loop_header__

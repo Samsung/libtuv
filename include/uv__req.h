@@ -79,4 +79,8 @@ struct uv_req_s {
 };
 
 
+#define uv__has_active_reqs(loop)                                             \
+  (QUEUE_EMPTY(&(loop)->active_reqs) == 0)
+
+
 #endif // __uv__req_header__

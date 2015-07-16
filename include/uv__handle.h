@@ -162,6 +162,10 @@ struct uv_handle_s {
   (((h)->flags & UV__HANDLE_REF) != 0)
 
 
+#define uv__has_active_handles(loop)                                          \
+  ((loop)->active_handles > 0)
+
+
 //-----------------------------------------------------------------------------
 
 void uv_ref(uv_handle_t*);
