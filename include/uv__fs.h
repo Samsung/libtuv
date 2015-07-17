@@ -110,5 +110,15 @@ int uv_fs_fstat(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 int uv_fs_fsync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 int uv_fs_fdatasync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 
+int uv_fs_unlink(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
+int uv_fs_ftruncate(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+                    int64_t offset, uv_fs_cb cb);
+int uv_fs_rename(uv_loop_t* loop, uv_fs_t* req,
+                 const char* path, const char* new_path, uv_fs_cb cb);
+
+int uv_fs_futime(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+                 double atime, double mtime, uv_fs_cb cb);
+int uv_fs_utime(uv_loop_t* loop, uv_fs_t* req, const char* path,
+                double atime, double mtime, uv_fs_cb cb);
 
 #endif // __uv__fs_header__

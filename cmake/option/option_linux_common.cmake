@@ -44,4 +44,6 @@ set(PLATFORM_SRCFILES "${LINUX_PATH}/uv_linux.cpp"
                       "${LINUX_PATH}/uv_linux_syscall.cpp"
                       )
 
+set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.cpp")
+
 set(TUV_LINK_LIBS "pthread")

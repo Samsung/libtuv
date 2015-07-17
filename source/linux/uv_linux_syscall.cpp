@@ -126,6 +126,16 @@ int uv__eventfd2(unsigned int count, int flags) {
 # endif
 #endif /* __NR_epoll_wait */
 
+#ifndef __NR_utimensat
+# if defined(__x86_64__)
+#  define __NR_utimensat 280
+# elif defined(__i386__)
+#  define __NR_utimensat 320
+# elif defined(__arm__)
+#  define __NR_utimensat (UV_SYSCALL_BASE + 348)
+# endif
+#endif /* __NR_utimensat */
+
 #ifndef __NR_epoll_pwait
 # if defined(__x86_64__)
 #  define __NR_epoll_pwait 281
@@ -184,6 +194,19 @@ int uv__epoll_pwait(int epfd, struct uv__epoll_event* events,
                  timeout,
                  &sigmask,
                  sizeof(sigmask));
+#else
+  return errno = ENOSYS, -1;
+#endif
+}
+
+
+int uv__utimesat(int dirfd,
+                 const char* path,
+                 const struct timespec times[2],
+                 int flags)
+{
+#if defined(__NR_utimensat)
+  return syscall(__NR_utimensat, dirfd, path, times, flags);
 #else
   return errno = ENOSYS, -1;
 #endif

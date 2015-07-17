@@ -45,4 +45,16 @@
   TE(timer_huge_repeat, 5000)                                                 \
   TE(timer_run_once, 5000)                                                    \
   TE(timer_null_callback, 5000)                                               \
+  TE(timer_again, 5000)                                                       \
+  TE(fs_file_noent, 5000)                                                     \
+  TE(fs_file_nametoolong, 5000)                                               \
+  TE(fs_file_async, 5000)                                                     \
+  TE(fs_file_sync, 5000)                                                      \
+  TE(fs_file_write_null_buffer, 5000)                                         \
+  TE(fs_utime, 5000)                                                          \
+  TE(fs_futime, 5000)                                                         \
+  TE(fs_stat_missing_path, 5000)                                              \
+  TE(fs_open_dir, 5000)                                                       \
+  TE(fs_file_open_append, 5000)                                               \
+  TE(fs_read_file_eof, 5000)                                                  \
 

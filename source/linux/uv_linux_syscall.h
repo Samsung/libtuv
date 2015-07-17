@@ -88,5 +88,7 @@ int uv__pipe2(int pipefd[2], int flags);
 ssize_t uv__preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset);
 ssize_t uv__pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset);
 
+int uv__utimesat(int dirfd, const char* path, const struct timespec times[2],
+                 int flags);
 
 #endif // __uv_linux_syscall_header__

@@ -68,12 +68,15 @@
 
 
 #define UV_FS_PRIVATE_FIELDS                                                  \
+  const char *new_path;                                                       \
   uv_file file;                                                               \
   int flags;                                                                  \
   mode_t mode;                                                                \
   unsigned int nbufs;                                                         \
   uv_buf_t* bufs;                                                             \
   off_t off;                                                                  \
+  double atime;                                                               \
+  double mtime;                                                               \
   struct uv__work work_req;                                                   \
   uv_buf_t bufsml[4];                                                         \
 /*

@@ -45,8 +45,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/uio.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <utime.h>
+#include <sys/time.h>
+#include <sys/uio.h>
 
 #include <uv.h>
 #include "uv_internal.h"
@@ -62,19 +65,10 @@
     (req)->ptr = NULL;                                                        \
     (req)->loop = loop;                                                       \
     (req)->path = NULL;                                                       \
+    (req)->new_path = NULL;                                                   \
     (req)->cb = (cb);                                                         \
   }                                                                           \
   while (0)
-/*
-    (req)->fs_type = UV_FS_ ## type;                                          \
-    (req)->result = 0;                                                        \
-    (req)->ptr = NULL;                                                        \
-    (req)->loop = loop;                                                       \
-    (req)->path = NULL;                                                       \
-    (req)->new_path = NULL;                                                   \
-    (req)->cb = (cb);                                                         \
-*/
-
 
 #define PATH                                                                  \
   do {                                                                        \
@@ -84,6 +78,20 @@
   }                                                                           \
   while (0)
 
+#define PATH2                                                                 \
+  do {                                                                        \
+    size_t path_len;                                                          \
+    size_t new_path_len;                                                      \
+    path_len = strlen((path)) + 1;                                            \
+    new_path_len = strlen((new_path)) + 1;                                    \
+    (req)->path = (char*)malloc(path_len + new_path_len);                     \
+    if ((req)->path == NULL)                                                  \
+      return -ENOMEM;                                                         \
+    (req)->new_path = (req)->path + path_len;                                 \
+    memcpy((void*) (req)->path, (path), path_len);                            \
+    memcpy((void*) (req)->new_path, (new_path), new_path_len);                \
+  }                                                                           \
+  while (0)
 
 #define POST                                                                  \
   do {                                                                        \
@@ -289,6 +297,68 @@ static void uv__fs_done(struct uv__work* w, int status) {
 }
 
 
+static ssize_t uv__fs_futime(uv_fs_t* req) {
+  /* utimesat() has nanosecond resolution but we stick to microseconds
+   * for the sake of consistency with other platforms.
+   */
+  static int no_utimesat;
+  struct timespec ts[2];
+  struct timeval tv[2];
+  char path[sizeof("/proc/self/fd/") + 3 * sizeof(int)];
+  int r;
+
+  if (no_utimesat)
+    goto skip;
+
+  ts[0].tv_sec  = req->atime;
+  ts[0].tv_nsec = (unsigned long)(req->atime * 1000000) % 1000000 * 1000;
+  ts[1].tv_sec  = req->mtime;
+  ts[1].tv_nsec = (unsigned long)(req->mtime * 1000000) % 1000000 * 1000;
+
+  r = uv__utimesat(req->file, NULL, ts, 0);
+  if (r == 0)
+    return r;
+
+  if (errno != ENOSYS)
+    return r;
+
+  no_utimesat = 1;
+
+skip:
+
+  tv[0].tv_sec  = req->atime;
+  tv[0].tv_usec = (unsigned long)(req->atime * 1000000) % 1000000;
+  tv[1].tv_sec  = req->mtime;
+  tv[1].tv_usec = (unsigned long)(req->mtime * 1000000) % 1000000;
+  snprintf(path, sizeof(path), "/proc/self/fd/%d", (int) req->file);
+
+  r = utimes(path, tv);
+  if (r == 0)
+    return r;
+
+  switch (errno) {
+  case ENOENT:
+    if (fcntl(req->file, F_GETFL) == -1 && errno == EBADF)
+      break;
+    /* Fall through. */
+
+  case EACCES:
+  case ENOTDIR:
+    errno = ENOSYS;
+    break;
+  }
+
+  return r;
+}
+
+
+static ssize_t uv__fs_utime(uv_fs_t* req) {
+  struct utimbuf buf;
+  buf.actime = req->atime;
+  buf.modtime = req->mtime;
+  return utime(req->path, &buf); /* TODO use utimes() where available */
+}
+
 //-----------------------------------------------------------------------------
 //
 
@@ -316,7 +386,7 @@ static void uv__fs_work(struct uv__work* w) {
     //X(CHOWN, chown(req->path, req->uid, req->gid));
     //X(FCHMOD, fchmod(req->file, req->mode));
     //X(FCHOWN, fchown(req->file, req->uid, req->gid));
-    //X(FTRUNCATE, ftruncate(req->file, req->off));
+    X(FTRUNCATE, ftruncate(req->file, req->off));
     //X(LINK, link(req->path, req->new_path));
     //X(SYMLINK, symlink(req->path, req->new_path));
     //X(ACCESS, access(req->path, req->flags));
@@ -324,19 +394,19 @@ static void uv__fs_work(struct uv__work* w) {
     X(FDATASYNC, uv__fs_fdatasync(req));
     X(FSTAT, uv__fs_fstat(req->file, &req->statbuf));
     X(FSYNC, fsync(req->file));
-    //X(FUTIME, uv__fs_futime(req));
+    X(FUTIME, uv__fs_futime(req));
     //X(LSTAT, uv__fs_lstat(req->path, &req->statbuf));
     //X(MKDIR, mkdir(req->path, req->mode));
     //X(MKDTEMP, uv__fs_mkdtemp(req));
     X(READ, uv__fs_read(req));
     //X(SCANDIR, uv__fs_scandir(req));
     //X(READLINK, uv__fs_readlink(req));
-    //X(RENAME, rename(req->path, req->new_path));
+    X(RENAME, rename(req->path, req->new_path));
     //X(RMDIR, rmdir(req->path));
     //X(SENDFILE, uv__fs_sendfile(req));
     X(STAT, uv__fs_stat(req->path, &req->statbuf));
-    //X(UNLINK, unlink(req->path));
-    //X(UTIME, uv__fs_utime(req));
+    X(UNLINK, unlink(req->path));
+    X(UTIME, uv__fs_utime(req));
     X(WRITE, uv__fs_write(req));
 
     case UV_FS_OPEN:
@@ -484,7 +554,7 @@ int uv_fs_write(uv_loop_t* loop, uv_fs_t* req, uv_file file,
 void uv_fs_req_cleanup(uv_fs_t* req) {
   free((void*) req->path);
   req->path = NULL;
-  //req->new_path = NULL;
+  req->new_path = NULL;
 
   if (req->fs_type == UV_FS_SCANDIR && req->ptr != NULL)
     uv__fs_scandir_cleanup(req);
@@ -495,3 +565,44 @@ void uv_fs_req_cleanup(uv_fs_t* req) {
 }
 
 
+int uv_fs_unlink(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb) {
+  INIT(UNLINK);
+  PATH;
+  POST;
+}
+
+int uv_fs_ftruncate(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+                    int64_t off, uv_fs_cb cb) {
+  INIT(FTRUNCATE);
+  req->file = file;
+  req->off = off;
+  POST;
+}
+
+
+int uv_fs_rename(uv_loop_t* loop, uv_fs_t* req,
+                 const char* path, const char* new_path, uv_fs_cb cb) {
+  INIT(RENAME);
+  PATH2;
+  POST;
+}
+
+
+int uv_fs_futime(uv_loop_t* loop, uv_fs_t* req, uv_file file,
+                 double atime, double mtime, uv_fs_cb cb) {
+  INIT(FUTIME);
+  req->file = file;
+  req->atime = atime;
+  req->mtime = mtime;
+  POST;
+}
+
+
+int uv_fs_utime(uv_loop_t* loop, uv_fs_t* req, const char* path,
+                double atime, double mtime, uv_fs_cb cb) {
+  INIT(UTIME);
+  PATH;
+  req->atime = atime;
+  req->mtime = mtime;
+  POST;
+}

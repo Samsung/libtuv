@@ -14,18 +14,27 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(TEST_MAINFILE ${TEST_ROOT}/runner_main.cpp
-                  ${TEST_ROOT}/runner_linux.cpp)
+set(TEST_MAINFILE ${TEST_ROOT}/runner_main.cpp)
 
 set(TEST_UNITFILES ${TEST_ROOT}/test_idle.cpp
                    ${TEST_ROOT}/test_timer.cpp
+                   ${TEST_ROOT}/test_timer_again.cpp
+                   ${TEST_ROOT}/test_fs.cpp
                    )
+
+set(TEST_PLATFORMFILES )
 
 set(TESTEXENAME "tuvtester")
 
-add_executable(${TESTEXENAME} ${TEST_MAINFILE} ${TEST_UNITFILES})
+foreach(FILES ${PLATFORM_TESTFILES})
+  set(TEST_PLATFORMFILES ${TEST_PLATFORMFILES} ${FILES})
+endforeach()
+
+
+add_executable(${TESTEXENAME} ${TEST_MAINFILE} ${TEST_UNITFILES}
+               ${TEST_PLATFORMFILES})
 target_include_directories(${TESTEXENAME} PUBLIC ${LIB_TUV_INCDIRS})
-target_link_libraries(${TESTEXENAME} LINK_PUBLIC "${TARGETLIBNAME}"
+target_link_libraries(${TESTEXENAME} LINK_PUBLIC ${TARGETLIBNAME}
                       ${TUV_LINK_LIBS})
 set_target_properties(${TESTEXENAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${LIB_OUT}"

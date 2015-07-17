@@ -73,11 +73,42 @@
 # define UV__EINVAL (-4071)
 #endif
 
+#if defined(ELOOP)
+# define UV__ELOOP (-ELOOP)
+#else
+# define UV__ELOOP (-4067)
+#endif
+
+#if defined(ENAMETOOLONG)
+# define UV__ENAMETOOLONG (-ENAMETOOLONG)
+#else
+# define UV__ENAMETOOLONG (-4064)
+#endif
+
+#if defined(ENOENT)
+# define UV__ENOENT (-ENOENT)
+#else
+# define UV__ENOENT (-4058)
+#endif
+
 #if defined(ENOMEM)
 # define UV__ENOMEM (-ENOMEM)
 #else
 # define UV__ENOMEM (-4057)
 #endif
+
+#if defined(ENOTDIR)
+# define UV__ENOTDIR (-ENOTDIR)
+#else
+# define UV__ENOTDIR (-4052)
+#endif
+
+#if defined(EPERM)
+# define UV__EPERM (-EPERM)
+#else
+# define UV__EPERM (-4048)
+#endif
+
 
 
 
@@ -89,8 +120,13 @@
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \
   XX(EINVAL, "invalid argument")                                              \
+  XX(ELOOP, "too many symbolic links encountered")                            \
+  XX(ENAMETOOLONG, "name too long")                                           \
+  XX(ENOENT, "no such file or directory")                                     \
   XX(ENOMEM, "not enough memory")                                             \
-
+  XX(ENOTDIR, "not a directory")                                              \
+  XX(EPERM, "operation not permitted")                                        \
+  XX(EOF, "end of file")                                                      \
 
 //-----------------------------------------------------------------------------
 #define XX(code, _) UV_ ## code = UV__ ## code,
