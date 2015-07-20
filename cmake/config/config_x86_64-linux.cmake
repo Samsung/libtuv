@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# linux common
-include("cmake/option/option_linux_common.cmake")
+include(CMakeForceCompiler)
 
-# i686 specific
-
-set(FLAGS_COMMON
-      "-m32")
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR x86_64)

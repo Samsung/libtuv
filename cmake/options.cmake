@@ -28,11 +28,6 @@ set(BIN_ROOT ${CMAKE_BINARY_DIR})
 set(LIB_OUT "${BIN_ROOT}/../lib")
 set(BIN_OUT "${BIN_ROOT}/../bin")
 
-
-if(NOT DEFINED TARGET_BOARD)
-   message(STATUS "WARNING: TARGET_BOARD not defined")
-endif()
-
 # path for platform depends files, use full name for default
 # (e.g, i686-linux)
 set(TUV_PLATFORM_PATH ${TARGET_PLATFORM})

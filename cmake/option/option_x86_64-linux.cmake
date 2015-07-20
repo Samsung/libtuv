@@ -15,7 +15,4 @@
 # linux common
 include("cmake/option/option_linux_common.cmake")
 
-# i686 specific
-
-set(FLAGS_COMMON
-      "-m32")
+# x86_64 specific
