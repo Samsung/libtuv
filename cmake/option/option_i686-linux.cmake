@@ -16,4 +16,3 @@
 include("cmake/option/option_linux_common.cmake")
 
 # i686 specific
-

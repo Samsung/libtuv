@@ -34,9 +34,8 @@ all:
 	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES)
 	make -C $(CMAKE_FOLDER)
 	@echo '=============================================================='
-	@echo 'to run test files change to bin folder with'
-	@echo 'pushd $(BUILD_FOLDER)/bin/'
-	@echo 'and return here with popd'
+	@echo 'to run test,'
+	@echo '$(BUILD_FOLDER)/bin/tuvtester'
 	@echo '=============================================================='
 
 call:
