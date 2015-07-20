@@ -12,7 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TUV_PLATFORM    ?= i686-linux
+UNAME_M := $(shell uname -m)
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	UNAME_S := linux
+endif
+ifeq ($(UNAME_S),Darwin)
+	UNAME_S := darwin
+endif
+
+
+TUV_PLATFORM    ?= $(UNAME_M)-$(UNAME_S)
 TUV_BUILD_TYPE  ?= debug
 TUV_BOARD       ?= unknown
 TUV_BUILDTEST   ?= YES

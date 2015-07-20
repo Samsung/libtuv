@@ -19,3 +19,5 @@ include("cmake/option/option_linux_common.cmake")
 
 set(FLAGS_COMMON
       "-m32")
+
+set(TUV_LINK_LIBS ${TUV_LINK_LIBS} "-m32")
