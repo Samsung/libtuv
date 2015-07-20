@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-TUV_PLATFORM    ?= i686-linux-generic
+TUV_PLATFORM    ?= i686-linux
 TUV_BUILD_TYPE  ?= debug
+TUV_BOARD       ?= generic
 TUV_BUILDTEST   ?= YES
 
 OUTPUT_ROOT     := build
@@ -23,6 +24,7 @@ CMAKE_DEFINES   := \
 	-DCMAKE_TOOLCHAIN_FILE=./cmake/config/config_$(TUV_PLATFORM).cmake \
 	-DCMAKE_BUILD_TYPE=$(TUV_BUILD_TYPE) \
 	-DTARGET_PLATFORM=$(TUV_PLATFORM) \
+	-DTARGET_BOARD=${TUV_BOARD} \
 	-DBUILD_TEST=$(TUV_BUILDTEST)
 
 .phony: all
@@ -45,6 +47,14 @@ clean:
 
 #
 # make option
-#   VERBOSE=1 > verbose output
-#   TUV_BUILD_TYPE=release > release build
+#   VERBOSE=1
+#       ; verbose output if set
+#   TUV_BUILD_TYPE=release
+#       ; release build or else debug build
+#
+# support platform+board
+#   TUV_PLATFORM=i686-linux
+#       ; x86 32bit linux
+#   TUV_PLATFORM=arm-linux TUV_BOARD=rpi2
+#       ; arm linux raspberry pi 2
 #

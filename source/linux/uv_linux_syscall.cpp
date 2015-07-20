@@ -42,6 +42,18 @@
 
 #include <uv.h>
 
+
+//-----------------------------------------------------------------------------
+
+#if defined(__arm__)
+# if defined(__thumb__) || defined(__ARM_EABI__)
+#  define UV_SYSCALL_BASE 0
+# else
+#  define UV_SYSCALL_BASE 0x900000
+# endif
+#endif /* __arm__ */
+
+
 //-----------------------------------------------------------------------------
 
 #ifndef __NR_eventfd
@@ -106,6 +118,16 @@ int uv__eventfd2(unsigned int count, int flags) {
 # endif
 #endif /* __NR_epoll_create1 */
 
+#ifndef __NR_pipe2
+# if defined(__x86_64__)
+#  define __NR_pipe2 293
+# elif defined(__i386__)
+#  define __NR_pipe2 331
+# elif defined(__arm__)
+#  define __NR_pipe2 (UV_SYSCALL_BASE + 359)
+# endif
+#endif /* __NR_pipe2 */
+
 #ifndef __NR_epoll_ctl
 # if defined(__x86_64__)
 #  define __NR_epoll_ctl 233 /* used to be 214 */
@@ -145,6 +167,7 @@ int uv__eventfd2(unsigned int count, int flags) {
 #  define __NR_epoll_pwait (UV_SYSCALL_BASE + 346)
 # endif
 #endif /* __NR_epoll_pwait */
+
 
 //-----------------------------------------------------------------------------
 
@@ -207,6 +230,15 @@ int uv__utimesat(int dirfd,
 {
 #if defined(__NR_utimensat)
   return syscall(__NR_utimensat, dirfd, path, times, flags);
+#else
+  return errno = ENOSYS, -1;
+#endif
+}
+
+
+int uv__pipe2(int pipefd[2], int flags) {
+#if defined(__NR_pipe2)
+  return syscall(__NR_pipe2, pipefd, flags);
 #else
   return errno = ENOSYS, -1;
 #endif

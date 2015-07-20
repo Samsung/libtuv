@@ -15,10 +15,18 @@
 # linux common
 include("cmake/option/option_linux_common.cmake")
 
-# rpi2 specific
-set(FLAGS_COMMON
-      "${FLAGS_COMMON}"
-      "-mcpu=cortex-a7"
-      "-mfloat-abi=hard"
-      "-mfpu=neon-vfpv4"
-      )
+if(DEFINED TARGET_BOARD)
+  if(${TARGET_BOARD} STREQUAL "rpi2")
+    # rpi2 specific
+    set(FLAGS_COMMON
+          "${FLAGS_COMMON}"
+          "-mcpu=cortex-a7"
+          "-mfloat-abi=hard"
+          "-mfpu=neon-vfpv4"
+          )
+  else()
+    message(STATUS "WARNING: TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
+  endif()
+else()
+  message(STATUS "WARNING: TARGET_BOARD not defined")
+endif()

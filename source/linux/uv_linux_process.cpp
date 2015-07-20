@@ -39,16 +39,6 @@
 #include <uv.h>
 
 
-#ifndef __NR_pipe2
-# if defined(__x86_64__)
-#  define __NR_pipe2 293
-# elif defined(__i386__)
-#  define __NR_pipe2 331
-# elif defined(__arm__)
-#  define __NR_pipe2 (UV_SYSCALL_BASE + 359)
-# endif
-#endif /* __NR_pipe2 */
-
 
 //-----------------------------------------------------------------------------
 
@@ -82,13 +72,4 @@ skip:
   }
 
   return 0;
-}
-
-
-int uv__pipe2(int pipefd[2], int flags) {
-#if defined(__NR_pipe2)
-  return syscall(__NR_pipe2, pipefd, flags);
-#else
-  return errno = ENOSYS, -1;
-#endif
 }

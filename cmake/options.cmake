@@ -44,4 +44,3 @@ foreach(FLAG ${FLAGS_CXXONLY})
 endforeach()
 
 message(STATUS "Build Type: [${CMAKE_BUILD_TYPE}]")
-message(STATUS "Target board: [${TUV_TARGETBOARD}]")
