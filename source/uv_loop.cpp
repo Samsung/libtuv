@@ -91,6 +91,9 @@ int uv_loop_init(uv_loop_t* loop) {
   uv__handle_unref(&loop->wq_async);
   loop->wq_async.flags |= UV__HANDLE_INTERNAL;
 
+  // add update timer here for show systems
+  uv__update_time(loop);
+
   return 0;
 }
 
@@ -148,4 +151,14 @@ int uv_loop_close(uv_loop_t* loop) {
     default_loop_ptr = NULL;
 
   return 0;
+}
+
+
+void uv_update_time(uv_loop_t* loop) {
+  uv__update_time(loop);
+}
+
+
+uint64_t uv_now(const uv_loop_t* loop) {
+  return loop->time;
 }

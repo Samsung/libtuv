@@ -27,6 +27,7 @@ static int idle_cb_called = 0;
 
 void idle_callback(uv_idle_t* handle) {
   uv_idle_stop(handle);
+  uv_close((uv_handle_t*)handle, NULL);
   idle_cb_called++;
 }
 
@@ -34,13 +35,15 @@ void idle_callback(uv_idle_t* handle) {
 TEST_IMPL(idle_basic) {
   uv_loop_t* loop;
 
+  idle_cb_called = 0;
+
   loop = uv_default_loop();
   uv_idle_init(loop, &idle_handle);
   uv_idle_start(&idle_handle, idle_callback);
   uv_run(loop, UV_RUN_DEFAULT);
   uv_loop_close(loop);
 
-  WARN(idle_cb_called==1);
+  TUV_WARN(idle_cb_called==1);
 
   return 0;
 }

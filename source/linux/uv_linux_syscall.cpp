@@ -43,6 +43,9 @@
 #include <uv.h>
 
 
+// linux_syscall is only for linux
+
+
 //-----------------------------------------------------------------------------
 
 #if defined(__arm__)

@@ -267,3 +267,66 @@ void process_cleanup(process_info_t *p) {
   free(p->name);
 }
 
+int run_test_one(task_entry_t* task) {
+  process_info_t processes;
+  char errmsg[1024] = "no error";
+  int result = 0;
+  int status;
+
+  status = 255;
+  if (process_start(task->task_name,
+                    task->process_name,
+                    &processes, 0) == -1) {
+    fprintf(stderr,
+            "Process `%s` failed to start.",
+            task->process_name);
+    return -1;
+  }
+
+  usleep(1000);
+
+  result = process_wait(&processes, 1, task->timeout);
+  if (result == -1) {
+    TUV_FATAL("process_wait failed ");
+  } else if (result == -2) {
+    /* Don't have to clean up the process, process_wait() has killed it. */
+    fprintf(stderr, "timeout ");
+    goto out;
+  }
+  status = process_reap(&processes);
+  if (status != TEST_OK) {
+    fprintf(stderr, "exit code %d ", status);
+    result = -1;
+    goto out;
+  }
+
+out:
+  if (result == 0) {
+    result = process_read_last_line(&processes, errmsg, sizeof(errmsg));
+    if (strlen(errmsg))
+      fprintf(stderr, "lastmsg:[%s] ", errmsg);
+  }
+  process_cleanup(&processes);
+
+  return result;
+}
+
+
+int main(int argc, char *argv[]) {
+  int ret = -1;
+
+  platform_init(argc, argv);
+
+  switch (argc) {
+  case 1:
+    ret = run_tests();
+    break;
+  case 3:
+    ret = run_test_part(argv[1], argv[2]);
+    break;
+  default :
+    TUV_FATAL("System Error");
+    break;
+  }
+  return ret;
+}

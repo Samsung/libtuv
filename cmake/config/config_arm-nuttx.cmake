@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8)
-project(libtuv)
+include(CMakeForceCompiler)
 
-set(LIBTUV_VERSION_MAJOR 0)
-set(LIBTUV_VERSION_MINOR 1)
+set(CMAKE_SYSTEM_NAME nuttx)
+set(CMAKE_SYSTEM_PROCESSOR arm)
 
-include(cmake/options.cmake)
-include(cmake/libtuv.cmake)
-include(cmake/tuvtest.cmake)
+SET(CMAKE_C_COMPILER   arm-none-eabi-gcc)
+SET(CMAKE_CXX_COMPILER arm-none-eabi-g++)
+
+# need to force compiler,
+# else it'll try to check and exit with 'unedefined _exit()
+CMAKE_FORCE_C_COMPILER(${CMAKE_C_COMPILER} GNU)
+CMAKE_FORCE_CXX_COMPILER(${CMAKE_CXX_COMPILER} GNU)

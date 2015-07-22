@@ -34,69 +34,99 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__async_header__
-#define __uv__async_header__
+#ifndef __uv__platform_header__
+#define __uv__platform_header__
 
-#ifndef __uv_header__
-#error Please include with uv.h
+#include <pthread.h>
+#include <poll.h>     // for nuttx
+#include <unistd.h>
+#include <errno.h>
+
+
+#ifndef TUV_POLL_EVENTS_SIZE
+#define TUV_POLL_EVENTS_SIZE 1024
 #endif
 
 
 //-----------------------------------------------------------------------------
 
-#define ACCESS_ONCE(type, var)                                                \
-  (*(volatile type*) &(var))
+#define ENOTSUP       EOPNOTSUPP
 
+#define STDIN_FILNO   0
+#define STDOUT_FILNO  1
+#define STDERR_FILENO 2
 
-//-----------------------------------------------------------------------------
+#ifndef SIGCHLD
+#define SIGCHLD       17
+#endif
+#define SIGPROF       27
 
-struct uv_async_s {
-  UV_HANDLE_FIELDS
-  UV_ASYNC_PRIVATE_FIELDS
-};
+#define SHUT_RD       0
+#define SHUT_WR       1
+#define SHUT_RDWR     2
 
-int uv_async_init(uv_loop_t*, uv_async_t* async, uv_async_cb async_cb);
-int uv_async_send(uv_async_t* async);
+#define TCP_NODELAY   1
 
+#define _SC_CLK_TCK           0x0006
+#define _SC_NPROCESSORS_ONLN  0x0061
 
-//-----------------------------------------------------------------------------
-
-struct uv__io_s {
-  uv__io_cb cb;
-  void* pending_queue[2];
-  void* watcher_queue[2];
-  unsigned int pevents; /* Pending event mask i.e. mask at next tick. */
-  unsigned int events;  /* Current event mask. */
-  int fd;
-  UV_IO_PRIVATE_PLATFORM_FIELDS
-};
-
-
-struct uv__async {
-  uv__async_cb cb;
-  uv__io_t io_watcher;
-  int wfd;
-};
-
-
-void uv__async_send(struct uv__async* wa);
-void uv__async_init(struct uv__async* wa);
-int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb);
-void uv__async_stop(uv_loop_t* loop, struct uv__async* wa);
-
-void uv__async_close(uv_async_t* handle);
-int uv__async_make_pending(int* pending);
-
-void uv__io_init(uv__io_t* w, uv__io_cb cb, int fd);
-void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_close(uv_loop_t* loop, uv__io_t* w);
-
-void uv__io_feed(uv_loop_t* loop, uv__io_t* w);
-int uv__io_active(const uv__io_t* w, unsigned int events);
-void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
+#define CLOCK_MONOTONIC 1
 
 //-----------------------------------------------------------------------------
 
+#define UV__POLLIN   1
+#define UV__POLLOUT  2
+#define UV__POLLERR  4
+#define UV__POLLHUP  8
 
-#endif // __uv__async_header__
+//-----------------------------------------------------------------------------
+
+#define SAVE_ERRNO(block)                                                     \
+  do {                                                                        \
+    int _saved_errno = errno;                                                 \
+    do { block; } while (0);                                                  \
+    set_errno(_saved_errno);                                                  \
+  }                                                                           \
+  while (0)
+
+
+//-----------------------------------------------------------------------------
+// date time extension
+
+// in (os)/uv_clock.cpp
+uint64_t uv__hrtime();
+
+#define uv__update_time(loop)                                                 \
+  loop->time = uv__hrtime() / 1000000
+
+inline uint64_t uv__time_precise() {
+  return uv__hrtime();
+}
+
+//-----------------------------------------------------------------------------
+// fs
+
+typedef struct dirent uv__dirent_t;
+typedef int uv_file;
+
+
+typedef struct uv_buf_t {
+  char* base;
+  size_t len;
+} uv_buf_t;
+
+
+//-----------------------------------------------------------------------------
+// thread and mutex
+
+#define UV_ONCE_INIT PTHREAD_ONCE_INIT
+
+typedef pthread_t uv_thread_t;
+typedef pthread_once_t uv_once_t;
+typedef pthread_mutex_t uv_mutex_t;
+typedef sem_t uv_sem_t;
+typedef pthread_cond_t uv_cond_t;
+typedef pthread_mutex_t uv_rwlock_t;  // no rwlock for nuttx
+
+
+#endif // __uv__platform_header__

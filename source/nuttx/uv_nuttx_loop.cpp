@@ -34,52 +34,17 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__loop_header__
-#define __uv__loop_header__
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-//-----------------------------------------------------------------------------
-// uv_loop_t
-
-struct uv_loop_s {
-  /* User data - use this for whatever. */
-  void* data;
-  /* Loop reference counting. */
-  uint32_t active_handles;
-  void* handle_queue[2];
-  void* active_reqs[2];
-  /* Internal flag to signal loop stop. */
-  uint32_t stop_flag;
-  /* platform dependent fields */
-  UV_LOOP_PRIVATE_FIELDS
-};
+#include <uv.h>
 
 
-typedef enum {
-    UV_RUN_DEFAULT = 0,
-    UV_RUN_ONCE,
-    UV_RUN_NOWAIT
-} uv_run_mode;
+int uv__platform_loop_init(uv_loop_t* loop) {
+  loop->npollfds = 0;
+  return 0;
+}
 
 
-//-----------------------------------------------------------------------------
+void uv__platform_loop_delete(uv_loop_t* loop) {
+  loop->npollfds = 0;
+}
 
-int uv_loop_init(uv_loop_t* loop);
-int uv_loop_close(uv_loop_t* loop);
-uv_loop_t* uv_default_loop(void);
-
-int uv_run(uv_loop_t* loop, uv_run_mode mode);
-
-void uv_update_time(uv_loop_t*);
-uint64_t uv_now(const uv_loop_t*);
-
-int uv__platform_loop_init(uv_loop_t* loop);
-void uv__platform_loop_delete(uv_loop_t* loop);
-void uv__platform_invalidate_fd(uv_loop_t* loop, int fd);
-
-
-
-#endif // __uv__loop_header__

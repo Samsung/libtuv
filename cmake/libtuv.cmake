@@ -32,17 +32,25 @@ set(LIB_TUV_SRCFILES
 )
 
 set(LIB_TUV_INCDIRS
-    ${TARGET_INC}
     ${INCLUDE_ROOT}
     ${SOURCE_ROOT}
     ${SOURCE_ROOT}/${TUV_PLATFORM_PATH}
 )
 
+
 # build tuv library
 set(TARGETLIBNAME tuv)
 add_library(${TARGETLIBNAME} ${LIB_TUV_SRCFILES})
+target_include_directories(${TARGETLIBNAME} SYSTEM PRIVATE ${TARGET_INC})
 target_include_directories(${TARGETLIBNAME} PUBLIC ${LIB_TUV_INCDIRS})
 set_target_properties(${TARGETLIBNAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${LIB_OUT}"
     LIBRARY_OUTPUT_DIRECTORY "${LIB_OUT}"
     RUNTIME_OUTPUT_DIRECTORY "${BIN_OUT}")
+
+if(DEFINED COPY_TARGET_LIB)
+  add_custom_command(TARGET ${TARGETLIBNAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGETLIBNAME}>
+                                  "${COPY_TARGET_LIB}"
+      COMMENT "Copying lib${TARGETLIBNAME} to ${COPY_TARGET_LIB}")
+endif()

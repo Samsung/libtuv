@@ -34,69 +34,39 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__async_header__
-#define __uv__async_header__
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <sys/select.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include <uv.h>
 
-
-//-----------------------------------------------------------------------------
-
-#define ACCESS_ONCE(type, var)                                                \
-  (*(volatile type*) &(var))
+#include "runner.h"
 
 
-//-----------------------------------------------------------------------------
-
-struct uv_async_s {
-  UV_HANDLE_FIELDS
-  UV_ASYNC_PRIVATE_FIELDS
-};
-
-int uv_async_init(uv_loop_t*, uv_async_t* async, uv_async_cb async_cb);
-int uv_async_send(uv_async_t* async);
-
+/* Do platform-specific initialization. */
+int platform_init(int argc, char **argv) {
+  return 0;
+}
 
 //-----------------------------------------------------------------------------
 
-struct uv__io_s {
-  uv__io_cb cb;
-  void* pending_queue[2];
-  void* watcher_queue[2];
-  unsigned int pevents; /* Pending event mask i.e. mask at next tick. */
-  unsigned int events;  /* Current event mask. */
-  int fd;
-  UV_IO_PRIVATE_PLATFORM_FIELDS
-};
+int run_test_one(task_entry_t* task) {
+  return run_test_part(task->task_name, task->process_name);
+}
 
 
-struct uv__async {
-  uv__async_cb cb;
-  uv__io_t io_watcher;
-  int wfd;
-};
-
-
-void uv__async_send(struct uv__async* wa);
-void uv__async_init(struct uv__async* wa);
-int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb);
-void uv__async_stop(uv_loop_t* loop, struct uv__async* wa);
-
-void uv__async_close(uv_async_t* handle);
-int uv__async_make_pending(int* pending);
-
-void uv__io_init(uv__io_t* w, uv__io_cb cb, int fd);
-void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_close(uv_loop_t* loop, uv__io_t* w);
-
-void uv__io_feed(uv_loop_t* loop, uv__io_t* w);
-int uv__io_active(const uv__io_t* w, unsigned int events);
-void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
-
-//-----------------------------------------------------------------------------
-
-
-#endif // __uv__async_header__
+//
+// this is called from nuttx apps system tuvtester
+//
+extern "C" int tuvtester_entry(int argc, char *argv[]) {
+  fprintf(stderr, ">> tuvtester_entry call ok\n");
+  fflush(stderr);
+  platform_init(argc, argv);
+  if (argc>2) {
+    return run_test_part(argv[1], argv[2]);
+  }
+  return run_tests();
+}

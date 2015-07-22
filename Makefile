@@ -25,7 +25,7 @@ endif
 TUV_PLATFORM    ?= $(UNAME_M)-$(UNAME_S)
 TUV_BUILD_TYPE  ?= debug
 TUV_BOARD       ?= unknown
-TUV_BUILDTEST   ?= YES
+TUV_SYSTEMROOT  ?= default
 
 OUTPUT_ROOT     := build
 BUILD_FOLDER    := ./$(OUTPUT_ROOT)/$(TUV_PLATFORM)/$(TUV_BUILD_TYPE)
@@ -34,10 +34,13 @@ CMAKE_DEFINES   := \
 	-DCMAKE_TOOLCHAIN_FILE=./cmake/config/config_$(TUV_PLATFORM).cmake \
 	-DCMAKE_BUILD_TYPE=$(TUV_BUILD_TYPE) \
 	-DTARGET_PLATFORM=$(TUV_PLATFORM) \
-	-DBUILD_TEST=$(TUV_BUILDTEST)
 
 ifneq ($(TUV_BOARD),unknown)
 	CMAKE_DEFINES += -DTARGET_BOARD=${TUV_BOARD}
+endif
+
+ifneq ($(TUV_SYSTEMROOT),default)
+	CMAKE_DEFINES += -DTARGET_SYSTEMROOT=${TUV_SYSTEMROOT}
 endif
 
 .phony: all
@@ -46,10 +49,12 @@ all:
 	mkdir -p $(CMAKE_FOLDER)
 	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES)
 	make -C $(CMAKE_FOLDER)
+ifneq (,$(findstring linux,$(TUV_PLATFORM)))
 	@echo '=============================================================='
 	@echo 'to run test,'
 	@echo '$(BUILD_FOLDER)/bin/tuvtester'
 	@echo '=============================================================='
+endif
 
 call:
 	make -C $(CMAKE_FOLDER)

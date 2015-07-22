@@ -50,6 +50,24 @@
   XX(IDLE, idle)                                                              \
   XX(TIMER, timer)                                                            \
 
+/*
+  XX(ASYNC, async)                                                            \
+  XX(CHECK, check)                                                            \
+  XX(FS_EVENT, fs_event)                                                      \
+  XX(FS_POLL, fs_poll)                                                        \
+  XX(HANDLE, handle)                                                          \
+  XX(IDLE, idle)                                                              \
+  XX(NAMED_PIPE, pipe)                                                        \
+  XX(POLL, poll)                                                              \
+  XX(PREPARE, prepare)                                                        \
+  XX(PROCESS, process)                                                        \
+  XX(STREAM, stream)                                                          \
+  XX(TCP, tcp)                                                                \
+  XX(TIMER, timer)                                                            \
+  XX(TTY, tty)                                                                \
+  XX(UDP, udp)                                                                \
+  XX(SIGNAL, signal)                                                          \
+*/
 
 //-----------------------------------------------------------------------------
 #define XX(uc, lc) UV_##uc,
@@ -57,6 +75,7 @@
 typedef enum {
   UV_UNKNOWN_HANDLE = 0,
   UV_HANDLE_TYPE_MAP(XX)
+  UV_FILE,
   UV_HANDLE_TYPE_MAX
 } uv_handle_type;
 
@@ -68,7 +87,24 @@ enum {
   UV_CLOSING             = 0x0001, /* uv_close() called but not finished. */
   UV_CLOSED              = 0x0002, /* close(2) finished. */
 };
-
+/*
+enum {
+  UV_CLOSING              = 0x01,   * uv_close() called but not finished. *
+  UV_CLOSED               = 0x02,   * close(2) finished. *
+  UV_STREAM_READING       = 0x04,   * uv_read_start() called. *
+  UV_STREAM_SHUTTING      = 0x08,   * uv_shutdown() called but not complete. *
+  UV_STREAM_SHUT          = 0x10,   * Write side closed. *
+  UV_STREAM_READABLE      = 0x20,   * The stream is readable *
+  UV_STREAM_WRITABLE      = 0x40,   * The stream is writable *
+  UV_STREAM_BLOCKING      = 0x80,   * Synchronous writes. *
+  UV_STREAM_READ_PARTIAL  = 0x100,  * read(2) read less than requested. *
+  UV_STREAM_READ_EOF      = 0x200,  * read(2) read EOF. *
+  UV_TCP_NODELAY          = 0x400,  * Disable Nagle. *
+  UV_TCP_KEEPALIVE        = 0x800,  * Turn on keep-alive. *
+  UV_TCP_SINGLE_ACCEPT    = 0x1000, * Only accept() when idle. *
+  UV_HANDLE_IPV6          = 0x10000 * Handle is bound to a IPv6 socket. *
+};
+*/
 
 //-----------------------------------------------------------------------------
 
@@ -173,6 +209,14 @@ void uv_unref(uv_handle_t*);
 
 int uv_is_active(const uv_handle_t* handle);
 void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
+
+
+
+#ifdef UV__O_NONBLOCK
+# define UV__F_NONBLOCK UV__O_NONBLOCK
+#else
+# define UV__F_NONBLOCK 1
+#endif
 
 
 #endif // __uv__handle_header__

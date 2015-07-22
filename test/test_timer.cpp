@@ -34,7 +34,9 @@
  * IN THE SOFTWARE.
  */
 
+#include <string.h>
 #include <uv.h>
+
 
 #include "runner.h"
 
@@ -42,29 +44,21 @@ static int once_cb_called = 0;
 static int once_close_cb_called = 0;
 static int repeat_cb_called = 0;
 static int repeat_close_cb_called = 0;
-static int order_cb_called = 0;
 
 static uint64_t start_time = 0ll;
-static uv_timer_t tiny_timer;
-static uv_timer_t huge_timer1;
-static uv_timer_t huge_timer2;
 
 
 static void once_close_cb(uv_handle_t* handle) {
-  printf("ONCE_CLOSE_CB\n");
-
-  ASSERT(handle != NULL);
-  ASSERT(0 == uv_is_active(handle));
+  TUV_ASSERT(handle != NULL);
+  TUV_ASSERT(0 == uv_is_active(handle));
 
   once_close_cb_called++;
 }
 
 
 static void once_cb(uv_timer_t* handle) {
-  printf("ONCE_CB %d\n", once_cb_called);
-
-  ASSERT(handle != NULL);
-  ASSERT(0 == uv_is_active((uv_handle_t*) handle));
+  TUV_ASSERT(handle != NULL);
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) handle));
 
   once_cb_called++;
 
@@ -76,19 +70,15 @@ static void once_cb(uv_timer_t* handle) {
 
 
 static void repeat_close_cb(uv_handle_t* handle) {
-  printf("REPEAT_CLOSE_CB\n");
-
-  ASSERT(handle != NULL);
+  TUV_ASSERT(handle != NULL);
 
   repeat_close_cb_called++;
 }
 
 
 static void repeat_cb(uv_timer_t* handle) {
-  printf("REPEAT_CB\n");
-
-  ASSERT(handle != NULL);
-  ASSERT(1 == uv_is_active((uv_handle_t*) handle));
+  TUV_ASSERT(handle != NULL);
+  TUV_ASSERT(1 == uv_is_active((uv_handle_t*) handle));
 
   repeat_cb_called++;
 
@@ -99,7 +89,7 @@ static void repeat_cb(uv_timer_t* handle) {
 
 
 static void never_cb(uv_timer_t* handle) {
-  FATAL("never_cb should never be called");
+  TUV_FATAL("never_cb should never be called");
 }
 
 
@@ -110,84 +100,107 @@ TEST_IMPL(timer) {
   unsigned int i;
   int r;
 
+  once_cb_called = 0;
+  once_close_cb_called = 0;
+  repeat_cb_called = 0;
+  repeat_close_cb_called = 0;
+
   start_time = uv_now(uv_default_loop());
-  ASSERT(0 < start_time);
+  TUV_ASSERT(0 < start_time);
 
   /* Let 10 timers time out in 500 ms total. */
   for (i = 0; i < ARRAY_SIZE(once_timers); i++) {
     once = once_timers + i;
     r = uv_timer_init(uv_default_loop(), once);
-    ASSERT(r == 0);
+    TUV_ASSERT(r == 0);
     r = uv_timer_start(once, once_cb, i * 50, 0);
-    ASSERT(r == 0);
+    TUV_ASSERT(r == 0);
   }
 
   /* The 11th timer is a repeating timer that runs 4 times */
   r = uv_timer_init(uv_default_loop(), &repeat);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_timer_start(&repeat, repeat_cb, 100, 100);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
 
   /* The 12th timer should not do anything. */
   r = uv_timer_init(uv_default_loop(), &never);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_timer_start(&never, never_cb, 100, 100);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_timer_stop(&never);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   uv_unref((uv_handle_t*)&never);
 
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-  ASSERT(once_cb_called == 10);
-  ASSERT(once_close_cb_called == 10);
-  printf("repeat_cb_called %d\n", repeat_cb_called);
-  ASSERT(repeat_cb_called == 5);
-  ASSERT(repeat_close_cb_called == 1);
+  TUV_ASSERT(once_cb_called == 10);
+  TUV_ASSERT(once_close_cb_called == 10);
+  TUV_ASSERT(repeat_cb_called == 5);
+  TUV_ASSERT(repeat_close_cb_called == 1);
 
-  ASSERT(500 <= uv_now(uv_default_loop()) - start_time);
+  TUV_ASSERT(500 <= uv_now(uv_default_loop()) - start_time);
+
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
+
+//-----------------------------------------------------------------------------
+
+TEST_IMPL(timer_init) {
+  uv_timer_t handle;
+
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
+  TUV_ASSERT(0 == uv_timer_get_repeat(&handle));
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &handle));
+
+  // for platforms that needs cleaning
+  uv_close((uv_handle_t*)&handle, NULL);
+  uv_loop_close(uv_default_loop());
+
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
 
 TEST_IMPL(timer_start_twice) {
   uv_timer_t once;
   int r;
 
+  once_cb_called = 0;
+
   r = uv_timer_init(uv_default_loop(), &once);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_timer_start(&once, never_cb, 86400 * 1000, 0);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_timer_start(&once, once_cb, 10, 0);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
   r = uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-  ASSERT(r == 0);
+  TUV_ASSERT(r == 0);
+  TUV_ASSERT(once_cb_called == 1);
 
-  ASSERT(once_cb_called == 1);
-
-  return 0;
-}
-
-
-TEST_IMPL(timer_init) {
-  uv_timer_t handle;
-
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
-  ASSERT(0 == uv_timer_get_repeat(&handle));
-  ASSERT(0 == uv_is_active((uv_handle_t*) &handle));
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
+
+//-----------------------------------------------------------------------------
+
+static int order_cb_called = 0;
 
 static void order_cb_a(uv_timer_t *handle) {
-  ASSERT(order_cb_called++ == *(int*)handle->data);
+  TUV_ASSERT(order_cb_called++ == *(int*)handle->data);
 }
 
 
 static void order_cb_b(uv_timer_t *handle) {
-  ASSERT(order_cb_called++ == *(int*)handle->data);
+  TUV_ASSERT(order_cb_called++ == *(int*)handle->data);
 }
 
 
@@ -197,40 +210,52 @@ TEST_IMPL(timer_order) {
   uv_timer_t handle_a;
   uv_timer_t handle_b;
 
+  order_cb_called = 0;
+
   first = 0;
   second = 1;
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &handle_a));
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &handle_b));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle_a));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle_b));
 
   /* Test for starting handle_a then handle_b */
   handle_a.data = &first;
-  ASSERT(0 == uv_timer_start(&handle_a, order_cb_a, 0, 0));
+  TUV_ASSERT(0 == uv_timer_start(&handle_a, order_cb_a, 0, 0));
   handle_b.data = &second;
-  ASSERT(0 == uv_timer_start(&handle_b, order_cb_b, 0, 0));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+  TUV_ASSERT(0 == uv_timer_start(&handle_b, order_cb_b, 0, 0));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
 
-  ASSERT(order_cb_called == 2);
+  TUV_ASSERT(order_cb_called == 2);
 
-  ASSERT(0 == uv_timer_stop(&handle_a));
-  ASSERT(0 == uv_timer_stop(&handle_b));
+  TUV_ASSERT(0 == uv_timer_stop(&handle_a));
+  TUV_ASSERT(0 == uv_timer_stop(&handle_b));
 
   /* Test for starting handle_b then handle_a */
   order_cb_called = 0;
   handle_b.data = &first;
-  ASSERT(0 == uv_timer_start(&handle_b, order_cb_b, 0, 0));
+  TUV_ASSERT(0 == uv_timer_start(&handle_b, order_cb_b, 0, 0));
 
   handle_a.data = &second;
-  ASSERT(0 == uv_timer_start(&handle_a, order_cb_a, 0, 0));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+  TUV_ASSERT(0 == uv_timer_start(&handle_a, order_cb_a, 0, 0));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
 
-  ASSERT(order_cb_called == 2);
+  TUV_ASSERT(order_cb_called == 2);
+
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
 
+//-----------------------------------------------------------------------------
+
+static uv_timer_t tiny_timer;
+static uv_timer_t huge_timer1;
+static uv_timer_t huge_timer2;
+
+
 static void tiny_timer_cb(uv_timer_t* handle) {
-  ASSERT(handle == &tiny_timer);
+  TUV_ASSERT(handle == &tiny_timer);
   uv_close((uv_handle_t*) &tiny_timer, NULL);
   uv_close((uv_handle_t*) &huge_timer1, NULL);
   uv_close((uv_handle_t*) &huge_timer2, NULL);
@@ -238,27 +263,30 @@ static void tiny_timer_cb(uv_timer_t* handle) {
 
 
 TEST_IMPL(timer_huge_timeout) {
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &tiny_timer));
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer1));
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer2));
-  ASSERT(0 == uv_timer_start(&tiny_timer, tiny_timer_cb, 1, 0));
-  ASSERT(0 == uv_timer_start(&huge_timer1, tiny_timer_cb, 0xffffffffffffLL, 0));
-  ASSERT(0 == uv_timer_start(&huge_timer2, tiny_timer_cb, (uint64_t) -1, 0));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &tiny_timer));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer1));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer2));
+  TUV_ASSERT(0 == uv_timer_start(&tiny_timer, tiny_timer_cb, 1, 0));
+  TUV_ASSERT(0 == uv_timer_start(&huge_timer1, tiny_timer_cb, 0xffffffffffffLL, 0));
+  TUV_ASSERT(0 == uv_timer_start(&huge_timer2, tiny_timer_cb, (uint64_t) -1, 0));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
 
+static int huge_repeat_cb_ncalls;
+
 static void huge_repeat_cb(uv_timer_t* handle) {
-  static int ncalls;
-
-  if (ncalls == 0)
-    ASSERT(handle == &huge_timer1);
+  if (huge_repeat_cb_ncalls == 0)
+    TUV_ASSERT(handle == &huge_timer1);
   else
-    ASSERT(handle == &tiny_timer);
+    TUV_ASSERT(handle == &tiny_timer);
 
-  if (++ncalls == 10) {
+  if (++huge_repeat_cb_ncalls == 10) {
     uv_close((uv_handle_t*) &tiny_timer, NULL);
     uv_close((uv_handle_t*) &huge_timer1, NULL);
   }
@@ -266,18 +294,24 @@ static void huge_repeat_cb(uv_timer_t* handle) {
 
 
 TEST_IMPL(timer_huge_repeat) {
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &tiny_timer));
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer1));
-  ASSERT(0 == uv_timer_start(&tiny_timer, huge_repeat_cb, 2, 2));
-  ASSERT(0 == uv_timer_start(&huge_timer1, huge_repeat_cb, 1, (uint64_t) -1));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+  huge_repeat_cb_ncalls = 0;
+
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &tiny_timer));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer1));
+  TUV_ASSERT(0 == uv_timer_start(&tiny_timer, huge_repeat_cb, 2, 2));
+  TUV_ASSERT(0 == uv_timer_start(&huge_timer1, huge_repeat_cb, 1, (uint64_t) -1));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
+
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
 
-static unsigned int timer_run_once_timer_cb_called = 0;
+//-----------------------------------------------------------------------------
 
+static unsigned int timer_run_once_timer_cb_called = 0;
 
 static void timer_run_once_timer_cb(uv_timer_t* handle) {
   timer_run_once_timer_cb_called++;
@@ -287,17 +321,25 @@ static void timer_run_once_timer_cb(uv_timer_t* handle) {
 TEST_IMPL(timer_run_once) {
   uv_timer_t timer_handle;
 
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &timer_handle));
-  ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 0, 0));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
-  ASSERT(1 == timer_run_once_timer_cb_called);
+  timer_run_once_timer_cb_called = 0;
 
-  ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 1, 0));
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
-  ASSERT(2 == timer_run_once_timer_cb_called);
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &timer_handle));
+  TUV_ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 0, 0));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
+  TUV_ASSERT(1 == timer_run_once_timer_cb_called);
 
-  uv_close((uv_handle_t*) &timer_handle, NULL);
-  ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
+  // for platforms that needs cleaning
+  uv_timer_stop(&timer_handle);
+
+  TUV_ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 1, 0));
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
+  TUV_ASSERT(2 == timer_run_once_timer_cb_called);
+
+  uv_close((uv_handle_t*)&timer_handle, NULL);
+  TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
+
+  // for platforms that needs cleaning
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }
@@ -306,8 +348,13 @@ TEST_IMPL(timer_run_once) {
 TEST_IMPL(timer_null_callback) {
   uv_timer_t handle;
 
-  ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
-  ASSERT(UV_EINVAL == uv_timer_start(&handle, NULL, 100, 100));
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
+  TUV_ASSERT(UV_EINVAL == uv_timer_start(&handle, NULL, 100, 100));
+
+  // for platform that needs closing
+  uv_timer_stop(&handle);
+  uv_close((uv_handle_t*)&handle, NULL);
+  uv_loop_close(uv_default_loop());
 
   return 0;
 }

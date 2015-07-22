@@ -34,9 +34,11 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include <assert.h>
 #include <limits.h> // INT_MAX
+#include <string.h> // memset
 
 #include <uv.h>
 #include "heap-inl.h"
@@ -70,6 +72,7 @@ static int timer_less_than(const struct heap_node* ha,
 //-----------------------------------------------------------------------------
 
 int uv_timer_init(uv_loop_t* loop, uv_timer_t* handle) {
+  memset(handle, 0, sizeof(uv_timer_t));
   uv__handle_init(loop, (uv_handle_t*)handle, UV_TIMER);
   handle->timer_cb = NULL;
   handle->repeat = 0;
@@ -171,13 +174,14 @@ void uv__run_timers(uv_loop_t* loop) {
 
   for (;;) {
     heap_node = heap_min((struct heap*) &loop->timer_heap);
-    if (heap_node == NULL)
+    if (heap_node == NULL) {
       break;
+    }
 
     handle = container_of(heap_node, uv_timer_t, heap_node);
-    if (handle->timeout > loop->time)
+    if (handle->timeout > loop->time) {
       break;
-
+    }
     uv_timer_stop(handle);
     uv_timer_again(handle);
     handle->timer_cb(handle);

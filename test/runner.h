@@ -62,7 +62,7 @@ typedef struct {
 /* Have our own assert, so we are sure it does not get optimized away in
  * a release build.
  */
-#define ASSERT(expr)                                      \
+#define TUV_ASSERT(expr)                                  \
  do {                                                     \
   if (!(expr)) {                                          \
     fprintf(stderr,                                       \
@@ -74,7 +74,7 @@ typedef struct {
   }                                                       \
  } while (0)
 
-#define WARN(expr)                                        \
+#define TUV_WARN(expr)                                    \
  do {                                                     \
   if (!(expr)) {                                          \
     fprintf(stderr,                                       \
@@ -86,7 +86,7 @@ typedef struct {
   }                                                       \
  } while (0)
 
-#define FATAL(msg)                                        \
+#define TUV_FATAL(msg)                                    \
   do {                                                    \
     fprintf(stderr,                                       \
             "Fatal error in %s on line %d: %s\n",         \
@@ -136,5 +136,9 @@ int process_wait(process_info_t* vec, int n, int timeout);
 int process_reap(process_info_t *p);
 int process_read_last_line(process_info_t *p, char* buffer, size_t buffer_len);
 void process_cleanup(process_info_t *p);
+
+int run_test_one(task_entry_t* task);
+int run_test_part(const char* test, const char* part);
+int run_tests();
 
 #endif // __tuv_test_runner_header__

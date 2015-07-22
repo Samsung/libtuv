@@ -34,52 +34,46 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__loop_header__
-#define __uv__loop_header__
+// uv_unix.cpp: unix, bsd, osx, linux, nuttx,
 
-#ifndef __uv_header__
-#error Please include with uv.h
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <assert.h>
+#include <string.h>
+
+#include <uv.h>
+
+
+int uv__open_cloexec(const char* path, int flags) {
+  int err;
+  int fd;
+
+#if defined(__linux__) || (defined(__FreeBSD__) && __FreeBSD__ >= 9)
+  static int no_cloexec;
+
+  if (!no_cloexec) {
+    fd = open(path, flags | UV__O_CLOEXEC);
+    if (fd != -1)
+      return fd;
+
+    if (errno != EINVAL)
+      return -errno;
+
+    /* O_CLOEXEC not supported. */
+    no_cloexec = 1;
+  }
 #endif
 
-//-----------------------------------------------------------------------------
-// uv_loop_t
+  fd = open(path, flags);
+  if (fd == -1)
+    return -errno;
 
-struct uv_loop_s {
-  /* User data - use this for whatever. */
-  void* data;
-  /* Loop reference counting. */
-  uint32_t active_handles;
-  void* handle_queue[2];
-  void* active_reqs[2];
-  /* Internal flag to signal loop stop. */
-  uint32_t stop_flag;
-  /* platform dependent fields */
-  UV_LOOP_PRIVATE_FIELDS
-};
+  err = uv__cloexec(fd, 1);
+  if (err) {
+    uv__close(fd);
+    return err;
+  }
 
-
-typedef enum {
-    UV_RUN_DEFAULT = 0,
-    UV_RUN_ONCE,
-    UV_RUN_NOWAIT
-} uv_run_mode;
-
-
-//-----------------------------------------------------------------------------
-
-int uv_loop_init(uv_loop_t* loop);
-int uv_loop_close(uv_loop_t* loop);
-uv_loop_t* uv_default_loop(void);
-
-int uv_run(uv_loop_t* loop, uv_run_mode mode);
-
-void uv_update_time(uv_loop_t*);
-uint64_t uv_now(const uv_loop_t*);
-
-int uv__platform_loop_init(uv_loop_t* loop);
-void uv__platform_loop_delete(uv_loop_t* loop);
-void uv__platform_invalidate_fd(uv_loop_t* loop, int fd);
-
-
-
-#endif // __uv__loop_header__
+  return fd;
+}

@@ -34,52 +34,71 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__loop_header__
-#define __uv__loop_header__
+#include <assert.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include <uv.h>
 
-//-----------------------------------------------------------------------------
-// uv_loop_t
-
-struct uv_loop_s {
-  /* User data - use this for whatever. */
-  void* data;
-  /* Loop reference counting. */
-  uint32_t active_handles;
-  void* handle_queue[2];
-  void* active_reqs[2];
-  /* Internal flag to signal loop stop. */
-  uint32_t stop_flag;
-  /* platform dependent fields */
-  UV_LOOP_PRIVATE_FIELDS
-};
+void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
+  int i;
+  int nfd = loop->npollfds;
+  for (i = 0; i < nfd; ++i) {
+    struct pollfd* pfd = &loop->pollfds[i];
+    pfd->fd = -1;
+  }
+}
 
 
-typedef enum {
-    UV_RUN_DEFAULT = 0,
-    UV_RUN_ONCE,
-    UV_RUN_NOWAIT
-} uv_run_mode;
+int uv__nonblock(int fd, int set) {
+  int flags;
+  int r;
+
+  do
+    r = fcntl(fd, F_GETFL);
+  while (r == -1 && errno == EINTR);
+
+  if (r == -1)
+    return -errno;
+
+  /* Bail out now if already set/clear. */
+  if (!!(r & O_NONBLOCK) == !!set)
+    return 0;
+
+  if (set)
+    flags = r | O_NONBLOCK;
+  else
+    flags = r & ~O_NONBLOCK;
+
+  do
+    r = fcntl(fd, F_SETFL, flags);
+  while (r == -1 && errno == EINTR);
+
+  if (r)
+    return -errno;
+
+  return 0;
+}
 
 
-//-----------------------------------------------------------------------------
+int uv__close(int fd) {
+  int saved_errno;
+  int rc;
 
-int uv_loop_init(uv_loop_t* loop);
-int uv_loop_close(uv_loop_t* loop);
-uv_loop_t* uv_default_loop(void);
+  assert(fd > -1);  /* Catch uninitialized io_watcher.fd bugs. */
+  assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
 
-int uv_run(uv_loop_t* loop, uv_run_mode mode);
+  saved_errno = errno;
+  rc = close(fd);
+  if (rc == -1) {
+    rc = -errno;
+    if (rc == -EINTR)
+      rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    set_errno(saved_errno);
+  }
 
-void uv_update_time(uv_loop_t*);
-uint64_t uv_now(const uv_loop_t*);
-
-int uv__platform_loop_init(uv_loop_t* loop);
-void uv__platform_loop_delete(uv_loop_t* loop);
-void uv__platform_invalidate_fd(uv_loop_t* loop, int fd);
+  return rc;
+}
 
 
-
-#endif // __uv__loop_header__
+int uv__cloexec(int fd, int set) {
+  return 0;
+}

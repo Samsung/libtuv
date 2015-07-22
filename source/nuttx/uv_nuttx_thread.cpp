@@ -34,69 +34,53 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__async_header__
-#define __uv__async_header__
+#include <stdlib.h> // malloc(), free()
+#include <stdio.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include <uv.h>
 
 
 //-----------------------------------------------------------------------------
 
-#define ACCESS_ONCE(type, var)                                                \
-  (*(volatile type*) &(var))
+//
+// nuttx has no pthread_rwlock_t, use pthread_mutex_t
+//
+
+int uv_rwlock_init(uv_rwlock_t* rwlock) {
+  return uv_mutex_init(rwlock);
+}
 
 
-//-----------------------------------------------------------------------------
-
-struct uv_async_s {
-  UV_HANDLE_FIELDS
-  UV_ASYNC_PRIVATE_FIELDS
-};
-
-int uv_async_init(uv_loop_t*, uv_async_t* async, uv_async_cb async_cb);
-int uv_async_send(uv_async_t* async);
+void uv_rwlock_destroy(uv_rwlock_t* rwlock) {
+  uv_mutex_destroy(rwlock);
+}
 
 
-//-----------------------------------------------------------------------------
-
-struct uv__io_s {
-  uv__io_cb cb;
-  void* pending_queue[2];
-  void* watcher_queue[2];
-  unsigned int pevents; /* Pending event mask i.e. mask at next tick. */
-  unsigned int events;  /* Current event mask. */
-  int fd;
-  UV_IO_PRIVATE_PLATFORM_FIELDS
-};
+void uv_rwlock_rdlock(uv_rwlock_t* rwlock) {
+  uv_mutex_lock(rwlock);
+}
 
 
-struct uv__async {
-  uv__async_cb cb;
-  uv__io_t io_watcher;
-  int wfd;
-};
+int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock) {
+  return uv_mutex_trylock(rwlock);
+}
 
 
-void uv__async_send(struct uv__async* wa);
-void uv__async_init(struct uv__async* wa);
-int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb);
-void uv__async_stop(uv_loop_t* loop, struct uv__async* wa);
-
-void uv__async_close(uv_async_t* handle);
-int uv__async_make_pending(int* pending);
-
-void uv__io_init(uv__io_t* w, uv__io_cb cb, int fd);
-void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events);
-void uv__io_close(uv_loop_t* loop, uv__io_t* w);
-
-void uv__io_feed(uv_loop_t* loop, uv__io_t* w);
-int uv__io_active(const uv__io_t* w, unsigned int events);
-void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
-
-//-----------------------------------------------------------------------------
+void uv_rwlock_rdunlock(uv_rwlock_t* rwlock) {
+  uv_mutex_unlock(rwlock);
+}
 
 
-#endif // __uv__async_header__
+void uv_rwlock_wrlock(uv_rwlock_t* rwlock) {
+  uv_mutex_lock(rwlock);
+}
+
+
+int uv_rwlock_trywrlock(uv_rwlock_t* rwlock) {
+  return uv_mutex_trylock(rwlock);
+}
+
+
+void uv_rwlock_wrunlock(uv_rwlock_t* rwlock) {
+  uv_mutex_unlock(rwlock);
+}

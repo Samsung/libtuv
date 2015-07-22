@@ -71,24 +71,6 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
 }
 
 
-int uv__close(int fd) {
-  int saved_errno;
-  int rc;
-
-  assert(fd > -1);  /* Catch uninitialized io_watcher.fd bugs. */
-  assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
-
-  saved_errno = errno;
-  rc = close(fd);
-  if (rc == -1) {
-    rc = -errno;
-    if (rc == -EINTR)
-      rc = -EINPROGRESS;  /* For platform/libc consistency. */
-    errno = saved_errno;
-  }
-
-  return rc;
-}
 
 
 ssize_t uv__preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset) {
@@ -109,6 +91,26 @@ ssize_t uv__pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset) {
 }
 
 
+int uv__close(int fd) {
+  int saved_errno;
+  int rc;
+
+  assert(fd > -1);  /* Catch uninitialized io_watcher.fd bugs. */
+  assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
+
+  saved_errno = errno;
+  rc = close(fd);
+  if (rc == -1) {
+    rc = -errno;
+    if (rc == -EINTR)
+      rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    errno = saved_errno;
+  }
+
+  return rc;
+}
+
+
 int uv__nonblock(int fd, int set) {
   int r;
 
@@ -120,38 +122,6 @@ int uv__nonblock(int fd, int set) {
     return -errno;
 
   return 0;
-}
-
-
-int uv__open_cloexec(const char* path, int flags) {
-  int err;
-  int fd;
-
-  static int no_cloexec;
-
-  if (!no_cloexec) {
-    fd = open(path, flags | UV__O_CLOEXEC);
-    if (fd != -1)
-      return fd;
-
-    if (errno != EINVAL)
-      return -errno;
-
-    /* O_CLOEXEC not supported. */
-    no_cloexec = 1;
-  }
-
-  fd = open(path, flags);
-  if (fd == -1)
-    return -errno;
-
-  err = uv__cloexec(fd, 1);
-  if (err) {
-    uv__close(fd);
-    return err;
-  }
-
-  return fd;
 }
 
 

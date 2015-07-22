@@ -14,29 +14,44 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(TEST_MAINFILE ${TEST_ROOT}/runner_main.cpp)
+set(TEST_MAINFILE "${TEST_ROOT}/runner_main.cpp")
 
-set(TEST_UNITFILES ${TEST_ROOT}/test_idle.cpp
-                   ${TEST_ROOT}/test_timer.cpp
-                   ${TEST_ROOT}/test_timer_again.cpp
-                   ${TEST_ROOT}/test_fs.cpp
+set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
+                   "${TEST_ROOT}/test_timer.cpp"
+                   "${TEST_ROOT}/test_timer_again.cpp"
                    )
 
 set(TEST_PLATFORMFILES )
 
-set(TESTEXENAME "tuvtester")
+set(TUVTESTNAME "tuvtester")
 
 foreach(FILES ${PLATFORM_TESTFILES})
   set(TEST_PLATFORMFILES ${TEST_PLATFORMFILES} ${FILES})
 endforeach()
 
+if(DEFINED BUILD_TEST_LIB AND BUILD_TEST_LIB STREQUAL "YES")
+  add_library(${TUVTESTNAME} ${TEST_MAINFILE} ${TEST_UNITFILES}
+              ${TEST_PLATFORMFILES})
+else()
+  add_executable(${TUVTESTNAME} ${TEST_MAINFILE} ${TEST_UNITFILES}
+                 ${TEST_PLATFORMFILES})
+endif()
 
-add_executable(${TESTEXENAME} ${TEST_MAINFILE} ${TEST_UNITFILES}
-               ${TEST_PLATFORMFILES})
-target_include_directories(${TESTEXENAME} PUBLIC ${LIB_TUV_INCDIRS})
-target_link_libraries(${TESTEXENAME} LINK_PUBLIC ${TARGETLIBNAME}
+
+target_include_directories(${TUVTESTNAME} SYSTEM PRIVATE ${TARGET_INC})
+target_include_directories(${TUVTESTNAME} PUBLIC ${LIB_TUV_INCDIRS})
+target_link_libraries(${TUVTESTNAME} LINK_PUBLIC ${TARGETLIBNAME}
                       ${TUV_LINK_LIBS})
-set_target_properties(${TESTEXENAME} PROPERTIES
+set_target_properties(${TUVTESTNAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${LIB_OUT}"
     LIBRARY_OUTPUT_DIRECTORY "${LIB_OUT}"
     RUNTIME_OUTPUT_DIRECTORY "${BIN_OUT}")
+
+if(DEFINED BUILD_TEST_LIB AND BUILD_TEST_LIB STREQUAL "YES")
+  if(DEFINED COPY_TARGET_LIB)
+    add_custom_command(TARGET ${TUVTESTNAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TUVTESTNAME}>
+                                        "${COPY_TARGET_LIB}"
+        COMMENT "Copying lib${TUVTESTNAME} to ${COPY_TARGET_LIB}")
+  endif()
+endif()

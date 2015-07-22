@@ -60,10 +60,11 @@
 #include "uv__idle.h"
 #include "uv__timer.h"
 
-#include "uv__thread.h"
 #include "uv__async.h"
-#include "uv__req.h"
+#include "uv__req.h"      // req should be placed before fs
 #include "uv__fs.h"
+#include "uv__fd.h"
+#include "uv__thread.h"
 
 #include "uv__util.h"
 

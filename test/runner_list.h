@@ -35,7 +35,7 @@
  */
 
 
-#define TEST_LIST(TE)                                                         \
+#define TEST_LIST_ALL(TE)                                                     \
   TE(idle_basic, 5000)                                                        \
   TE(timer, 5000)                                                             \
   TE(timer_init, 5000)                                                        \
@@ -46,6 +46,9 @@
   TE(timer_run_once, 5000)                                                    \
   TE(timer_null_callback, 5000)                                               \
   TE(timer_again, 5000)                                                       \
+
+#if defined(__linux__)
+#define TEST_LIST_EXT(TE)                                                     \
   TE(fs_file_noent, 5000)                                                     \
   TE(fs_file_nametoolong, 5000)                                               \
   TE(fs_file_async, 5000)                                                     \
@@ -58,3 +61,7 @@
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
 
+#else
+#define TEST_LIST_EXT(TE)
+
+#endif

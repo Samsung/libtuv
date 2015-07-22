@@ -43,9 +43,39 @@
 #include <uv.h>
 
 
-//-----------------------------------------------------------------------------
+int uv__async_make_pending(int* pending) {
+  /* Do a cheap read first. */
+  if (ACCESS_ONCE(int, *pending) != 0)
+    return 1;
+
+  /* Micro-optimization: use atomic memory operations to detect if we've been
+   * preempted by another thread and don't have to make an expensive syscall.
+   * This speeds up the heavily contended case by about 1-2% and has little
+   * if any impact on the non-contended case.
+   *
+   * Use XCHG instead of the CMPXCHG that __sync_val_compare_and_swap() emits
+   * on x86, it's about 4x faster. It probably makes zero difference in the
+   * grand scheme of things but I'm OCD enough not to let this one pass.
+   */
+#if defined(__i386__) || defined(__x86_64__)
+  {
+    unsigned int val = 1;
+    __asm__ __volatile__ ("xchgl %0, %1"
+                         : "+r" (val)
+                         : "m"  (*pending));
+    return val != 0;
+  }
+#elif defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ > 0)
+  return __sync_val_compare_and_swap(pending, 0, 1) != 0;
+#else
+  ACCESS_ONCE(int, *pending) = 1;
+  return 0;
+#endif
+}
+
 
 static int uv__async_eventfd() {
+#if defined(__linux__)
   static int no_eventfd2;
   static int no_eventfd;
   int fd;
@@ -81,8 +111,11 @@ skip_eventfd2:
 
 skip_eventfd:
 
+#endif
+
   return -ENOSYS;
 }
+
 
 static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   struct uv__async* wa;
@@ -114,6 +147,7 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   wa = container_of(w, struct uv__async, io_watcher);
 
+#if defined(__linux__)
   if (wa->wfd == -1) {
     uint64_t val;
     assert(n == sizeof(val));
@@ -121,43 +155,14 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     wa->cb(loop, wa, val);
     return;
   }
+#endif
 
   wa->cb(loop, wa, n);
 }
 
 
-int uv__async_make_pending(int* pending) {
-  /* Do a cheap read first. */
-  if (ACCESS_ONCE(int, *pending) != 0)
-    return 1;
-
-  /* Micro-optimization: use atomic memory operations to detect if we've been
-   * preempted by another thread and don't have to make an expensive syscall.
-   * This speeds up the heavily contended case by about 1-2% and has little
-   * if any impact on the non-contended case.
-   *
-   * Use XCHG instead of the CMPXCHG that __sync_val_compare_and_swap() emits
-   * on x86, it's about 4x faster. It probably makes zero difference in the
-   * grand scheme of things but I'm OCD enough not to let this one pass.
-   */
-#if defined(__i386__) || defined(__x86_64__)
-  {
-    unsigned int val = 1;
-    __asm__ __volatile__ ("xchgl %0, %1"
-                         : "+r" (val)
-                         : "m"  (*pending));
-    return val != 0;
-  }
-#elif defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ > 0)
-  return __sync_val_compare_and_swap(pending, 0, 1) != 0;
-#else
-  ACCESS_ONCE(int, *pending) = 1;
-  return 0;
-#endif
-}
-
 //-----------------------------------------------------------------------------
-
+//
 
 void uv__async_init(struct uv__async* wa) {
   wa->io_watcher.fd = -1;
@@ -165,41 +170,25 @@ void uv__async_init(struct uv__async* wa) {
 }
 
 
-void uv__async_send(struct uv__async* wa) {
-  const void* buf;
-  ssize_t len;
-  int fd;
-  int r;
-
-  buf = "";
-  len = 1;
-  fd = wa->wfd;
-
-  if (fd == -1) {
-    static const uint64_t val = 1;
-    buf = &val;
-    len = sizeof(val);
-    fd = wa->io_watcher.fd;  /* eventfd */
-  }
-
-  do
-    r = write(fd, buf, len);
-  while (r == -1 && errno == EINTR);
-
-  if (r == len)
-    return;
-
-  if (r == -1)
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
-      return;
-
-  abort();
-}
-
-
 void uv__async_close(uv_async_t* handle) {
   QUEUE_REMOVE(&handle->queue);
   uv__handle_stop(handle);
+}
+
+
+void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
+  if (wa->io_watcher.fd == -1)
+    return;
+
+  if (wa->wfd != -1) {
+    if (wa->wfd != wa->io_watcher.fd)
+      uv__close(wa->wfd);
+    wa->wfd = -1;
+  }
+
+  uv__io_stop(loop, &wa->io_watcher, UV__POLLIN);
+  uv__close(wa->io_watcher.fd);
+  wa->io_watcher.fd = -1;
 }
 
 
@@ -217,6 +206,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
   }
   else if (err == -ENOSYS) {
     err = uv__make_pipe(pipefd, UV__F_NONBLOCK);
+#if defined(__linux__)
     /* Save a file descriptor by opening one of the pipe descriptors as
      * read/write through the procfs.  That file descriptor can then
      * function as both ends of the pipe.
@@ -234,6 +224,7 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
         pipefd[1] = fd;
       }
     }
+#endif
   }
 
   if (err < 0)
@@ -248,17 +239,35 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
 }
 
 
-void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
-  if (wa->io_watcher.fd == -1)
+void uv__async_send(struct uv__async* wa) {
+  const void* buf;
+  ssize_t len;
+  int fd;
+  int r;
+
+  buf = "";
+  len = 1;
+  fd = wa->wfd;
+
+#if defined(__linux__)
+  if (fd == -1) {
+    static const uint64_t val = 1;
+    buf = &val;
+    len = sizeof(val);
+    fd = wa->io_watcher.fd;  /* eventfd */
+  }
+#endif
+
+  do
+    r = write(fd, buf, len);
+  while (r == -1 && errno == EINTR);
+
+  if (r == len)
     return;
 
-  if (wa->wfd != -1) {
-    if (wa->wfd != wa->io_watcher.fd)
-      uv__close(wa->wfd);
-    wa->wfd = -1;
-  }
+  if (r == -1)
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+      return;
 
-  uv__io_stop(loop, &wa->io_watcher, UV__POLLIN);
-  uv__close(wa->io_watcher.fd);
-  wa->io_watcher.fd = -1;
+  abort();
 }

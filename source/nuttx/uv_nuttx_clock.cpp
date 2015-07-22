@@ -34,27 +34,15 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __tuv_test_task_header__
-#define __tuv_test_task_header__
+#include <stdio.h>
 
-#include <stdlib.h>
-
-
-#define ASSERT(expr)                                      \
- do {                                                     \
-  if (!(expr)) {                                          \
-    fprintf(stderr,                                       \
-            "Assertion failed in %s on line %d: %s\n",    \
-            __FILE__,                                     \
-            __LINE__,                                     \
-            #expr);                                       \
-    abort();                                              \
-  }                                                       \
- } while (0)
+#include <uv.h>
 
 
-#define TEST_IMPL(name)                                                       \
-  int run_test_##name(void);                                                  \
-  int run_test_##name(void)
-
-#endif // __tuv_test_task_header__
+uint64_t uv__hrtime() {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  uint64_t ret = (((uint64_t) ts.tv_sec) * ((uint64_t) 1e9) +
+                   (uint64_t) ts.tv_nsec);
+  return ret;
+}
