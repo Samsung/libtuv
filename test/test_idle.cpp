@@ -41,7 +41,9 @@ TEST_IMPL(idle_basic) {
   uv_idle_init(loop, &idle_handle);
   uv_idle_start(&idle_handle, idle_callback);
   uv_run(loop, UV_RUN_DEFAULT);
-  uv_loop_close(loop);
+
+  uv_deinit((uv_handle_t*) &idle_handle);
+  TUV_ASSERT(0 == uv_loop_close(loop));
 
   TUV_WARN(idle_cb_called==1);
 

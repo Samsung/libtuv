@@ -49,7 +49,7 @@ struct uv_loop_s {
   void* data;
   /* Loop reference counting. */
   uint32_t active_handles;
-  void* handle_queue[2];
+  void* handles_queue[2];
   void* active_reqs[2];
   /* Internal flag to signal loop stop. */
   uint32_t stop_flag;

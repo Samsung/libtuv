@@ -48,7 +48,7 @@ static uv_cond_t cond;
 static uv_mutex_t mutex;
 static unsigned int nthreads;
 static uv_thread_t* threads;
-static uv_thread_t default_threads[1];
+static uv_thread_t default_threads[2];
 static QUEUE exit_message;
 static QUEUE wq;
 static volatile int initialized;

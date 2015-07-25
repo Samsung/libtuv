@@ -44,11 +44,18 @@
 
 
 //-----------------------------------------------------------------------------
+static int no_epoll_pwait = 0;
+static int no_epoll_wait = 0;
+static struct uv__epoll_event events[TUV_POLL_EVENTS_SIZE];
+
+
+void uv__io_poll_platform_init(void) {
+  no_epoll_pwait = 0;
+  no_epoll_wait = 0;
+}
+
 
 void uv__io_poll(uv_loop_t* loop, int timeout) {
-  static int no_epoll_pwait;
-  static int no_epoll_wait;
-  struct uv__epoll_event events[TUV_POLL_EVENTS_SIZE];
   struct uv__epoll_event* pe;
   struct uv__epoll_event e;
   QUEUE* q;

@@ -56,9 +56,13 @@ int uv__platform_loop_init(uv_loop_t* loop) {
   loop->backend_fd = fd;
   loop->inotify_fd = -1;
   loop->inotify_watchers = NULL;
+  QUEUE_INIT(&(loop->inotify_read_watcher.pending_queue));
+  QUEUE_INIT(&(loop->inotify_read_watcher.watcher_queue));
 
   if (fd == -1)
     return -errno;
+
+  uv__io_poll_platform_init();
 
   return 0;
 }

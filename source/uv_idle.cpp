@@ -41,8 +41,8 @@
 
 
 int uv_idle_init(uv_loop_t* loop, uv_idle_t* handle) {
+  uv__idle_platform_init(handle);
   uv__handle_init(loop, (uv_handle_t*)handle, UV_IDLE);
-  handle->idle_cb = NULL;
 
   return 0;
 }

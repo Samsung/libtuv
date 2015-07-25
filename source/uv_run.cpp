@@ -90,7 +90,7 @@ static void uv__run_closing_handles(uv_loop_t* loop) {
 static int uv__run_pending(uv_loop_t* loop) {
   QUEUE* q;
   QUEUE pq;
-  //uv__io_t* w;
+  uv__io_t* w;
 
   if (QUEUE_EMPTY(&loop->pending_queue))
     return 0;
@@ -103,8 +103,8 @@ static int uv__run_pending(uv_loop_t* loop) {
     q = QUEUE_HEAD(&pq);
     QUEUE_REMOVE(q);
     QUEUE_INIT(q);
-    //w = QUEUE_DATA(q, uv__io_t, pending_queue);
-    //w->cb(loop, w, UV__POLLOUT);
+    w = QUEUE_DATA(q, uv__io_t, pending_queue);
+    w->cb(loop, w, UV__POLLOUT);
   }
 
   return 1;

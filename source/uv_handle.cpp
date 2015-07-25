@@ -95,3 +95,8 @@ void uv_ref(uv_handle_t* handle) {
 void uv_unref(uv_handle_t* handle) {
   uv__handle_unref(handle);
 }
+
+
+void uv_deinit(uv_handle_t* handle) {
+  uv__handle_deinit(handle);
+}

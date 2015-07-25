@@ -165,6 +165,8 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 //
 
 void uv__async_init(struct uv__async* wa) {
+  QUEUE_INIT(&(wa->io_watcher.pending_queue));
+  QUEUE_INIT(&(wa->io_watcher.watcher_queue));
   wa->io_watcher.fd = -1;
   wa->wfd = -1;
 }

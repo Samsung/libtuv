@@ -69,16 +69,17 @@ static void uv__async_event(uv_loop_t* loop, struct uv__async* w,
 int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
   int err;
 
-  err = uv__async_start(loop, &loop->async_watcher, uv__async_event);
-  if (err)
-    return err;
-
+  uv__async_platform_init(handle);
   uv__handle_init(loop, (uv_handle_t*)handle, UV_ASYNC);
   handle->async_cb = async_cb;
   handle->pending = 0;
 
   QUEUE_INSERT_TAIL(&loop->async_handles, &handle->queue);
   uv__handle_start(handle);
+
+  err = uv__async_start(loop, &loop->async_watcher, uv__async_event);
+  if (err)
+    return err;
 
   return 0;
 }

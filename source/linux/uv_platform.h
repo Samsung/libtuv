@@ -118,5 +118,12 @@ typedef pthread_cond_t uv_cond_t;
 typedef pthread_rwlock_t uv_rwlock_t;
 
 
+void uv__handle_platform_init(uv_handle_t* handle);
+void uv__idle_platform_init(uv_idle_t* handle);
+void uv__async_platform_init(uv_async_t* handle);
+void uv__timer_platform_init(uv_timer_t* handle);
+
+// poll static vars init
+void uv__io_poll_platform_init(void);
 
 #endif // __uv__platform_header__

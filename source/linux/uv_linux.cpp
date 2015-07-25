@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/uio.h>
 #include <sys/ioctl.h> // FIOCLEX
 
@@ -136,4 +137,26 @@ int uv__cloexec(int fd, int set) {
     return -errno;
 
   return 0;
+}
+
+
+void uv__handle_platform_init(uv_handle_t* handle) {
+ handle->next_closing = NULL;
+}
+
+
+void uv__idle_platform_init(uv_idle_t* handle) {
+  memset(handle, 0, sizeof(uv_idle_t));
+  QUEUE_INIT(&(handle->queue));
+}
+
+
+void uv__timer_platform_init(uv_timer_t* handle) {
+  memset(handle, 0, sizeof(uv_timer_t));
+}
+
+
+void uv__async_platform_init(uv_async_t* handle) {
+  memset(handle, 0, sizeof(uv_async_t));
+  QUEUE_INIT(&(handle->queue));
 }

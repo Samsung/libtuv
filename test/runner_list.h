@@ -37,8 +37,8 @@
 
 #define TEST_LIST_ALL(TE)                                                     \
   TE(idle_basic, 5000)                                                        \
-  TE(timer, 5000)                                                             \
   TE(timer_init, 5000)                                                        \
+  TE(timer, 5000)                                                             \
   TE(timer_start_twice, 5000)                                                 \
   TE(timer_order, 5000)                                                       \
   TE(timer_huge_timeout, 5000)                                                \

@@ -40,6 +40,26 @@
 
 #include "runner.h"
 
+
+//-----------------------------------------------------------------------------
+
+TEST_IMPL(timer_init) {
+  uv_timer_t handle;
+
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
+  TUV_ASSERT(0 == uv_timer_get_repeat(&handle));
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &handle));
+
+  // for platforms that needs cleaning
+  uv_deinit((uv_handle_t*) &handle);
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
+
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+
 static int once_cb_called = 0;
 static int once_close_cb_called = 0;
 static int repeat_cb_called = 0;
@@ -142,27 +162,18 @@ TEST_IMPL(timer) {
   TUV_ASSERT(500 <= uv_now(uv_default_loop()) - start_time);
 
   // for platforms that needs cleaning
+  uv_deinit((uv_handle_t*) &never);
+  uv_deinit((uv_handle_t*) &repeat);
+  for (i = 0; i < ARRAY_SIZE(once_timers); i++) {
+    once = once_timers + i;
+    uv_deinit((uv_handle_t*) once);
+  }
+  //TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
   uv_loop_close(uv_default_loop());
 
   return 0;
 }
 
-
-//-----------------------------------------------------------------------------
-
-TEST_IMPL(timer_init) {
-  uv_timer_t handle;
-
-  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
-  TUV_ASSERT(0 == uv_timer_get_repeat(&handle));
-  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &handle));
-
-  // for platforms that needs cleaning
-  uv_close((uv_handle_t*)&handle, NULL);
-  uv_loop_close(uv_default_loop());
-
-  return 0;
-}
 
 
 //-----------------------------------------------------------------------------
@@ -184,7 +195,7 @@ TEST_IMPL(timer_start_twice) {
   TUV_ASSERT(once_cb_called == 1);
 
   // for platforms that needs cleaning
-  uv_loop_close(uv_default_loop());
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;
 }
@@ -241,6 +252,7 @@ TEST_IMPL(timer_order) {
   TUV_ASSERT(order_cb_called == 2);
 
   // for platforms that needs cleaning
+  //TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
   uv_loop_close(uv_default_loop());
 
   return 0;
@@ -272,7 +284,7 @@ TEST_IMPL(timer_huge_timeout) {
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
 
   // for platforms that needs cleaning
-  uv_loop_close(uv_default_loop());
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;
 }
@@ -303,7 +315,7 @@ TEST_IMPL(timer_huge_repeat) {
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
 
   // for platforms that needs cleaning
-  uv_loop_close(uv_default_loop());
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;
 }
@@ -339,7 +351,9 @@ TEST_IMPL(timer_run_once) {
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
 
   // for platforms that needs cleaning
-  uv_loop_close(uv_default_loop());
+  uv_timer_stop(&timer_handle);
+  uv_deinit((uv_handle_t*) &timer_handle);
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;
 }
@@ -354,6 +368,7 @@ TEST_IMPL(timer_null_callback) {
   // for platform that needs closing
   uv_timer_stop(&handle);
   uv_close((uv_handle_t*)&handle, NULL);
+  //TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
   uv_loop_close(uv_default_loop());
 
   return 0;

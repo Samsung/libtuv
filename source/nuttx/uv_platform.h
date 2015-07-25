@@ -83,7 +83,7 @@
 
 #define SAVE_ERRNO(block)                                                     \
   do {                                                                        \
-    int _saved_errno = errno;                                                 \
+    int _saved_errno = get_errno();                                           \
     do { block; } while (0);                                                  \
     set_errno(_saved_errno);                                                  \
   }                                                                           \

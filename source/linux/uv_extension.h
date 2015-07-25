@@ -145,6 +145,8 @@
   uint64_t time;                                                              \
   UV_PLATFORM_LOOP_FIELDS                                                     \
 
+// timer_heap should be same as 'struct heap' in heap-inl.h
+
 /*
   unsigned long flags;                                                        \
   int backend_fd;                                                             \
@@ -186,8 +188,5 @@ enum {
   UV__HANDLE_REF      = 0x2000,
   UV__HANDLE_CLOSING  = 0 /* no-op on unix */
 };
-
-#define uv__handle_platform_init(h) ((h)->next_closing = NULL)
-
 
 #endif // __uv__extenstion_header__

@@ -45,6 +45,7 @@
 
 #include "runner.h"
 
+#if 1
 
 /* Do platform-specific initialization. */
 int platform_init(int argc, char **argv) {
@@ -330,3 +331,27 @@ int main(int argc, char *argv[]) {
   }
   return ret;
 }
+
+#else
+
+/* Do platform-specific initialization. */
+int platform_init(int argc, char **argv) {
+  return 0;
+}
+
+
+int run_test_one(task_entry_t* task) {
+  return run_test_part(task->task_name, task->process_name);
+}
+
+
+int main(int argc, char *argv[]) {
+  platform_init(argc, argv);
+
+  if (argc>2) {
+    return run_test_part(argv[1], argv[2]);
+  }
+  return run_tests();
+}
+
+#endif

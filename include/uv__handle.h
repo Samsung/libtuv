@@ -120,6 +120,14 @@ enum {
   void* handle_queue[2];                                                      \
   UV_HANDLE_PRIVATE_FIELDS                                                    \
 
+// 'void* reserved[4]' came in to libuv @
+//  06f9e1438ed20dd83618bca78759ea8635a79289
+/*
+  union {                                                                     \
+    int fd;                                                                   \
+    void* reserved[4];                                                        \
+  } u;                                                                        \
+*/
 
 struct uv_handle_s {
   UV_HANDLE_FIELDS
@@ -168,11 +176,17 @@ struct uv_handle_s {
     (h)->loop = (loop_);                                                      \
     (h)->type = (type_);                                                      \
     (h)->flags = UV__HANDLE_REF;  /* Ref the loop when active. */             \
-    QUEUE_INSERT_TAIL(&(loop_)->handle_queue, &(h)->handle_queue);            \
+    QUEUE_INIT(&(h)->handle_queue);                                           \
+    QUEUE_INSERT_TAIL(&(loop_)->handles_queue, &(h)->handle_queue);           \
     uv__handle_platform_init(h);                                              \
   }                                                                           \
   while (0)
 
+#define uv__handle_deinit(h)                                                  \
+  do {                                                                        \
+    QUEUE_REMOVE(&(h)->handle_queue);                                         \
+  }                                                                           \
+  while (0)
 
 #define uv__handle_ref(h)                                                     \
   do {                                                                        \
@@ -206,6 +220,7 @@ struct uv_handle_s {
 
 void uv_ref(uv_handle_t*);
 void uv_unref(uv_handle_t*);
+void uv_deinit(uv_handle_t*);
 
 int uv_is_active(const uv_handle_t* handle);
 void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
