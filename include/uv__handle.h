@@ -185,6 +185,7 @@ struct uv_handle_s {
 #define uv__handle_deinit(h)                                                  \
   do {                                                                        \
     QUEUE_REMOVE(&(h)->handle_queue);                                         \
+    QUEUE_INIT(&(h)->handle_queue);                                           \
   }                                                                           \
   while (0)
 
@@ -220,7 +221,7 @@ struct uv_handle_s {
 
 void uv_ref(uv_handle_t*);
 void uv_unref(uv_handle_t*);
-void uv_deinit(uv_handle_t*);
+void uv_deinit(uv_loop_t*, uv_handle_t*);
 
 int uv_is_active(const uv_handle_t* handle);
 void uv_close(uv_handle_t* handle, uv_close_cb close_cb);

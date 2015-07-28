@@ -45,7 +45,7 @@
 
 #include "runner.h"
 
-#if 1
+#if 0
 
 /* Do platform-specific initialization. */
 int platform_init(int argc, char **argv) {
@@ -315,6 +315,7 @@ out:
 
 int main(int argc, char *argv[]) {
   int ret = -1;
+  TuvUseDebug usedebug;
 
   platform_init(argc, argv);
 
@@ -346,6 +347,7 @@ int run_test_one(task_entry_t* task) {
 
 
 int main(int argc, char *argv[]) {
+  TuvUseDebug usedebug;
   platform_init(argc, argv);
 
   if (argc>2) {

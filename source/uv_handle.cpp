@@ -34,8 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include <uv.h>
 #include "uv_internal.h"
@@ -97,6 +97,16 @@ void uv_unref(uv_handle_t* handle) {
 }
 
 
-void uv_deinit(uv_handle_t* handle) {
-  uv__handle_deinit(handle);
+//-----------------------------------------------------------------------------
+
+void uv_deinit(uv_loop_t* loop, uv_handle_t* handle) {
+  QUEUE* q;
+  uv_handle_t* h;
+  QUEUE_FOREACH(q, &loop->handles_queue) {
+    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
+    if (h == handle) {
+      uv__handle_deinit(handle);
+      break;
+    }
+  }
 }

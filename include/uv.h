@@ -68,6 +68,8 @@
 
 #include "uv__util.h"
 
+#include "tuv_debuglog.h"
+
 
 #undef UV_HANDLE_PRIVATE_FIELDS
 #undef UV_ASYNC_PRIVATE_FIELDS

@@ -33,6 +33,11 @@ set(BIN_OUT "${BIN_ROOT}/../bin")
 set(TUV_PLATFORM_PATH ${TARGET_PLATFORM})
 include("cmake/option/option_${TARGET_PLATFORM}.cmake")
 
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE_L)
+if (${BUILD_TYPE_L} STREQUAL "debug")
+  set(FLAGS_COMMON "${FLAGS_COMMON} -DENABLE_DEBUG_LOG")
+endif()
+
 foreach(FLAG ${FLAGS_COMMON})
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")

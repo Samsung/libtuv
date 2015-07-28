@@ -34,6 +34,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <errno.h>
 #include <assert.h>
 #include <limits.h> // INT_MAX
@@ -101,6 +102,8 @@ int uv_timer_start(uv_timer_t* handle, uv_timer_cb cb,
               (struct heap_node*)(&handle->heap_node),
               timer_less_than);
   uv__handle_start(handle);
+
+  TDDDLOG("uv_timer_start %p, %d", handle, handle->start_id);
 
   return 0;
 }

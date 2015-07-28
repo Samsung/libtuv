@@ -91,3 +91,12 @@ int uv_async_send(uv_async_t* handle) {
 
   return 0;
 }
+
+
+int uv_async_deinit(uv_loop_t* loop, uv_async_t* handle) {
+  uv__async_stop(loop, &loop->async_watcher);
+  uv__handle_stop(handle);
+  QUEUE_REMOVE(&handle->queue);
+  QUEUE_INIT(&handle->queue);
+  uv__handle_deinit(handle);
+}

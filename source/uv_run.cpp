@@ -63,8 +63,10 @@ static void uv__finish_close(uv_handle_t* handle) {
       break;
   }
 
+  TDDDLOG("uv__finish_close %p", handle);
   uv__handle_unref(handle);
   QUEUE_REMOVE(&handle->handle_queue);
+  QUEUE_INIT(&handle->handle_queue);
 
   if (handle->close_cb) {
     handle->close_cb(handle);

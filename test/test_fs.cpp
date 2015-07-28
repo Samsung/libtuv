@@ -589,6 +589,8 @@ TEST_IMPL(fs_file_nametoolong) {
   uv_fs_t req;
   int r;
 
+  open_cb_count = 0;
+
   loop = uv_default_loop();
 
   memset(name, 'a', TOO_LONG_NAME_LENGTH);
@@ -645,6 +647,13 @@ TEST_IMPL(fs_file_async) {
   /* Setup. */
   unlink("test_file");
   unlink("test_file2");
+
+  open_cb_count = 0;
+  read_cb_count = 0;
+  close_cb_count = 0;
+  rename_cb_count = 0;
+  create_cb_count = 0;
+  write_cb_count = 0;
 
   loop = uv_default_loop();
 
@@ -1022,6 +1031,8 @@ TEST_IMPL(fs_open_dir) {
   uv_fs_t req;
   int r, file;
 
+  open_cb_count = 0;
+
   path = ".";
   loop = uv_default_loop();
 
@@ -1095,7 +1106,6 @@ TEST_IMPL(fs_file_open_append) {
   iov = uv_buf_init(buf, sizeof(buf));
   r = uv_fs_read(loop, &read_req, open_req1.result, &iov, 1, -1,
       NULL);
-  printf("read = %d\n", r);
   TUV_ASSERT(r == 26);
   TUV_ASSERT(read_req.result == 26);
   TUV_ASSERT(memcmp(buf,

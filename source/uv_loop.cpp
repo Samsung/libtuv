@@ -140,12 +140,16 @@ int uv_loop_close(uv_loop_t* loop) {
   uv_handle_t* h;
 
   if (!QUEUE_EMPTY(&(loop)->active_reqs)) {
+    TDDDLOG("uv_loop_close active_req exist, cancel");
     return UV_EBUSY;
   }
+
+  uv_async_deinit(loop, &loop->wq_async);
 
   QUEUE_FOREACH(q, &loop->handles_queue) {
     h = QUEUE_DATA(q, uv_handle_t, handle_queue);
     if (!(h->flags & UV__HANDLE_INTERNAL)) {
+      TDDDLOG("uv_loop_close handle(%p) exist, cancel", h);
       return UV_EBUSY;
     }
   }

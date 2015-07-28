@@ -34,8 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__platform_header__
-#define __uv__platform_header__
+#ifndef __uv__platform_linux_header__
+#define __uv__platform_linux_header__
 
 #include <semaphore.h>
 #include <pthread.h>
@@ -126,4 +126,4 @@ void uv__timer_platform_init(uv_timer_t* handle);
 // poll static vars init
 void uv__io_poll_platform_init(void);
 
-#endif // __uv__platform_header__
+#endif // __uv__platform_linux_header__

@@ -17,8 +17,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <uv.h>
 
+#include <uv.h>
 #include "runner.h"
 
 
@@ -26,8 +26,8 @@ static uv_idle_t idle_handle;
 static int idle_cb_called = 0;
 
 void idle_callback(uv_idle_t* handle) {
-  uv_idle_stop(handle);
-  uv_close((uv_handle_t*)handle, NULL);
+  TDDDLOG("idle_callback handle flag %p, %x, %d",
+          handle, handle->flags, idle_cb_called);
   idle_cb_called++;
 }
 
@@ -40,9 +40,10 @@ TEST_IMPL(idle_basic) {
   loop = uv_default_loop();
   uv_idle_init(loop, &idle_handle);
   uv_idle_start(&idle_handle, idle_callback);
-  uv_run(loop, UV_RUN_DEFAULT);
+  uv_run(loop, UV_RUN_ONCE);
+  uv_close((uv_handle_t*) &idle_handle, NULL);
+  uv_run(loop, UV_RUN_ONCE);
 
-  uv_deinit((uv_handle_t*) &idle_handle);
   TUV_ASSERT(0 == uv_loop_close(loop));
 
   TUV_WARN(idle_cb_called==1);

@@ -57,6 +57,7 @@ struct uv_async_s {
 
 int uv_async_init(uv_loop_t*, uv_async_t* async, uv_async_cb async_cb);
 int uv_async_send(uv_async_t* async);
+int uv_async_deinit(uv_loop_t* loop, uv_async_t* handle);
 
 
 //-----------------------------------------------------------------------------

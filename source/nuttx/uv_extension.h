@@ -186,7 +186,5 @@ enum {
   UV__HANDLE_CLOSING  = 0 /* no-op on unix */
 };
 
-#define uv__handle_platform_init(h) ((h)->next_closing = NULL)
-
 
 #endif // __uv__extenstion_header__
