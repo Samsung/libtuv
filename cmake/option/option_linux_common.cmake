@@ -38,6 +38,7 @@ set(UNIX_PATH "${SOURCE_ROOT}/unix")
 set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.cpp"
                       "${UNIX_PATH}/uv_unix_async.cpp"
                       "${UNIX_PATH}/uv_unix_io.cpp"
+                      "${UNIX_PATH}/uv_unix_fs.cpp"
                       "${UNIX_PATH}/uv_unix_process.cpp"
                       "${UNIX_PATH}/uv_unix_thread.cpp"
                       )
@@ -49,14 +50,12 @@ set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
                       "${LINUX_PATH}/uv_linux.cpp"
                       "${LINUX_PATH}/uv_linux_loop.cpp"
                       "${LINUX_PATH}/uv_linux_clock.cpp"
-                      "${LINUX_PATH}/uv_linux_fs.cpp"
                       "${LINUX_PATH}/uv_linux_io.cpp"
                       "${LINUX_PATH}/uv_linux_syscall.cpp"
                       "${LINUX_PATH}/uv_linux_thread.cpp"
                       )
 
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.cpp"
-                       "${TEST_ROOT}/test_fs.cpp"
-)
+                       )
 
 set(TUV_LINK_LIBS "pthread")

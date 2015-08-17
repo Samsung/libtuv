@@ -25,6 +25,8 @@ set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.cpp"
                     "${SOURCE_ROOT}/uv_async.cpp"
                     "${SOURCE_ROOT}/uv_util.cpp"
                     "${SOURCE_ROOT}/tuv_debuglog.cpp"
+                    "${SOURCE_ROOT}/uv_error.cpp"
+                    "${SOURCE_ROOT}/uv_dir.cpp"
                     )
 
 set(LIB_TUV_SRCFILES

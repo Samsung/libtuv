@@ -34,52 +34,11 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv_header__
-#define __uv_header__
-
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
-
-#include "queue.h"
+#ifndef __uv__dir_header__
+#define __uv__dir_header__
 
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-#define container_of(ptr, type, member) \
-  ((type *) ((char *) (ptr) - offsetof(type, member)))
+int uv_cwd(char* buffer, size_t* size);
 
 
-#include "uv__types.h"    // types should be placed in the first
-#include "uv_platform.h"  // platform should be placed before extension
-#include "uv_extension.h" // extension should be placed before others
-
-#include "uv__error.h"
-#include "uv__handle.h"
-#include "uv__loop.h"
-#include "uv__idle.h"
-#include "uv__timer.h"
-
-#include "uv__async.h"
-#include "uv__req.h"      // req should be placed before fs
-#include "uv__fs.h"
-#include "uv__fd.h"
-#include "uv__thread.h"
-
-#include "uv__dir.h"
-#include "uv__util.h"
-
-#include "tuv_debuglog.h"
-
-
-#undef UV_HANDLE_PRIVATE_FIELDS
-#undef UV_ASYNC_PRIVATE_FIELDS
-#undef UV_LOOP_PRIVATE_FIELDS
-#undef UV_IDLE_PRIVATE_FIELDS
-#undef UV_TIMER_PRIVATE_FIELDS
-#undef UV_REQ_TYPE_PRIVATE
-#undef UV_REQ_PRIVATE_FIELDS
-#undef UV_FS_REQ_PRIVATE_FIELDS
-#undef UV_WORK_PRIVATE_FIELDS
-
-#endif // __uv_header__
+#endif // __uv__dir_header__

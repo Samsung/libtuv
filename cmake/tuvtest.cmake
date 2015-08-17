@@ -19,6 +19,9 @@ set(TEST_MAINFILE "${TEST_ROOT}/runner_main.cpp")
 set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
                    "${TEST_ROOT}/test_timer.cpp"
                    "${TEST_ROOT}/test_timer_again.cpp"
+                   "${TEST_ROOT}/test_fs.cpp"
+                   "${TEST_ROOT}/test_cwd.cpp"
+                   "${TEST_ROOT}/test_error.cpp"
                    )
 
 set(TEST_PLATFORMFILES )

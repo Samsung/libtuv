@@ -138,5 +138,8 @@ typedef enum {
 
 #undef XX
 
+const char* uv_strerror(int err);
+const char* uv_err_name(int err);
+
 
 #endif // __uv__error_header__

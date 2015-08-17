@@ -38,6 +38,7 @@ set(UNIX_PATH "${SOURCE_ROOT}/unix")
 set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.cpp"
                       "${UNIX_PATH}/uv_unix_async.cpp"
                       "${UNIX_PATH}/uv_unix_io.cpp"
+                      "${UNIX_PATH}/uv_unix_fs.cpp"
                       "${UNIX_PATH}/uv_unix_process.cpp"
                       "${UNIX_PATH}/uv_unix_thread.cpp"
                       )

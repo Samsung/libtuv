@@ -46,6 +46,10 @@
   TE(timer_run_once, 5000)                                                    \
   TE(timer_null_callback, 5000)                                               \
   TE(timer_again, 5000)                                                       \
+  \
+  TE(cwd, 5000)                                                               \
+  \
+  TE(error_message, 5000)                                                     \
 
 #if defined(__linux__)
 #define TEST_LIST_EXT(TE)                                                     \

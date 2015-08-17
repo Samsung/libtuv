@@ -49,11 +49,16 @@
 #include <sys/types.h>
 #include <utime.h>
 #include <sys/time.h>
-#include <sys/uio.h>
+#ifndef __NUTTX__
+# include <sys/uio.h>
+#endif
 
 #include <uv.h>
 #include "uv_internal.h"
 
+
+
+#define HAVE_PREADV 0
 
 //-----------------------------------------------------------------------------
 
@@ -112,23 +117,28 @@
 //
 
 static ssize_t uv__fs_fdatasync(uv_fs_t* req) {
+#if defined(__linux__)
   return fdatasync(req->file);
+#elif defined(__NUTTX__)
+  return fsync(req->file);
+#endif
 }
 
 
 static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
+#if !defined(__NUTTX__)
   dst->st_dev = src->st_dev;
   dst->st_nlink = src->st_nlink;
   dst->st_uid = src->st_uid;
   dst->st_gid = src->st_gid;
   dst->st_rdev = src->st_rdev;
   dst->st_ino = src->st_ino;
-
+#endif
   dst->st_mode = src->st_mode;
   dst->st_size = src->st_size;
   dst->st_blksize = src->st_blksize;
   dst->st_blocks = src->st_blocks;
-
+#if defined (__linux__)
   dst->st_atim.tv_sec = src->st_atim.tv_sec;
   dst->st_atim.tv_nsec = src->st_atim.tv_nsec;
   dst->st_mtim.tv_sec = src->st_mtim.tv_sec;
@@ -140,15 +150,31 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_birthtim.tv_nsec = src->st_ctim.tv_nsec;
   dst->st_flags = 0;
   dst->st_gen = 0;
+#elif defined (__NUTTX__)
+  dst->st_atim.tv_sec = src->st_atime;
+  dst->st_atim.tv_nsec = 0;
+  dst->st_mtim.tv_sec = src->st_mtime;
+  dst->st_mtim.tv_nsec = 0;
+  dst->st_ctim.tv_sec = src->st_ctime;
+  dst->st_ctim.tv_nsec = 0;
+  dst->st_birthtim.tv_sec = src->st_ctime;
+  dst->st_birthtim.tv_nsec = 0;
+  dst->st_flags = 0;
+  dst->st_gen = 0;
+#endif
 }
 
 
 static int uv__fs_fstat(int fd, uv_stat_t *buf) {
+#if defined(__NUTTX__)
+  return -1;
+#else
   struct stat pbuf;
   int ret;
   ret = fstat(fd, &pbuf);
   uv__to_stat(&pbuf, buf);
   return ret;
+#endif
 }
 
 
@@ -162,14 +188,18 @@ static int uv__fs_stat(const char *path, uv_stat_t *buf) {
 
 
 static ssize_t uv__fs_read(uv_fs_t* req) {
+#if defined(__linux__)
   static int no_preadv;
+#endif
   ssize_t result;
 
   if (req->off < 0) {
     if (req->nbufs == 1)
       result = read(req->file, req->bufs[0].base, req->bufs[0].len);
+#if defined(__linux__)
     else
       result = readv(req->file, (struct iovec*) req->bufs, req->nbufs);
+#endif
   } else {
     if (req->nbufs == 1) {
       result = pread(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
@@ -179,7 +209,9 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
 #if HAVE_PREADV
     result = preadv(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
 #else
+# if defined(__linux__)
     if (no_preadv) retry:
+# endif
     {
       off_t nread;
       size_t index;
@@ -201,6 +233,7 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
       if (nread > 0)
         result = nread;
     }
+# if defined(__linux__)
     else {
       result = uv__preadv(req->file,
                           (struct iovec*)req->bufs,
@@ -211,6 +244,7 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
         goto retry;
       }
     }
+# endif
 #endif
   }
 
@@ -222,14 +256,18 @@ done:
 
 
 static ssize_t uv__fs_write(uv_fs_t* req) {
+#if defined(__linux__)
   static int no_pwritev;
+#endif
   ssize_t r;
 
   if (req->off < 0) {
     if (req->nbufs == 1)
       r = write(req->file, req->bufs[0].base, req->bufs[0].len);
+#if defined(__linux__)
     else
       r = writev(req->file, (struct iovec*) req->bufs, req->nbufs);
+#endif
   } else {
     if (req->nbufs == 1) {
       r = pwrite(req->file, req->bufs[0].base, req->bufs[0].len, req->off);
@@ -238,7 +276,9 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
 #if HAVE_PREADV
     r = pwritev(req->file, (struct iovec*) req->bufs, req->nbufs, req->off);
 #else
+# if defined(__linux__)
     if (no_pwritev) retry:
+# endif
     {
       off_t written;
       size_t index;
@@ -260,6 +300,7 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
       if (written > 0)
         r = written;
     }
+# if defined(__linux__)
     else {
       r = uv__pwritev(req->file,
                       (struct iovec*) req->bufs,
@@ -270,6 +311,7 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
         goto retry;
       }
     }
+# endif
 #endif
   }
 
@@ -298,6 +340,7 @@ static void uv__fs_done(struct uv__work* w, int status) {
 
 
 static ssize_t uv__fs_futime(uv_fs_t* req) {
+#if defined(__linux__)
   /* utimesat() has nanosecond resolution but we stick to microseconds
    * for the sake of consistency with other platforms.
    */
@@ -349,14 +392,25 @@ skip:
   }
 
   return r;
+#elif defined(__NUTTX__)
+  set_errno(ENOSYS);
+  return -1;
+#else
+  errno = ENOSYS;
+  return -1;
+#endif
 }
 
 
 static ssize_t uv__fs_utime(uv_fs_t* req) {
+#if defined(__NUTTX__)
+  return -1;
+#else
   struct utimbuf buf;
   buf.actime = req->atime;
   buf.modtime = req->mtime;
   return utime(req->path, &buf); /* TODO use utimes() where available */
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -374,7 +428,11 @@ static void uv__fs_work(struct uv__work* w) {
   retry_on_eintr = !(req->fs_type == UV_FS_CLOSE);
 
   do {
+#if defined(__NUTTX__)
+    set_errno(0);
+#else
     errno = 0;
+#endif
 
 #define X(type, action)                                                       \
   case UV_FS_ ## type:                                                        \
@@ -382,6 +440,7 @@ static void uv__fs_work(struct uv__work* w) {
     break;
 
     switch (req->fs_type) {
+#if !defined(__NUTTX__)
     //X(CHMOD, chmod(req->path, req->mode));
     //X(CHOWN, chown(req->path, req->uid, req->gid));
     //X(FCHMOD, fchmod(req->file, req->mode));
@@ -389,6 +448,7 @@ static void uv__fs_work(struct uv__work* w) {
     X(FTRUNCATE, ftruncate(req->file, req->off));
     //X(LINK, link(req->path, req->new_path));
     //X(SYMLINK, symlink(req->path, req->new_path));
+#endif
     //X(ACCESS, access(req->path, req->flags));
     X(CLOSE, close(req->file));
     X(FDATASYNC, uv__fs_fdatasync(req));
@@ -423,6 +483,7 @@ static void uv__fs_work(struct uv__work* w) {
 #endif  /* O_CLOEXEC */
       if (req->cb != NULL)
         uv_rwlock_rdlock(&req->loop->cloexec_lock);
+
       r = open(req->path, req->flags, req->mode);
 
       /*
@@ -446,7 +507,11 @@ static void uv__fs_work(struct uv__work* w) {
   while (r == -1 && errno == EINTR && retry_on_eintr);
 
   if (r == -1)
+#if defined(__NUTTX__)
+    req->result = -get_errno();
+#else
     req->result = -errno;
+#endif
   else
     req->result = r;
 
