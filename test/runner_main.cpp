@@ -39,22 +39,8 @@
 #include <uv.h>
 
 #include "runner.h"
-#include "runner_list.h"
-
 
 char executable_path[EXEC_PATH_LENGTH];
-
-
-//-----------------------------------------------------------------------------
-// test function declaration
-
-#define TEST_DECLARE(name,x)                                                  \
-  int run_test_##name(void);
-
-TEST_LIST_ALL(TEST_DECLARE)
-TEST_LIST_EXT(TEST_DECLARE)
-
-#undef TEST_DECLARE
 
 
 //-----------------------------------------------------------------------------
@@ -74,6 +60,21 @@ task_entry_t TASKS[] = {
 #undef TEST_ENTRY
 
 //-----------------------------------------------------------------------------
+// test function list
+
+#define HELPER_ENTRY(task_name, name)               \
+    { #task_name, #name, &run_helper_##name, 1, 0, 0 },
+
+task_entry_t HELPERS[] = {
+
+  HELPER_LIST_ALL(HELPER_ENTRY)
+
+  { NULL, NULL, NULL, 0, 0, 0 }
+};
+
+#undef HELPER_ENTRY
+
+//-----------------------------------------------------------------------------
 
 int run_test_part(const char* test, const char* part) {
   int r;
@@ -91,12 +92,36 @@ int run_test_part(const char* test, const char* part) {
   return 255;
 }
 
+task_entry_t* get_helper(const char* test) {
+  int r;
+  task_entry_t* task;
+
+  for (task = HELPERS; task->main; task++) {
+    if (strcmp(test, task->task_name) == 0) {
+      return task;
+    }
+  }
+  return NULL;
+}
+
 
 int run_tests() {
-  int entry = 0;
+  int entry;
   int result;
   task_entry_t* task;
 
+  fprintf(stderr, "Run Helpers...\n");
+  entry = 0;
+  while (HELPERS[entry].task_name) {
+    task = &HELPERS[entry];
+
+    fprintf(stderr, "[%-30s]...", task->task_name);
+    result = run_test_one(task);
+    fprintf(stderr, "%s\n", result ? "failed" : "OK");
+    entry++;
+  }
+
+  entry = 0;
   while (TASKS[entry].task_name) {
     task = &TASKS[entry];
 

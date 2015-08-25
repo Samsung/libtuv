@@ -12,36 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include("cmake/option/option_unix_common.cmake")
+
 set(FLAGS_COMMON
+      "${FLAGS_COMMON}"
       "-D__NUTTX__"
-      "-fno-builtin"
       )
-
-set(FLAGS_CXXONLY
-      "-fpermissive"
-      "-fno-exceptions"
-      "-fno-rtti"
-      )
-
-set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG")
-set(CMAKE_C_FLAGS_RELEASE   "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # override TUV_PLATFORM_PATH for NuttX
 # use "nuttx" for NuttX platform dependent source files
 set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
-
-# unix common source files
-set(UNIX_PATH "${SOURCE_ROOT}/unix")
-
-set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.cpp"
-                      "${UNIX_PATH}/uv_unix_async.cpp"
-                      "${UNIX_PATH}/uv_unix_io.cpp"
-                      "${UNIX_PATH}/uv_unix_fs.cpp"
-                      "${UNIX_PATH}/uv_unix_process.cpp"
-                      "${UNIX_PATH}/uv_unix_thread.cpp"
-                      )
 
 # nuttx source files
 set(NUTTX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")

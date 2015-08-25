@@ -49,6 +49,13 @@
 #define UV__EOF     (-4095)
 #define UV__UNKNOWN (-4094)
 
+#if defined(EAFNOSUPPORT)
+# define UV__EAFNOSUPPORT (-EAFNOSUPPORT)
+#else
+# define UV__EAFNOSUPPORT (-4089)
+#endif
+
+
 #if defined(EAGAIN)
 # define UV__EAGAIN (-EAGAIN)
 #else
@@ -65,6 +72,12 @@
 # define UV__ECANCELED (-ECANCELED)
 #else
 # define UV__ECANCELED (-4081)
+#endif
+
+#if defined(ECONNREFUSED)
+# define UV__ECONNREFUSED (-ECONNREFUSED)
+#else
+# define UV__ECONNREFUSED (-4078)
 #endif
 
 #if defined(EINVAL)
@@ -85,6 +98,12 @@
 # define UV__ENAMETOOLONG (-4064)
 #endif
 
+#if defined(ENOBUFS)
+# define UV__ENOBUFS (-ENOBUFS)
+#else
+# define UV__ENOBUFS (-4060)
+#endif
+
 #if defined(ENOENT)
 # define UV__ENOENT (-ENOENT)
 #else
@@ -95,6 +114,12 @@
 # define UV__ENOMEM (-ENOMEM)
 #else
 # define UV__ENOMEM (-4057)
+#endif
+
+#if defined(ENOSPC)
+# define UV__ENOSPC (-ENOSPC)
+#else
+# define UV__ENOSPC (-4055)
 #endif
 
 #if defined(ENOTDIR)
@@ -116,14 +141,18 @@
 // errno map < uv.h
 
 #define UV_ERRNO_MAP(XX)                                                      \
+  XX(EAFNOSUPPORT, "address family not supported")                            \
   XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \
+  XX(ECONNREFUSED, "connection refused")                                      \
   XX(EINVAL, "invalid argument")                                              \
   XX(ELOOP, "too many symbolic links encountered")                            \
   XX(ENAMETOOLONG, "name too long")                                           \
+  XX(ENOBUFS, "no buffer space available")                                    \
   XX(ENOENT, "no such file or directory")                                     \
   XX(ENOMEM, "not enough memory")                                             \
+  XX(ENOSPC, "no space left on device")                                       \
   XX(ENOTDIR, "not a directory")                                              \
   XX(EPERM, "operation not permitted")                                        \
   XX(EOF, "end of file")                                                      \

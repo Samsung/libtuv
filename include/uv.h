@@ -59,11 +59,15 @@
 #include "uv__loop.h"
 #include "uv__idle.h"
 #include "uv__timer.h"
+#include "uv__inet.h"
 
 #include "uv__async.h"
 #include "uv__req.h"      // req should be placed before fs
 #include "uv__fs.h"
 #include "uv__fd.h"
+#include "uv__stream.h"
+#include "uv__tcp.h"
+#include "uv__pipe.h"
 #include "uv__thread.h"
 
 #include "uv__dir.h"
@@ -81,5 +85,9 @@
 #undef UV_REQ_PRIVATE_FIELDS
 #undef UV_FS_REQ_PRIVATE_FIELDS
 #undef UV_WORK_PRIVATE_FIELDS
+#undef UV_TCP_PRIVATE_FIELDS
+#undef UV_STREAM_PRIVATE_FIELDS
+#undef UV_PIPE_PRIVATE_FIELDS
+
 
 #endif // __uv_header__

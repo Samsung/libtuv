@@ -22,6 +22,9 @@ set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
                    "${TEST_ROOT}/test_fs.cpp"
                    "${TEST_ROOT}/test_cwd.cpp"
                    "${TEST_ROOT}/test_error.cpp"
+                   "${TEST_ROOT}/test_tcp_open.cpp"
+                   "${TEST_ROOT}/test_shutdown_eof.cpp"
+                   "${TEST_ROOT}/echo_server.cpp"
                    )
 
 set(TEST_PLATFORMFILES )

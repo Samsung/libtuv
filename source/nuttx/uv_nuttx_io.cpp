@@ -127,8 +127,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     }
 
     if (nfd == -1) {
-      if (errno != EINTR) {
-      //if (errno != EINTR && errno != ENOSYS) {
+      if (get_errno() != EINTR) {
         abort();
       }
       if (timeout == -1) {
@@ -143,8 +142,9 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     nevents = 0;
 
     for (i = 0; i < loop->npollfds; ++i) {
-        pe = &loop->pollfds[i];
-      if (pe->fd >= 0 && pe->revents & POLLIN) {
+      pe = &loop->pollfds[i];
+
+      if (pe->fd >= 0 && pe->revents & UV__POLLIN) {
         w = loop->watchers[pe->fd];
         if (w == NULL) {
           uv__rem_pollfd(loop, pe);

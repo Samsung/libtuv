@@ -48,7 +48,11 @@
   XX(ASYNC, async)                                                            \
   XX(HANDLE, handle)                                                          \
   XX(IDLE, idle)                                                              \
+  XX(NAMED_PIPE, pipe)                                                        \
+  XX(STREAM, stream)                                                          \
+  XX(TCP, tcp)                                                                \
   XX(TIMER, timer)                                                            \
+  XX(TTY, tty)                                                                \
 
 /*
   XX(ASYNC, async)                                                            \
@@ -84,27 +88,22 @@ typedef enum {
 
 /* handle flags */
 enum {
-  UV_CLOSING             = 0x0001, /* uv_close() called but not finished. */
-  UV_CLOSED              = 0x0002, /* close(2) finished. */
+  UV_CLOSING              = 0x0001, /* uv_close() called but not finished. */
+  UV_CLOSED               = 0x0002, /* close(2) finished. */
+  UV_STREAM_READING       = 0x0004, /* uv_read_start() called. */
+  UV_STREAM_SHUTTING      = 0x0008, /* uv_shutdown() called but not complete. */
+  UV_STREAM_SHUT          = 0x0010, /* Write side closed. */
+  UV_STREAM_READABLE      = 0x0020, /* The stream is readable */
+  UV_STREAM_WRITABLE      = 0x0040, /* The stream is writable */
+  UV_STREAM_BLOCKING      = 0x0080, /* Synchronous writes. */
+  UV_STREAM_READ_PARTIAL  = 0x0100, /* read(2) read less than requested. */
+  UV_STREAM_READ_EOF      = 0x0200, /* read(2) read EOF. */
+  UV_TCP_NODELAY          = 0x0400, /* Disable Nagle. */
+  UV_TCP_KEEPALIVE        = 0x0800, /* Turn on keep-alive. */
+  UV_TCP_SINGLE_ACCEPT    = 0x1000, /* Only accept() when idle. */
+  UV_HANDLE_IPV6          = 0x10000 /* Handle is bound to a IPv6 socket. */
 };
-/*
-enum {
-  UV_CLOSING              = 0x01,   * uv_close() called but not finished. *
-  UV_CLOSED               = 0x02,   * close(2) finished. *
-  UV_STREAM_READING       = 0x04,   * uv_read_start() called. *
-  UV_STREAM_SHUTTING      = 0x08,   * uv_shutdown() called but not complete. *
-  UV_STREAM_SHUT          = 0x10,   * Write side closed. *
-  UV_STREAM_READABLE      = 0x20,   * The stream is readable *
-  UV_STREAM_WRITABLE      = 0x40,   * The stream is writable *
-  UV_STREAM_BLOCKING      = 0x80,   * Synchronous writes. *
-  UV_STREAM_READ_PARTIAL  = 0x100,  * read(2) read less than requested. *
-  UV_STREAM_READ_EOF      = 0x200,  * read(2) read EOF. *
-  UV_TCP_NODELAY          = 0x400,  * Disable Nagle. *
-  UV_TCP_KEEPALIVE        = 0x800,  * Turn on keep-alive. *
-  UV_TCP_SINGLE_ACCEPT    = 0x1000, * Only accept() when idle. *
-  UV_HANDLE_IPV6          = 0x10000 * Handle is bound to a IPv6 socket. *
-};
-*/
+
 
 //-----------------------------------------------------------------------------
 

@@ -37,6 +37,8 @@
 #ifndef __uv_linux_syscall_header__
 #define __uv_linux_syscall_header__
 
+#include <sys/socket.h>
+
 
 // architectecture dependent
 #define UV__O_CLOEXEC         0x80000
@@ -44,6 +46,13 @@
 
 #define UV__EFD_CLOEXEC       UV__O_CLOEXEC
 #define UV__EFD_NONBLOCK      UV__O_NONBLOCK
+
+#define UV__SOCK_CLOEXEC      UV__O_CLOEXEC
+#if defined(SOCK_NONBLOCK)
+# define UV__SOCK_NONBLOCK    SOCK_NONBLOCK
+#else
+# define UV__SOCK_NONBLOCK    UV__O_NONBLOCK
+#endif
 
 /* epoll flags */
 #define UV__EPOLL_CLOEXEC     UV__O_CLOEXEC
@@ -71,6 +80,7 @@ struct uv__epoll_event {
 };
 #endif
 
+int uv__accept4(int fd, struct sockaddr* addr, socklen_t* addrlen, int flags);
 
 int uv__eventfd(unsigned int count);
 int uv__eventfd2(unsigned int count, int flags);

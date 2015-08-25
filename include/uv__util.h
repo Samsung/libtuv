@@ -46,6 +46,8 @@
 
 uv_buf_t uv_buf_init(char* base, unsigned int len);
 
+size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
+
 
 
 //-----------------------------------------------------------------------------

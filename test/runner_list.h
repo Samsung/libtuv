@@ -51,6 +51,8 @@
   \
   TE(error_message, 5000)                                                     \
 
+// shutdown_eof should be last of tcp test, it'll stop "echo_sevrer"
+
 #if defined(__linux__)
 #define TEST_LIST_EXT(TE)                                                     \
   TE(fs_file_noent, 5000)                                                     \
@@ -64,8 +66,15 @@
   TE(fs_open_dir, 5000)                                                       \
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
+  \
+  TE(tcp_open,5000)                                                           \
+  TE(shutdown_eof,5000)                                                       \
 
 #else
 #define TEST_LIST_EXT(TE)
 
 #endif
+
+#define HELPER_LIST_ALL(TE)                                                   \
+  TE(tcp4_echo_server, tcp4_echo_server)                                      \
+

@@ -69,6 +69,7 @@ int uv_loop_init(uv_loop_t* loop) {
   uv__update_time(loop);
   uv__async_init(&loop->async_watcher);
   loop->backend_fd = -1;
+  loop->emfile_fd = -1;
 
   loop->timer_counter = 0;
   loop->stop_flag = 0;
@@ -99,6 +100,11 @@ int uv_loop_init(uv_loop_t* loop) {
 void uv__loop_close(uv_loop_t* loop) {
   uv__platform_loop_delete(loop);
   uv__async_stop(loop, &loop->async_watcher);
+
+  if (loop->emfile_fd != -1) {
+    uv__close(loop->emfile_fd);
+    loop->emfile_fd = -1;
+  }
 
   if (loop->backend_fd != -1) {
     uv__close(loop->backend_fd);

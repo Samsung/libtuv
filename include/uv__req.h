@@ -46,7 +46,22 @@
 
 #define UV_REQ_TYPE_MAP(XX)                                                   \
   XX(REQ, req)                                                                \
+  XX(CONNECT, connect)                                                        \
+  XX(WRITE, write)                                                            \
+  XX(SHUTDOWN, shutdown)                                                      \
   XX(FS, fs)                                                                  \
+
+/*
+  XX(REQ, req)                                                                \
+  XX(CONNECT, connect)                                                        \
+  XX(WRITE, write)                                                            \
+  XX(SHUTDOWN, shutdown)                                                      \
+  XX(UDP_SEND, udp_send)                                                      \
+  XX(FS, fs)                                                                  \
+  XX(WORK, work)                                                              \
+  XX(GETADDRINFO, getaddrinfo)                                                \
+  XX(GETNAMEINFO, getnameinfo)                                                \
+*/
 
 
 typedef enum {
@@ -57,7 +72,6 @@ typedef enum {
   UV_REQ_TYPE_PRIVATE
   UV_REQ_TYPE_MAX
 } uv_req_type;
-
 
 
 //-----------------------------------------------------------------------------
@@ -82,5 +96,26 @@ struct uv_req_s {
 #define uv__has_active_reqs(loop)                                             \
   (QUEUE_EMPTY(&(loop)->active_reqs) == 0)
 
+
+#define uv__req_register(loop, req)                                           \
+  do {                                                                        \
+    QUEUE_INSERT_TAIL(&(loop)->active_reqs, &(req)->active_queue);            \
+  }                                                                           \
+  while (0)
+
+
+#define uv__req_unregister(loop, req)                                         \
+  do {                                                                        \
+    assert(uv__has_active_reqs(loop));                                        \
+    QUEUE_REMOVE(&(req)->active_queue);                                       \
+  }                                                                           \
+  while (0)
+
+static void uv__req_init(uv_loop_t* loop, uv_req_t* req, uv_req_type type) {
+  req->type = type;
+  uv__req_register(loop, req);
+}
+#define uv__req_init(loop, req, type) \
+        uv__req_init((loop), (uv_req_t*)(req), (type))
 
 #endif // __uv__req_header__

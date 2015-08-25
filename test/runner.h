@@ -41,6 +41,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+#if defined(__NUTTX__)
+#define EMBED_LOW_MEMORY
+#endif
+
+// for tcp_test
+#define TEST_PORT 9123
+#define TEST_PORT_2 9124
+
+
 typedef struct {
   const char *task_name;
   const char *process_name;
@@ -58,6 +68,13 @@ typedef struct {
 #define TEST_IMPL(name)                                                       \
   int run_test_##name(void);                                                  \
   int run_test_##name(void)
+
+#define HELPER_IMPL(name)                                                     \
+  int run_helper_##name(void);                                                \
+  int run_helper_##name(void)
+
+#define HELPER_CALL(name)                                                     \
+  run_helper_##name()
 
 /* Have our own assert, so we are sure it does not get optimized away in
  * a release build.
@@ -118,6 +135,18 @@ typedef struct {
   int n;
 } dowait_args;
 
+/* tcp server */
+typedef struct {
+  uv_write_t req;
+  uv_buf_t buf;
+} write_req_t;
+
+typedef enum {
+  TEST_TCP = 0,
+  TEST_UDP,
+  TEST_PIPE
+} stream_type;
+
 
 #ifdef PATH_MAX
 #define EXEC_PATH_LENGTH PATH_MAX
@@ -139,6 +168,30 @@ void process_cleanup(process_info_t *p);
 
 int run_test_one(task_entry_t* task);
 int run_test_part(const char* test, const char* part);
+task_entry_t* get_helper(const char* test);
 int run_tests();
+
+
+
+//-----------------------------------------------------------------------------
+// test function declaration
+
+#include "runner_list.h"
+
+
+#define TEST_DECLARE(name,x)                                                  \
+  int run_test_##name(void);
+
+#define HELPER_DECLARE(task_name,name)                                        \
+  int run_helper_##name(void);
+
+
+TEST_LIST_ALL(TEST_DECLARE)
+TEST_LIST_EXT(TEST_DECLARE)
+
+HELPER_LIST_ALL(HELPER_DECLARE)
+
+#undef TEST_DECLARE
+#undef HELPER_DECLARE
 
 #endif // __tuv_test_runner_header__

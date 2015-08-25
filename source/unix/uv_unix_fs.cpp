@@ -392,12 +392,12 @@ skip:
   }
 
   return r;
-#elif defined(__NUTTX__)
+
+#else
+
   set_errno(ENOSYS);
   return -1;
-#else
-  errno = ENOSYS;
-  return -1;
+
 #endif
 }
 
@@ -428,11 +428,7 @@ static void uv__fs_work(struct uv__work* w) {
   retry_on_eintr = !(req->fs_type == UV_FS_CLOSE);
 
   do {
-#if defined(__NUTTX__)
     set_errno(0);
-#else
-    errno = 0;
-#endif
 
 #define X(type, action)                                                       \
   case UV_FS_ ## type:                                                        \

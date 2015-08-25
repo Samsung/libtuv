@@ -38,14 +38,22 @@
 #define __uv__platform_nuttx_header__
 
 #include <pthread.h>
-#include <poll.h>     // for nuttx
+#include <poll.h>     // nuttx poll
 #include <unistd.h>
 #include <errno.h>
 
+#include "uv__unix_platform.h"
+
+/* for testing */
+#define TUV_POLL_EVENTS_SIZE  32
+
 
 #ifndef TUV_POLL_EVENTS_SIZE
-#define TUV_POLL_EVENTS_SIZE 1024
+#define TUV_POLL_EVENTS_SIZE  1024
 #endif
+
+#define TUV_NUTTX_IOV_MAX     TUV_POLL_EVENTS_SIZE /* check this */
+
 
 
 //-----------------------------------------------------------------------------
@@ -74,10 +82,11 @@
 
 //-----------------------------------------------------------------------------
 
-#define UV__POLLIN   1
-#define UV__POLLOUT  2
-#define UV__POLLERR  4
-#define UV__POLLHUP  8
+#define UV__POLLIN    POLLIN    /* 0x01 */
+#define UV__POLLOUT   POLLOUT   /* 0x02 */
+#define UV__POLLERR   POLLERR   /* 0x04 */
+#define UV__POLLHUP   POLLHUP   /* 0x08 */
+
 
 //-----------------------------------------------------------------------------
 
@@ -103,18 +112,6 @@ inline uint64_t uv__time_precise() {
   return uv__hrtime();
 }
 
-//-----------------------------------------------------------------------------
-// fs
-
-typedef struct dirent uv__dirent_t;
-typedef int uv_file;
-
-
-typedef struct uv_buf_t {
-  char* base;
-  size_t len;
-} uv_buf_t;
-
 
 //-----------------------------------------------------------------------------
 // thread and mutex
@@ -129,9 +126,23 @@ typedef pthread_cond_t uv_cond_t;
 typedef pthread_mutex_t uv_rwlock_t;  // no rwlock for nuttx
 
 
-void uv__handle_platform_init(uv_handle_t* handle);
-void uv__idle_platform_init(uv_idle_t* handle);
-void uv__async_platform_init(uv_async_t* handle);
-void uv__timer_platform_init(uv_timer_t* handle);
+//-----------------------------------------------------------------------------
+// uio
+struct iovec
+{
+  void* iov_base;
+  size_t iov_len;
+};
+
+ssize_t readv(int __fd, const struct iovec* __iovec, int __count);
+ssize_t writev(int __fd, const struct iovec* __iovec, int __count);
+
+
+//-----------------------------------------------------------------------------
+// etc
+int getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen);
+
+/* Maximum queue length specifiable by listen.  */
+#define SOMAXCONN 128
 
 #endif // __uv__platform_nuttx_header__

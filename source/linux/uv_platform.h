@@ -42,6 +42,11 @@
 
 #include "uv_linux_syscall.h"
 
+#include "uv__unix_platform.h"
+
+#include <netinet/tcp.h>
+#include <netdb.h>
+
 
 #ifndef TUV_POLL_EVENTS_SIZE
 #define TUV_POLL_EVENTS_SIZE 1024
@@ -56,6 +61,13 @@
 #define UV__POLLHUP  UV__EPOLLHUP
 
 //-----------------------------------------------------------------------------
+
+#define set_errno(e)                                                          \
+  do {                                                                        \
+    errno = e;                                                                \
+  } while (0)                                                                 \
+
+#define get_errno(e) errno
 
 #define SAVE_ERRNO(block)                                                     \
   do {                                                                        \
@@ -93,19 +105,6 @@ inline uint64_t uv__time_precise() {
 
 
 //-----------------------------------------------------------------------------
-// fs
-
-typedef struct dirent uv__dirent_t;
-typedef int uv_file;
-
-typedef struct uv_buf_t {
-  char* base;
-  size_t len;
-} uv_buf_t;
-
-
-
-//-----------------------------------------------------------------------------
 // linux thread and mutex
 
 #define UV_ONCE_INIT PTHREAD_ONCE_INIT
@@ -117,11 +116,6 @@ typedef sem_t uv_sem_t;
 typedef pthread_cond_t uv_cond_t;
 typedef pthread_rwlock_t uv_rwlock_t;
 
-
-void uv__handle_platform_init(uv_handle_t* handle);
-void uv__idle_platform_init(uv_idle_t* handle);
-void uv__async_platform_init(uv_async_t* handle);
-void uv__timer_platform_init(uv_timer_t* handle);
 
 // poll static vars init
 void uv__io_poll_platform_init(void);

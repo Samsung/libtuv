@@ -13,8 +13,10 @@
 # limitations under the License.
 
 # linux common
+include("cmake/option/option_unix_common.cmake")
 include("cmake/option/option_linux_common.cmake")
 
+# arm-linux specific
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "rpi2")
     # rpi2 specific

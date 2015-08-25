@@ -34,87 +34,16 @@
  * IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <string.h>
-
-#include <uv.h>
-#include "uv_internal.h"
+#ifndef __uv__pipe_header__
+#define __uv__pipe_header__
 
 
-//-----------------------------------------------------------------------------
-
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
-}
+struct uv_pipe_s {
+  UV_HANDLE_FIELDS
+  UV_STREAM_FIELDS
+  int ipc; /* non-zero if this pipe is used for passing handles */
+  UV_PIPE_PRIVATE_FIELDS
+};
 
 
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_TTY:
-    uv__stream_close((uv_stream_t*)handle);
-    break;
-
-  case UV_TCP:
-    uv__tcp_close((uv_tcp_t*)handle);
-    break;
-
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
-}
-
-
-//-----------------------------------------------------------------------------
-
-int uv_is_active(const uv_handle_t* handle) {
-  return uv__is_active(handle);
-}
-
-
-void uv_ref(uv_handle_t* handle) {
-  uv__handle_ref(handle);
-}
-
-
-void uv_unref(uv_handle_t* handle) {
-  uv__handle_unref(handle);
-}
-
-
-//-----------------------------------------------------------------------------
-
-void uv_deinit(uv_loop_t* loop, uv_handle_t* handle) {
-  QUEUE* q;
-  uv_handle_t* h;
-  QUEUE_FOREACH(q, &loop->handles_queue) {
-    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
-    if (h == handle) {
-      uv__handle_deinit(handle);
-      break;
-    }
-  }
-}
+#endif // __uv__pipe_header__

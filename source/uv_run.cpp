@@ -58,6 +58,12 @@ static void uv__finish_close(uv_handle_t* handle) {
     case UV_TIMER:
       break;
 
+    case UV_NAMED_PIPE:
+    case UV_TCP:
+    case UV_TTY:
+      uv__stream_destroy((uv_stream_t*)handle);
+      break;
+
     default:
       assert(0);
       break;

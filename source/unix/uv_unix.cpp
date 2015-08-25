@@ -77,3 +77,101 @@ int uv__open_cloexec(const char* path, int flags) {
 
   return fd;
 }
+
+
+/* Open a socket in non-blocking close-on-exec mode, atomically if possible. */
+int uv__socket(int domain, int type, int protocol) {
+  int sockfd;
+  int err;
+
+#if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
+  sockfd = socket(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
+  if (sockfd != -1)
+    return sockfd;
+
+  if (errno != EINVAL)
+    return -errno;
+#endif
+
+  sockfd = socket(domain, type, protocol);
+  if (sockfd == -1)
+    return -errno;
+
+  err = uv__nonblock(sockfd, 1);
+  if (err == 0)
+    err = uv__cloexec(sockfd, 1);
+
+  if (err) {
+    uv__close(sockfd);
+    return err;
+  }
+
+#if defined(SO_NOSIGPIPE)
+  {
+    int on = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));
+  }
+#endif
+
+  return sockfd;
+}
+
+
+int uv__accept(int sockfd) {
+  int peerfd;
+  int err;
+
+  assert(sockfd >= 0);
+
+  while (1) {
+#if defined(__linux__) || __FreeBSD__ >= 10
+    static int no_accept4 = 0;
+
+    if (no_accept4)
+      goto skip;
+
+    peerfd = uv__accept4(sockfd,
+                         NULL,
+                         NULL,
+                         UV__SOCK_NONBLOCK|UV__SOCK_CLOEXEC);
+    if (peerfd != -1)
+      return peerfd;
+
+    if (errno == EINTR)
+      continue;
+
+    if (errno != ENOSYS)
+      return -errno;
+
+    no_accept4 = 1;
+skip:
+#endif
+
+    peerfd = accept(sockfd, NULL, NULL);
+    if (peerfd == -1) {
+      err = get_errno();
+      if (err == EINTR)
+        continue;
+      return -err;
+    }
+
+    err = uv__cloexec(peerfd, 1);
+    if (err == 0)
+      err = uv__nonblock(peerfd, 1);
+
+    if (err) {
+      uv__close(peerfd);
+      return err;
+    }
+
+    return peerfd;
+  }
+}
+
+
+int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr) {
+  memset(addr, 0, sizeof(*addr));
+  addr->sin_family = AF_INET;
+  addr->sin_port = htons(port);
+  return uv_inet_pton(AF_INET, ip, &(addr->sin_addr.s_addr));
+}

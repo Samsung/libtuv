@@ -39,6 +39,9 @@
 
 #include <uv.h>
 
+
+//-----------------------------------------------------------------------------
+
 void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
   int i;
   int nfd = loop->npollfds;
@@ -105,6 +108,13 @@ int uv__cloexec(int fd, int set) {
 }
 
 
+ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
+  return -1;
+}
+
+
+//-----------------------------------------------------------------------------
+
 void uv__handle_platform_init(uv_handle_t* handle) {
  handle->next_closing = NULL;
 }
@@ -124,4 +134,44 @@ void uv__timer_platform_init(uv_timer_t* handle) {
 void uv__async_platform_init(uv_async_t* handle) {
   memset(handle, 0, sizeof(uv_async_t));
   QUEUE_INIT(&(handle->queue));
+}
+
+
+//-----------------------------------------------------------------------------
+
+int getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
+  return 0;
+}
+
+ssize_t readv(int fd, const struct iovec* iiovec, int count) {
+  ssize_t result = 0;
+  ssize_t total = 0;
+  int idx;
+
+  for (idx = 0; idx < count; ++idx) {
+    result = read(fd, iiovec[idx].iov_base, iiovec[idx].iov_len);
+    if (result < 0) {
+      return result;
+    } else {
+      total += result;
+    }
+  }
+  return total;
+}
+
+
+ssize_t writev(int fd, const struct iovec* iiovec, int count) {
+  ssize_t result = 0;
+  ssize_t total = 0;
+  int idx;
+
+  for (idx = 0; idx < count; ++idx) {
+    result = write(fd, iiovec[idx].iov_base, iiovec[idx].iov_len);
+    if (result < 0) {
+      return result;
+    } else {
+      total += result;
+    }
+  }
+  return total;
 }

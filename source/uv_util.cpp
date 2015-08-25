@@ -46,3 +46,15 @@ uv_buf_t uv_buf_init(char* base, unsigned int len) {
   buf.len = len;
   return buf;
 }
+
+
+size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs) {
+  unsigned int i;
+  size_t bytes;
+
+  bytes = 0;
+  for (i = 0; i < nbufs; i++)
+    bytes += (size_t) bufs[i].len;
+
+  return bytes;
+}

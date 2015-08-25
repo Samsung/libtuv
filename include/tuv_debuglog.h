@@ -31,12 +31,14 @@ extern const char* tuv_debug_prefix[4];
 
 #define TUV_DLOG(lvl, ...) \
   do { \
+    int errback = get_errno(); \
     if (0 <= lvl && lvl <= tuv_debug_level && tuv_log_stream) { \
       fprintf(tuv_log_stream, "[%s] ", tuv_debug_prefix[lvl]); \
       fprintf(tuv_log_stream, __VA_ARGS__); \
       fprintf(tuv_log_stream, "\n"); \
       fflush(tuv_log_stream); \
     } \
+    set_errno(errback); \
   } while (0)
 #define TDLOG(...)   TUV_DLOG(TDBGLEV_ERR, __VA_ARGS__)
 #define TDDLOG(...)  TUV_DLOG(TDBGLEV_WARN, __VA_ARGS__)

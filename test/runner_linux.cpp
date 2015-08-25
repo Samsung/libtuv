@@ -286,6 +286,9 @@ int run_test_one(task_entry_t* task) {
 
   usleep(1000);
 
+  if (task->is_helper)
+    return 0;
+
   result = process_wait(&processes, 1, task->timeout);
   if (result == -1) {
     TUV_FATAL("process_wait failed ");
@@ -340,8 +343,23 @@ int platform_init(int argc, char **argv) {
   return 0;
 }
 
+static void* helper_proc(void* data) {
+  task_entry_t* task = (task_entry_t*)data;
+  task->main();
+  return NULL;
+}
+
+int run_helper(task_entry_t* task) {
+  int r;
+  pthread_t tid;
+  r = pthread_create(&tid, NULL, helper_proc, task);
+}
 
 int run_test_one(task_entry_t* task) {
+  if (task->is_helper) {
+    run_helper(task);
+    return 0;
+  }
   return run_test_part(task->task_name, task->process_name);
 }
 
