@@ -181,22 +181,21 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
 //-----------------------------------------------------------------------------
 
 void uv__handle_platform_init(uv_handle_t* handle) {
- handle->next_closing = NULL;
+  handle->next_closing = NULL;
 }
 
+/* should not clear handle structure with memset as
+ * *data can be set before calling init function */
 
 void uv__idle_platform_init(uv_idle_t* handle) {
-  memset(handle, 0, sizeof(uv_idle_t));
   QUEUE_INIT(&(handle->queue));
 }
 
 
 void uv__timer_platform_init(uv_timer_t* handle) {
-  memset(handle, 0, sizeof(uv_timer_t));
 }
 
 
 void uv__async_platform_init(uv_async_t* handle) {
-  memset(handle, 0, sizeof(uv_async_t));
   QUEUE_INIT(&(handle->queue));
 }
