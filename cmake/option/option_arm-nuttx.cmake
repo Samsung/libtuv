@@ -60,7 +60,7 @@ endif()
 set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include")
 set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include/cxx")
 
-# build text as library
+# build tester as library
 set(BUILD_TEST_LIB "YES")
 unset(BUILD_TEST_LIB CACHE)
 

@@ -177,3 +177,15 @@ void uv_update_time(uv_loop_t* loop) {
 uint64_t uv_now(const uv_loop_t* loop) {
   return loop->time;
 }
+
+
+static int uv__loop_alive(const uv_loop_t* loop) {
+  return uv__has_active_handles(loop) ||
+         uv__has_active_reqs(loop) ||
+         loop->closing_handles != NULL;
+}
+
+
+int uv_loop_alive(const uv_loop_t* loop) {
+    return uv__loop_alive(loop);
+}

@@ -70,6 +70,7 @@ typedef enum {
 int uv_loop_init(uv_loop_t* loop);
 int uv_loop_close(uv_loop_t* loop);
 uv_loop_t* uv_default_loop(void);
+int uv_loop_alive(const uv_loop_t* loop);
 
 int uv_run(uv_loop_t* loop, uv_run_mode mode);
 

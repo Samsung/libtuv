@@ -24,9 +24,13 @@ set(SOURCE_ROOT  ${PATH_ROOT}/source)
 set(INCLUDE_ROOT ${PATH_ROOT}/include)
 set(TEST_ROOT    ${PATH_ROOT}/test)
 
-set(BIN_ROOT ${CMAKE_BINARY_DIR})
-set(LIB_OUT "${BIN_ROOT}/../lib")
-set(BIN_OUT "${BIN_ROOT}/../bin")
+if (DEFINED LIBTUV_CUSTOM_LIB_OUT)
+  set(LIB_OUT ${LIBTUV_CUSTOM_LIB_OUT})
+else()
+  set(BIN_ROOT ${CMAKE_BINARY_DIR})
+  set(LIB_OUT "${BIN_ROOT}/../lib")
+  set(BIN_OUT "${BIN_ROOT}/../bin")
+endif()
 
 # path for platform depends files, use full name for default
 # (e.g, i686-linux)

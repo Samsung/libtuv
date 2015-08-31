@@ -26,6 +26,7 @@ TUV_PLATFORM    ?= $(UNAME_M)-$(UNAME_S)
 TUV_BUILD_TYPE  ?= debug
 TUV_BOARD       ?= unknown
 TUV_SYSTEMROOT  ?= default
+TUV_BUILDTESTER ?= yes
 
 OUTPUT_ROOT     := build
 BUILD_FOLDER    := ./$(OUTPUT_ROOT)/$(TUV_PLATFORM)/$(TUV_BUILD_TYPE)
@@ -34,6 +35,7 @@ CMAKE_DEFINES   := \
 	-DCMAKE_TOOLCHAIN_FILE=./cmake/config/config_$(TUV_PLATFORM).cmake \
 	-DCMAKE_BUILD_TYPE=$(TUV_BUILD_TYPE) \
 	-DTARGET_PLATFORM=$(TUV_PLATFORM) \
+	-DBUILDTESTER=${TUV_BUILDTESTER}
 
 ifneq ($(TUV_BOARD),unknown)
 	CMAKE_DEFINES += -DTARGET_BOARD=${TUV_BOARD}
@@ -68,6 +70,8 @@ clean:
 #       ; verbose output if set
 #   TUV_BUILD_TYPE=release
 #       ; release build or else debug build
+#   TUV_BUILDTESTER=yes
+#       ; build also unit test program, default is yes
 #
 # support platform+board
 #   TUV_PLATFORM=i686-linux
