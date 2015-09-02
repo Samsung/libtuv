@@ -35,6 +35,7 @@
  */
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -47,10 +48,6 @@
 #include <limits.h> /* IOV_MAX */
 
 #include <uv.h>
-
-
-#define UV__CMSG_FD_COUNT 64
-#define UV__CMSG_FD_SIZE  (UV__CMSG_FD_COUNT * sizeof(int))
 
 
 static void uv__stream_flush_write_queue(uv_stream_t* stream, int error);
@@ -434,6 +431,7 @@ static void uv__stream_eof(uv_stream_t* stream, const uv_buf_t* buf) {
 }
 
 
+#if !defined(__NUTTX__)
 static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
   uv__stream_queued_fds_t* queued_fds;
   unsigned int queue_size;
@@ -473,6 +471,7 @@ static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
 
   return 0;
 }
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -587,7 +586,6 @@ static int uv__getiovmax() {
 
 
 static void uv__write(uv_stream_t* stream) {
-
   struct iovec* iov;
   QUEUE* q;
   uv_write_t* req;
@@ -596,7 +594,6 @@ static void uv__write(uv_stream_t* stream) {
   ssize_t n;
 
 start:
-
   assert(uv__stream_fd(stream) >= 0);
 
   if (QUEUE_EMPTY(&stream->write_queue))
@@ -626,7 +623,6 @@ start:
    */
 
 #if defined(__NUTTX__)
-
   do {
     if (iovcnt == 1) {
       n = write(uv__stream_fd(stream), iov[0].iov_base, iov[0].iov_len);
@@ -636,9 +632,7 @@ start:
   }
   while (n == -1 && errno == EINTR)
     ;
-
 #else
-
   if (req->send_handle) {
     struct msghdr msg;
     char scratch[64];
@@ -682,7 +676,6 @@ start:
     }
     while (n == -1 && errno == EINTR);
   }
-
 #endif
 
   if (n < 0) {
@@ -758,10 +751,8 @@ start:
 }
 
 
+#if !defined(__NUTTX__)
 static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
-#if defined(__NUTTX__)
-  return -1;
-#else
   struct cmsghdr* cmsg;
 
   for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL; cmsg = CMSG_NXTHDR(msg, cmsg)) {
@@ -806,18 +797,30 @@ static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
       }
     }
   }
-
   return 0;
-#endif
 }
+#endif
+
+
+#if defined(__NUTTX__)
+# define READ_ALLOC_CB_SIZE (2 * 1024)
+#else
+# define READ_ALLOC_CB_SIZE (64 * 1024)
+
+# define UV__CMSG_FD_COUNT 64
+# define UV__CMSG_FD_SIZE  (UV__CMSG_FD_COUNT * sizeof(int))
+#endif
 
 static void uv__read(uv_stream_t* stream) {
-#ifdef __NUTTX__
   uv_buf_t buf;
   ssize_t nread;
   int count;
   int err;
   int is_ipc;
+#if !defined(__NUTTX__)
+  struct msghdr msg;
+  char cmsg_space[CMSG_SPACE(UV__CMSG_FD_SIZE)];
+#endif
 
   stream->flags &= ~UV_STREAM_READ_PARTIAL;
 
@@ -827,17 +830,20 @@ static void uv__read(uv_stream_t* stream) {
   count = 32;
 
   is_ipc = stream->type == UV_NAMED_PIPE && ((uv_pipe_t*) stream)->ipc;
-  ASSERT(!is_ipc); /* msg not support so disable ipc for nuttx */
+#if defined(__NUTTX__)
+  /* IPC for nuttx is not supported for now */
+  assert(!is_ipc);
+#endif
 
   /* XXX: Maybe instead of having UV_STREAM_READING we just test if
    * tcp->read_cb is NULL or not?
    */
   while (stream->read_cb
-         && (stream->flags & UV_STREAM_READING)
-         && (count-- > 0)) {
+      && (stream->flags & UV_STREAM_READING)
+      && (count-- > 0)) {
     assert(stream->alloc_cb != NULL);
 
-    stream->alloc_cb((uv_handle_t*)stream, 2 * 1024, &buf); /* 2K ? */
+    stream->alloc_cb((uv_handle_t*)stream, READ_ALLOC_CB_SIZE, &buf);
     if (buf.len == 0) {
       /* User indicates it can't or won't handle the read. */
       stream->read_cb(stream, UV_ENOBUFS, &buf);
@@ -847,10 +853,34 @@ static void uv__read(uv_stream_t* stream) {
     assert(buf.base != NULL);
     assert(uv__stream_fd(stream) >= 0);
 
+#if !defined(__NUTTX__)
+    if (!is_ipc) {
+      do {
+        nread = read(uv__stream_fd(stream), buf.base, buf.len);
+      }
+      while (nread < 0 && errno == EINTR);
+    } else {
+      /* ipc uses recvmsg */
+      msg.msg_flags = 0;
+      msg.msg_iov = (struct iovec*) &buf;
+      msg.msg_iovlen = 1;
+      msg.msg_name = NULL;
+      msg.msg_namelen = 0;
+      /* Set up to receive a descriptor even if one isn't in the message */
+      msg.msg_controllen = sizeof(cmsg_space);
+      msg.msg_control = cmsg_space;
+
+      do {
+        nread = uv__recvmsg(uv__stream_fd(stream), &msg, 0);
+      }
+      while (nread < 0 && errno == EINTR);
+    }
+#else
     do {
       nread = read(uv__stream_fd(stream), buf.base, buf.len);
       err = get_errno();
     } while (nread < 0 && err == EINTR);
+#endif
 
     if (nread < 0) {
       err = get_errno();
@@ -879,98 +909,7 @@ static void uv__read(uv_stream_t* stream) {
       /* Successful read */
       ssize_t buflen = buf.len;
 
-      stream->read_cb(stream, nread, &buf);
-      /* Return if we didn't fill the buffer, there is no more data to read. */
-      if (nread < buflen) {
-        stream->flags |= UV_STREAM_READ_PARTIAL;
-        return;
-      }
-    }
-  }
-#else
-  uv_buf_t buf;
-  ssize_t nread;
-  struct msghdr msg;
-  char cmsg_space[CMSG_SPACE(UV__CMSG_FD_SIZE)];
-  int count;
-  int err;
-  int is_ipc;
-
-  stream->flags &= ~UV_STREAM_READ_PARTIAL;
-
-  /* Prevent loop starvation when the data comes in as fast as (or faster than)
-   * we can read it. XXX Need to rearm fd if we switch to edge-triggered I/O.
-   */
-  count = 32;
-
-  is_ipc = stream->type == UV_NAMED_PIPE && ((uv_pipe_t*) stream)->ipc;
-
-  /* XXX: Maybe instead of having UV_STREAM_READING we just test if
-   * tcp->read_cb is NULL or not?
-   */
-  while (stream->read_cb
-      && (stream->flags & UV_STREAM_READING)
-      && (count-- > 0)) {
-    assert(stream->alloc_cb != NULL);
-
-    stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
-    if (buf.len == 0) {
-      /* User indicates it can't or won't handle the read. */
-      stream->read_cb(stream, UV_ENOBUFS, &buf);
-      return;
-    }
-
-    assert(buf.base != NULL);
-    assert(uv__stream_fd(stream) >= 0);
-
-    if (!is_ipc) {
-      do {
-        nread = read(uv__stream_fd(stream), buf.base, buf.len);
-      }
-      while (nread < 0 && errno == EINTR);
-    } else {
-      /* ipc uses recvmsg */
-      msg.msg_flags = 0;
-      msg.msg_iov = (struct iovec*) &buf;
-      msg.msg_iovlen = 1;
-      msg.msg_name = NULL;
-      msg.msg_namelen = 0;
-      /* Set up to receive a descriptor even if one isn't in the message */
-      msg.msg_controllen = sizeof(cmsg_space);
-      msg.msg_control = cmsg_space;
-
-      do {
-        nread = uv__recvmsg(uv__stream_fd(stream), &msg, 0);
-      }
-      while (nread < 0 && errno == EINTR);
-    }
-
-    if (nread < 0) {
-      /* Error */
-      if (errno == EAGAIN || errno == EWOULDBLOCK) {
-        /* Wait for the next one. */
-        if (stream->flags & UV_STREAM_READING) {
-          uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
-        }
-        stream->read_cb(stream, 0, &buf);
-      } else {
-        /* Error. User should call uv_close(). */
-        stream->read_cb(stream, -errno, &buf);
-        if (stream->flags & UV_STREAM_READING) {
-          stream->flags &= ~UV_STREAM_READING;
-          uv__io_stop(stream->loop, &stream->io_watcher, UV__POLLIN);
-          if (!uv__io_active(&stream->io_watcher, UV__POLLOUT))
-            uv__handle_stop(stream);
-        }
-      }
-      return;
-    } else if (nread == 0) {
-      uv__stream_eof(stream, &buf);
-      return;
-    } else {
-      /* Successful read */
-      ssize_t buflen = buf.len;
-
+#if !defined(__NUTTX__)
       if (is_ipc) {
         err = uv__stream_recv_cmsg(stream, &msg);
         if (err != 0) {
@@ -978,6 +917,7 @@ static void uv__read(uv_stream_t* stream) {
           return;
         }
       }
+#endif
       stream->read_cb(stream, nread, &buf);
 
       /* Return if we didn't fill the buffer, there is no more data to read. */
@@ -987,7 +927,6 @@ static void uv__read(uv_stream_t* stream) {
       }
     }
   }
-#endif
 }
 
 
