@@ -105,8 +105,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     assert(w->fd < (int)loop->nwatchers);
 
     pfd.fd = w->fd;
-    pfd.events = w->pevents;
-
+    pfd.events = w->pevents | UV__POLLIN;
     uv__add_pollfd(loop, &pfd);
 
     w->events = w->pevents;
@@ -127,7 +126,12 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     }
 
     if (nfd == -1) {
-      if (get_errno() != EINTR) {
+      int err = get_errno();
+      if (err == EAGAIN ) {
+        set_errno(0);
+      }
+      else if ( err != EINTR) {
+        TDLOG("uv__io_poll abort for errno(%d)", err);
         abort();
       }
       if (timeout == -1) {

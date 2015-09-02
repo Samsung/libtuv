@@ -197,8 +197,6 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 
   uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
 
-
-  TDDDLOG("uv__server_io, uv__stream_fd(stream)=%d", uv__stream_fd(stream));
   /* connection_cb can close the server socket while we're
    * in the loop so check it on each iteration.
    */
@@ -224,11 +222,9 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
           break;
       }
 
-      TDDDLOG("uv__server_io, uv__accept err(%d)", err);
       stream->connection_cb(stream, err);
       continue;
     }
-    TDDDLOG("uv__server_io, uv__accept ok(%d)", err);
 
     UV_DEC_BACKLOG(w)
     stream->accepted_fd = err;
@@ -258,10 +254,8 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
   assert(server->loop == client->loop);
 
   if (server->accepted_fd == -1) {
-    TDDLOG("uv_accept, server->accepted_fd==-1, return EAGAIN");
     return -EAGAIN;
   }
-  TDDDLOG("uv_accept, server->accepted_fd=%d", server->accepted_fd);
 
   switch (client->type) {
     case UV_NAMED_PIPE:
@@ -271,7 +265,6 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
                             UV_STREAM_READABLE | UV_STREAM_WRITABLE);
       if (err) {
         /* TODO handle error */
-        TDDLOG("uv_accept, err(%d)", err);
         uv__close(server->accepted_fd);
         goto done;
       }
@@ -298,7 +291,6 @@ done:
 
     /* Read first */
     server->accepted_fd = queued_fds->fds[0];
-    TDDDLOG("uv_accept, o server->accepted_fd=%d", server->accepted_fd);
 
     /* All read, free */
     assert(queued_fds->offset > 0);
@@ -313,11 +305,8 @@ done:
     }
   } else {
     server->accepted_fd = -1;
-    TDDDLOG("uv_accept, queued_fds is null, err(%d)", err);
-    if (err == 0) {
-      TDDDLOG("uv_accept, again uv__io_start");
+    if (err == 0)
       uv__io_start(server->loop, &server->io_watcher, UV__POLLIN);
-    }
   }
   return err;
 }
@@ -844,8 +833,8 @@ static void uv__read(uv_stream_t* stream) {
    * tcp->read_cb is NULL or not?
    */
   while (stream->read_cb
-      && (stream->flags & UV_STREAM_READING)
-      && (count-- > 0)) {
+         && (stream->flags & UV_STREAM_READING)
+         && (count-- > 0)) {
     assert(stream->alloc_cb != NULL);
 
     stream->alloc_cb((uv_handle_t*)stream, 2 * 1024, &buf); /* 2K ? */
@@ -860,12 +849,13 @@ static void uv__read(uv_stream_t* stream) {
 
     do {
       nread = read(uv__stream_fd(stream), buf.base, buf.len);
-    }
-    while (nread < 0 && errno == EINTR);
+      err = get_errno();
+    } while (nread < 0 && err == EINTR);
 
     if (nread < 0) {
+      err = get_errno();
       /* Error */
-      if (errno == EAGAIN || errno == EWOULDBLOCK) {
+      if (err == EAGAIN || err == EWOULDBLOCK) {
         /* Wait for the next one. */
         if (stream->flags & UV_STREAM_READING) {
           uv__io_start(stream->loop, &stream->io_watcher, UV__POLLIN);
@@ -873,7 +863,7 @@ static void uv__read(uv_stream_t* stream) {
         stream->read_cb(stream, 0, &buf);
       } else {
         /* Error. User should call uv_close(). */
-        stream->read_cb(stream, -errno, &buf);
+        stream->read_cb(stream, -err, &buf);
         if (stream->flags & UV_STREAM_READING) {
           stream->flags &= ~UV_STREAM_READING;
           uv__io_stop(stream->loop, &stream->io_watcher, UV__POLLIN);
@@ -1239,7 +1229,7 @@ int uv_read_start(uv_stream_t* stream,
                   uv_alloc_cb alloc_cb,
                   uv_read_cb read_cb) {
   assert(stream->type == UV_TCP || stream->type == UV_NAMED_PIPE ||
-      stream->type == UV_TTY);
+         stream->type == UV_TTY);
 
   if (stream->flags & UV_CLOSING)
     return -EINVAL;

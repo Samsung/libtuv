@@ -77,6 +77,9 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode);
 void uv_update_time(uv_loop_t*);
 uint64_t uv_now(const uv_loop_t*);
 
+
+int uv__loop_alive(const uv_loop_t* loop);
+
 int uv__platform_loop_init(uv_loop_t* loop);
 void uv__platform_loop_delete(uv_loop_t* loop);
 void uv__platform_invalidate_fd(uv_loop_t* loop, int fd);

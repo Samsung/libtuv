@@ -80,6 +80,8 @@ static void read_cb(uv_stream_t* t, ssize_t nread, const uv_buf_t* buf) {
     if (buf->base) {
       free(buf->base);
     }
+    uv_close((uv_handle_t*)t, NULL);
+
     got_eof = 1;
   }
 }
@@ -87,7 +89,6 @@ static void read_cb(uv_stream_t* t, ssize_t nread, const uv_buf_t* buf) {
 
 static void shutdown_cb(uv_shutdown_t *req, int status) {
   TUV_ASSERT(req == &shutdown_req);
-
   TUV_ASSERT(called_connect_cb == 1);
   TUV_ASSERT(!got_eof);
 
@@ -98,18 +99,22 @@ static void shutdown_cb(uv_shutdown_t *req, int status) {
 static void connect_cb(uv_connect_t *req, int status) {
   TUV_ASSERT(status == 0);
   TUV_ASSERT(req == &connect_req);
+  int r;
 
   /* Start reading from our connection so we can receive the EOF.  */
-  uv_read_start((uv_stream_t*)&tcp, alloc_cb, read_cb);
+  r = uv_read_start((uv_stream_t*)&tcp, alloc_cb, read_cb);
+  TUV_ASSERT(r == 0);
 
   /*
    * Write the letter 'Q' to gracefully kill the echo-server. This will not
    * effect our connection.
    */
-  uv_write(&write_req, (uv_stream_t*) &tcp, &qbuf, 1, NULL);
+  r = uv_write(&write_req, (uv_stream_t*) &tcp, &qbuf, 1, NULL);
+  TUV_ASSERT(r == 0);
 
   /* Shutdown our end of the connection.  */
-  uv_shutdown(&shutdown_req, (uv_stream_t*) &tcp, shutdown_cb);
+  r = uv_shutdown(&shutdown_req, (uv_stream_t*) &tcp, shutdown_cb);
+  TUV_ASSERT(r == 0);
 
   called_connect_cb++;
   TUV_ASSERT(called_shutdown_cb == 0);
@@ -145,6 +150,8 @@ TEST_IMPL(shutdown_eof) {
   TUV_ASSERT(!r);
 
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;
 }

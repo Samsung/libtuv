@@ -41,15 +41,19 @@
   TE(timer, 5000)                                                             \
   TE(timer_start_twice, 5000)                                                 \
   TE(timer_order, 5000)                                                       \
-  TE(timer_huge_timeout, 5000)                                                \
-  TE(timer_huge_repeat, 5000)                                                 \
   TE(timer_run_once, 5000)                                                    \
   TE(timer_null_callback, 5000)                                               \
   TE(timer_again, 5000)                                                       \
+  TE(timer_huge_timeout, 5000)                                                \
+  TE(timer_huge_repeat, 5000)                                                 \
   \
   TE(cwd, 5000)                                                               \
   \
   TE(error_message, 5000)                                                     \
+  \
+  TE(tcp_open,5000)                                                           \
+  TE(shutdown_eof,5000)                                                       \
+
 
 // shutdown_eof should be last of tcp test, it'll stop "echo_sevrer"
 
@@ -66,9 +70,6 @@
   TE(fs_open_dir, 5000)                                                       \
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
-  \
-  TE(tcp_open,5000)                                                           \
-  TE(shutdown_eof,5000)                                                       \
 
 #else
 #define TEST_LIST_EXT(TE)

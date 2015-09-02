@@ -47,7 +47,8 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
   int nfd = loop->npollfds;
   for (i = 0; i < nfd; ++i) {
     struct pollfd* pfd = &loop->pollfds[i];
-    pfd->fd = -1;
+    if (fd == pfd->fd)
+      pfd->fd = -1;
   }
 }
 

@@ -36,6 +36,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <uv.h>
 #include "runner.h"
@@ -58,12 +59,6 @@ static void on_server_close(uv_handle_t* handle) {
   TUV_ASSERT(handle == serverHandle);
 }
 
-/*
-static void on_send(uv_udp_send_t* req, int status) {
-  TUV_ASSERT(status == 0);
-  free(req);
-}
-*/
 
 //-----------------------------------------------------------------------------
 
@@ -78,10 +73,7 @@ static void after_write(uv_write_t* req, int status) {
   if (status == 0)
     return;
 
-  fprintf(stderr,
-          "uv_write error: %s - %s\n",
-          uv_err_name(status),
-          uv_strerror(status));
+  TDLOG("uv_write error: %s - %s", uv_err_name(status), uv_strerror(status));
 }
 
 
@@ -103,7 +95,8 @@ static void after_read(uv_stream_t* handle,
     TUV_ASSERT(nread == UV_EOF);
 
     free(buf->base);
-    sreq = (uv_shutdown_t*)malloc(sizeof* sreq);
+    sreq = (uv_shutdown_t*)malloc(sizeof(uv_shutdown_t));
+    memset(sreq, 0, sizeof(uv_shutdown_t));
     TUV_ASSERT(0 == uv_shutdown(sreq, handle, after_shutdown));
     return;
   }
@@ -128,12 +121,13 @@ static void after_read(uv_stream_t* handle,
         } else {
           uv_close(serverHandle, on_server_close);
           server_closed = 1;
+          break;
         }
       }
     }
   }
 
-  wr = (write_req_t*)malloc(sizeof *wr);
+  wr = (write_req_t*)malloc(sizeof(write_req_t));
   TUV_ASSERT(wr != NULL);
   wr->buf = uv_buf_init(buf->base, nread);
 
@@ -148,15 +142,12 @@ static void echo_alloc(uv_handle_t* handle,
                        uv_buf_t* buf) {
   buf->base = (char*)malloc(suggested_size);
   buf->len = suggested_size;
-  TDDDLOG("svr echo_alloc %d", suggested_size);
 }
 
 
 static void on_connection(uv_stream_t* server, int status) {
   uv_stream_t* stream;
   int r;
-
-  TDDDLOG("svr on_connection status(%d)", status);
 
   if (status != 0) {
     TDLOG("echo server on_connection, Connect error %d, %s",
@@ -192,8 +183,6 @@ static void on_connection(uv_stream_t* server, int status) {
 
   r = uv_accept(server, stream);
   TUV_ASSERT(r == 0);
-
-  TDDDLOG("svr start read");
 
   r = uv_read_start(stream, echo_alloc, after_read);
   TUV_ASSERT(r == 0);
@@ -232,8 +221,6 @@ static int tcp4_echo_start(int port) {
     return 1;
   }
 
-  TDDDLOG("svr tcp_echo_started.");
-
   return 0;
 }
 
@@ -241,16 +228,21 @@ static int tcp4_echo_start(int port) {
 //-----------------------------------------------------------------------------
 
 HELPER_IMPL(tcp4_echo_server) {
+  int r;
+
   server_closed = 0;
 
-  uv_loop_init(&loop);
+  r = uv_loop_init(&loop);
+  TUV_ASSERT(r == 0);
 
   if (tcp4_echo_start(TEST_PORT))
     return 1;
 
-  uv_run(&loop, UV_RUN_DEFAULT);
+  r = uv_run(&loop, UV_RUN_DEFAULT);
+  TUV_ASSERT(r == 0);
 
-  uv_loop_close(&loop);
+  r = uv_loop_close(&loop);
+  TUV_ASSERT(r == 0);
 
   return 0;
 }

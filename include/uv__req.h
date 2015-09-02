@@ -112,13 +112,9 @@ struct uv_req_s {
   while (0)
 
 
-UV_UNUSED(static void uv__req_init(uv_loop_t* loop,
-                                   uv_req_t* req,
-                                   uv_req_type type)) {
-  req->type = type;
-  uv__req_register(loop, req);
-}
+void uv__req_init_(uv_loop_t* loop, uv_req_t* req, uv_req_type type);
+
 #define uv__req_init(loop, req, type) \
-        uv__req_init((loop), (uv_req_t*)(req), (type))
+        uv__req_init_((loop), (uv_req_t*)(req), (type))
 
 #endif // __uv__req_header__

@@ -90,6 +90,8 @@ int run_helper(task_entry_t* task) {
 
   sem_wait(&startsem);
   sem_destroy(&startsem);
+
+  usleep(1000);
 }
 
 

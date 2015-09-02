@@ -610,10 +610,8 @@ TEST_IMPL(fs_file_nametoolong) {
 
   memset(name, 'a', TOO_LONG_NAME_LENGTH);
   name[TOO_LONG_NAME_LENGTH] = 0;
-  TDDDLOG("LONG : %d", TOO_LONG_NAME_LENGTH);
 
   r = uv_fs_open(loop, &req, name, O_RDONLY, 0, NULL);
-  TDDDLOG("LONG uv_fs_open: %d", r);
   TUV_ASSERT(r == UV_ENAMETOOLONG);
   TUV_ASSERT(req.result == UV_ENAMETOOLONG);
   uv_fs_req_cleanup(&req);

@@ -139,7 +139,6 @@ int uv__tcp_connect(uv_connect_t* req,
   do {
     set_errno(0);
     r = connect(uv__stream_fd(handle), addr, addrlen);
-    TDDDLOG("uv__tcp_connect connect r(%d), err(%d)", r, get_errno());
   } while (r == -1 && get_errno() == EINTR);
 
   if (r == -1) {
@@ -154,7 +153,6 @@ int uv__tcp_connect(uv_connect_t* req,
     else
       return -get_errno();
   }
-  TDDDLOG("uv__tcp_connect connect ok");
 
   uv__req_init(handle->loop, req, UV_CONNECT);
   req->cb = cb;

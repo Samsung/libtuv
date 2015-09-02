@@ -41,7 +41,6 @@
 
 
 int uv_idle_init(uv_loop_t* loop, uv_idle_t* handle) {
-  TDDDLOG("uv_idle_init %p", handle);
   uv__idle_platform_init(handle);
   uv__handle_init(loop, (uv_handle_t*)handle, UV_IDLE);
 
@@ -50,11 +49,12 @@ int uv_idle_init(uv_loop_t* loop, uv_idle_t* handle) {
 
 
 int uv_idle_start(uv_idle_t* handle, uv_idle_cb cb) {
-  if (uv__is_active(handle))
+  if (uv__is_active(handle)) {
+    TDDLOG("uv_idle_start, handle(%p) is already active", handle);
     return 0;
+  }
   if (cb == NULL)
     return -EINVAL;
-  TDDDLOG("uv_idle_start for %p", handle);
   QUEUE_INSERT_HEAD(&handle->loop->idle_handles, &handle->queue);
   handle->idle_cb = cb;
   uv__handle_start(handle);
@@ -65,14 +65,13 @@ int uv_idle_start(uv_idle_t* handle, uv_idle_cb cb) {
 
 int uv_idle_stop(uv_idle_t* handle) {
   if (!uv__is_active(handle)) {
-    TDDDLOG("uv_idle_stop, handle(%p) is not active, cancel", handle);
+    TDDLOG("uv_idle_stop, handle(%p) is not active, cancel", handle);
     return 0;
   }
   QUEUE_REMOVE(&handle->queue);
   QUEUE_INIT(&handle->queue);
   uv__handle_stop(handle);
 
-  TDDDLOG("uv_idle_stop %p", handle);
   return 0;
 }
 

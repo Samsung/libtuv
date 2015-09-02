@@ -49,17 +49,6 @@
 #define container_of(ptr, type, member) \
   ((type *) ((char *) (ptr) - offsetof(type, member)))
 
-#if defined(__clang__) ||                                                     \
-    defined(__GNUC__) ||                                                      \
-    defined(__INTEL_COMPILER) ||                                              \
-    defined(__SUNPRO_C)
-# define UV_DESTRUCTOR(declaration) __attribute__((destructor)) declaration
-# define UV_UNUSED(declaration)     __attribute__((unused)) declaration
-#else
-# define UV_DESTRUCTOR(declaration) declaration
-# define UV_UNUSED(declaration)     declaration
-#endif
-
 
 #include "uv__types.h"    // types should be placed in the first
 #include "uv_platform.h"  // platform should be placed before extension

@@ -47,7 +47,6 @@ int uv_cwd(char* buffer, size_t* size) {
     return -errno;
 
   *size = strlen(buffer);
-  TDDDLOG("uv_cwd: %s, %d\n", buffer, *size);
 
   if (*size > 1 && buffer[*size - 1] == '/') {
     buffer[*size-1] = '\0';

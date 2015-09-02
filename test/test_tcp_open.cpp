@@ -54,7 +54,7 @@ static uv_write_t write_req;
 
 
 static void startup(void) {
-
+  usleep(1000);
 }
 
 
@@ -92,8 +92,6 @@ static void alloc_cb(uv_handle_t* handle,
 static void close_cb(uv_handle_t* handle) {
   TUV_ASSERT(handle != NULL);
   close_cb_called++;
-
-  TDDDLOG("close_cb done");
 }
 
 
@@ -103,21 +101,21 @@ static void shutdown_cb(uv_shutdown_t* req, int status) {
 
   /* Now we wait for the EOF */
   shutdown_cb_called++;
-
-  TDDDLOG("shutdown_cb done");
 }
 
 
 static void read_cb(uv_stream_t* tcp, ssize_t nread, const uv_buf_t* buf) {
   TUV_ASSERT(tcp != NULL);
 
-  if (nread >= 0) {
+  if (nread > 0) {
     TUV_ASSERT(nread == 4);
     TUV_ASSERT(memcmp("PING", buf->base, nread) == 0);
   }
-  else {
+  else if (nread == 0) {
+
+  }
+  else if (nread < 0) {
     TUV_ASSERT(nread == UV_EOF);
-    printf("GOT EOF\n");
     uv_close((uv_handle_t*)tcp, close_cb);
   }
 }
@@ -127,11 +125,9 @@ static void write_cb(uv_write_t* req, int status) {
   TUV_ASSERT(req != NULL);
 
   if (status) {
-    fprintf(stderr, "uv_write error: %s\n", uv_strerror(status));
+    TDLOG("uv_write error: %s", uv_strerror(status));
     TUV_ASSERT(0);
   }
-
-  TDDDLOG("write_cb done");
 
   write_cb_called++;
 }
@@ -143,12 +139,10 @@ static void connect_cb(uv_connect_t* req, int status) {
   int r;
 
   if (status == UV__ECONNREFUSED) {
-    fprintf(stderr, "Connection refused. Run server first.");
+    TDLOG("Connection refused. Run server first.");
     fflush(stderr);
     TUV_ASSERT(0);
   }
-
-  TDDDLOG("connect_cb enter status(%d)", status);
 
   TUV_ASSERT(req == &connect_req);
   TUV_ASSERT(status == 0);
@@ -166,8 +160,6 @@ static void connect_cb(uv_connect_t* req, int status) {
   /* Start reading */
   r = uv_read_start(stream, alloc_cb, read_cb);
   TUV_ASSERT(r == 0);
-
-  TDDDLOG("connect_cb done");
 }
 
 
@@ -182,6 +174,9 @@ TEST_IMPL(tcp_open) {
   write_cb_called = 0;
   close_cb_called = 0;
 
+  r = uv_loop_init(uv_default_loop());
+  TUV_ASSERT(r == 0);
+
   TUV_ASSERT(0 == uv_ip4_addr("127.0.0.1", TEST_PORT, &addr));
 
   startup();
@@ -189,20 +184,19 @@ TEST_IMPL(tcp_open) {
 
   r = uv_tcp_init(uv_default_loop(), &client);
   TUV_ASSERT(r == 0);
-  TDDDLOG("uv_tcp_init ok");
 
   r = uv_tcp_open(&client, sock);
   TUV_ASSERT(r == 0);
-  TDDDLOG("uv_tcp_open ok");
 
   r = uv_tcp_connect(&connect_req,
                      &client,
                      (const struct sockaddr*)&addr,
                      connect_cb);
   TUV_ASSERT(r == 0);
-  TDDDLOG("uv_tcp_connect ok");
 
   uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   TUV_ASSERT(shutdown_cb_called == 1);
   TUV_ASSERT(connect_cb_called == 1);

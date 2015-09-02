@@ -146,7 +146,7 @@ int uv_loop_close(uv_loop_t* loop) {
   uv_handle_t* h;
 
   if (!QUEUE_EMPTY(&(loop)->active_reqs)) {
-    TDDDLOG("uv_loop_close active_req exist, cancel");
+    TDDLOG("uv_loop_close active_req exist, cancel");
     return UV_EBUSY;
   }
 
@@ -155,7 +155,7 @@ int uv_loop_close(uv_loop_t* loop) {
   QUEUE_FOREACH(q, &loop->handles_queue) {
     h = QUEUE_DATA(q, uv_handle_t, handle_queue);
     if (!(h->flags & UV__HANDLE_INTERNAL)) {
-      TDDDLOG("uv_loop_close handle(%p) exist, cancel", h);
+      TDDLOG("uv_loop_close handle(%p) exist, cancel", h);
       return UV_EBUSY;
     }
   }
@@ -179,7 +179,7 @@ uint64_t uv_now(const uv_loop_t* loop) {
 }
 
 
-static int uv__loop_alive(const uv_loop_t* loop) {
+int uv__loop_alive(const uv_loop_t* loop) {
   return uv__has_active_handles(loop) ||
          uv__has_active_reqs(loop) ||
          loop->closing_handles != NULL;

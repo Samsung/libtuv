@@ -193,6 +193,7 @@ void uv__io_feed(uv_loop_t* loop, uv__io_t* w) {
 int uv__io_active(const uv__io_t* w, unsigned int events) {
   assert(0 == (events & ~(UV__POLLIN | UV__POLLOUT)));
   assert(0 != events);
+
   return 0 != (w->pevents & events);
 }
 
