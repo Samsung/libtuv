@@ -47,7 +47,6 @@ static uv_tcp_t tcp;
 static uv_connect_t connect_req;
 static uv_write_t write_req;
 static uv_shutdown_t shutdown_req;
-static uv_buf_t qbuf;
 static int got_q;
 static int got_eof;
 
@@ -69,11 +68,16 @@ static void read_cb(uv_stream_t* t, ssize_t nread, const uv_buf_t* buf) {
     return;
   }
 
-  if (!got_q) {
-    TUV_ASSERT(nread == 1);
+  if (nread > 0) {
+    TUV_ASSERT(!got_q);
     TUV_ASSERT(!got_eof);
     TUV_ASSERT(buf->base[0] == 'Q');
     free(buf->base);
+
+    uv_buf_t qbuf = uv_buf_init((char*)"Q", 1);
+    int r = uv_write(&write_req, t, &qbuf, 1, NULL);
+    TUV_ASSERT(r == 0);
+
     got_q = 1;
   } else {
     TUV_ASSERT(nread == UV_EOF);
@@ -109,12 +113,13 @@ static void connect_cb(uv_connect_t *req, int status) {
    * Write the letter 'Q' to gracefully kill the echo-server. This will not
    * effect our connection.
    */
-  r = uv_write(&write_req, (uv_stream_t*) &tcp, &qbuf, 1, NULL);
+  uv_buf_t qsbuf = uv_buf_init((char*)"QS", 2);
+  r = uv_write(&write_req, (uv_stream_t*) &tcp, &qsbuf, 1, NULL);
   TUV_ASSERT(r == 0);
 
   /* Shutdown our end of the connection.  */
-  r = uv_shutdown(&shutdown_req, (uv_stream_t*) &tcp, shutdown_cb);
-  TUV_ASSERT(r == 0);
+  //r = uv_shutdown(&shutdown_req, (uv_stream_t*) &tcp, shutdown_cb);
+  //TUV_ASSERT(r == 0);
 
   called_connect_cb++;
   TUV_ASSERT(called_shutdown_cb == 0);
@@ -136,8 +141,6 @@ TEST_IMPL(shutdown_eof) {
   called_connect_cb = 0;
   called_shutdown_cb = 0;
 
-  qbuf.base = (char*)"Q";
-  qbuf.len = 1;
 
   TUV_ASSERT(0 == uv_ip4_addr("127.0.0.1", TEST_PORT, &server_addr));
   r = uv_tcp_init(uv_default_loop(), &tcp);

@@ -110,6 +110,13 @@ static void read_cb(uv_stream_t* tcp, ssize_t nread, const uv_buf_t* buf) {
   if (nread > 0) {
     TUV_ASSERT(nread == 4);
     TUV_ASSERT(memcmp("PING", buf->base, nread) == 0);
+
+    /* tell server to close connection */
+    {
+      uv_buf_t buf = uv_buf_init((char*)"QS", 2);
+      int r = uv_write(&write_req, tcp, &buf, 1, NULL);
+      TUV_ASSERT(r == 0);
+    }
   }
   else if (nread == 0) {
 
@@ -125,7 +132,7 @@ static void write_cb(uv_write_t* req, int status) {
   TUV_ASSERT(req != NULL);
 
   if (status) {
-    TDLOG("uv_write error: %s", uv_strerror(status));
+    TDLOG("tcp_open uv_write error: %s", uv_strerror(status));
     TUV_ASSERT(0);
   }
 
@@ -139,7 +146,7 @@ static void connect_cb(uv_connect_t* req, int status) {
   int r;
 
   if (status == UV__ECONNREFUSED) {
-    TDLOG("Connection refused. Run server first.");
+    TDLOG("tcp_open Connection refused. Run server first.");
     fflush(stderr);
     TUV_ASSERT(0);
   }
@@ -154,8 +161,8 @@ static void connect_cb(uv_connect_t* req, int status) {
   TUV_ASSERT(r == 0);
 
   /* Shutdown on drain. */
-  r = uv_shutdown(&shutdown_req, stream, shutdown_cb);
-  TUV_ASSERT(r == 0);
+ // r = uv_shutdown(&shutdown_req, stream, shutdown_cb);
+  //TUV_ASSERT(r == 0);
 
   /* Start reading */
   r = uv_read_start(stream, alloc_cb, read_cb);
@@ -198,7 +205,7 @@ TEST_IMPL(tcp_open) {
 
   TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
-  TUV_ASSERT(shutdown_cb_called == 1);
+  //TUV_ASSERT(shutdown_cb_called == 1);
   TUV_ASSERT(connect_cb_called == 1);
   TUV_ASSERT(write_cb_called == 1);
   TUV_ASSERT(close_cb_called == 1);

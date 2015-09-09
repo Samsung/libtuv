@@ -395,7 +395,10 @@ static void uv__drain(uv_stream_t* stream) {
     uv__req_unregister(stream->loop, req);
 
     err = 0;
-#if !defined(__NUTTX__)
+#if defined(__NUTTX__)
+    TDLOG("uv__drain, shutdown() is not supported in NuttX");
+    assert(false);
+#else
     if (shutdown(uv__stream_fd(stream), SHUT_WR))
       err = -errno;
 #endif

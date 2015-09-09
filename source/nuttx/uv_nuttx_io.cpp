@@ -105,7 +105,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     assert(w->fd < (int)loop->nwatchers);
 
     pfd.fd = w->fd;
-    pfd.events = w->pevents | UV__POLLIN;
+    pfd.events = w->pevents;
     uv__add_pollfd(loop, &pfd);
 
     w->events = w->pevents;
@@ -148,13 +148,15 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     for (i = 0; i < loop->npollfds; ++i) {
       pe = &loop->pollfds[i];
 
-      if (pe->fd >= 0 && pe->revents & UV__POLLIN) {
-        w = loop->watchers[pe->fd];
-        if (w == NULL) {
-          uv__rem_pollfd(loop, pe);
-        } else {
-          w->cb(loop, w, pe->revents);
-          ++nevents;
+      if (pe->fd >= 0) {
+        if (pe->revents & (UV__POLLIN | UV__POLLOUT | UV__POLLHUP)) {
+          w = loop->watchers[pe->fd];
+          if (w == NULL) {
+            uv__rem_pollfd(loop, pe);
+          } else {
+            w->cb(loop, w, pe->revents);
+            ++nevents;
+          }
         }
       }
     }
