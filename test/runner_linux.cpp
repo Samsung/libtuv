@@ -345,24 +345,31 @@ int platform_init(int argc, char **argv) {
 
 static void* helper_proc(void* data) {
   task_entry_t* task = (task_entry_t*)data;
+
+  sem_post(&task->semsync);
   task->main();
+  sem_post(&task->semsync);
   return NULL;
 }
 
 int run_helper(task_entry_t* task) {
   int r;
   pthread_t tid;
+  sem_init(&task->semsync, 0, 0);
   r = pthread_create(&tid, NULL, helper_proc, task);
+  sem_wait(&task->semsync);
+  return r;
+}
+
+int wait_helper(task_entry_t* task) {
+  sem_wait(&task->semsync);
+  sem_destroy(&task->semsync);
+  return 0;
 }
 
 int run_test_one(task_entry_t* task) {
-  if (task->is_helper) {
-    run_helper(task);
-    return 0;
-  }
   return run_test_part(task->task_name, task->process_name);
 }
-
 
 int main(int argc, char *argv[]) {
   TuvUseDebug usedebug;

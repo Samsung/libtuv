@@ -161,7 +161,7 @@ static void connect_cb(uv_connect_t* req, int status) {
   TUV_ASSERT(r == 0);
 
   /* Shutdown on drain. */
- // r = uv_shutdown(&shutdown_req, stream, shutdown_cb);
+  // r = uv_shutdown(&shutdown_req, stream, shutdown_cb);
   //TUV_ASSERT(r == 0);
 
   /* Start reading */

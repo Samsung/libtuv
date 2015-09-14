@@ -205,7 +205,9 @@ void uv__server_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
       return;
 #endif /* defined(UV_HAVE_KQUEUE) */
 
+    set_errno(0);
     err = uv__accept(uv__stream_fd(stream));
+
     if (err < 0) {
       if (err == -EAGAIN || err == -EWOULDBLOCK)
         return;  /* Not an error. */
@@ -1116,7 +1118,8 @@ int uv_write(uv_write_t* req,
 
 void uv_try_write_cb(uv_write_t* req, int status) {
   /* Should not be called */
-  abort();
+  TDLOG("uv_try_write_cb abort");
+  ABORT();
 }
 
 

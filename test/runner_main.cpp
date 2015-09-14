@@ -116,7 +116,7 @@ int run_tests() {
     task = &HELPERS[entry];
 
     fprintf(stderr, "[%-30s]...", task->task_name);
-    result = run_test_one(task);
+    result = run_helper(task);
     fprintf(stderr, "%s\n", result ? "failed" : "OK");
     entry++;
   }
@@ -127,6 +127,17 @@ int run_tests() {
 
     fprintf(stderr, "[%-30s]...", task->task_name);
     result = run_test_one(task);
+    fprintf(stderr, "%s\n", result ? "failed" : "OK");
+    entry++;
+  }
+
+  fprintf(stderr, "Waiting Helpers to end...\n");
+  entry = 0;
+  while (HELPERS[entry].task_name) {
+    task = &HELPERS[entry];
+
+    fprintf(stderr, "[%-30s]...", task->task_name);
+    result = wait_helper(task);
     fprintf(stderr, "%s\n", result ? "failed" : "OK");
     entry++;
   }

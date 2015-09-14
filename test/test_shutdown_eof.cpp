@@ -63,29 +63,25 @@ static void alloc_cb(uv_handle_t* handle, size_t size, uv_buf_t* buf) {
 static void read_cb(uv_stream_t* t, ssize_t nread, const uv_buf_t* buf) {
   TUV_ASSERT((uv_tcp_t*)t == &tcp);
 
-  if (nread == 0) {
+
+  if (buf->base)
     free(buf->base);
+
+  if (nread == 0) {
     return;
   }
 
   if (nread > 0) {
-    TUV_ASSERT(!got_q);
-    TUV_ASSERT(!got_eof);
-    TUV_ASSERT(buf->base[0] == 'Q');
-    free(buf->base);
-
-    uv_buf_t qbuf = uv_buf_init((char*)"Q", 1);
-    int r = uv_write(&write_req, t, &qbuf, 1, NULL);
-    TUV_ASSERT(r == 0);
-
-    got_q = 1;
+    TUV_ASSERT(false);
+    //TUV_ASSERT(!got_eof);
+    //TUV_ASSERT(buf->base[0] == 'Q');
+    //uv_buf_t qbuf = uv_buf_init((char*)"Q", 1);
+    //int r = uv_write(&write_req, t, &qbuf, 1, NULL);
+    //TUV_ASSERT(r == 0);
+    //got_q = 1;
   } else {
     TUV_ASSERT(nread == UV_EOF);
-    if (buf->base) {
-      free(buf->base);
-    }
     uv_close((uv_handle_t*)t, NULL);
-
     got_eof = 1;
   }
 }
@@ -113,7 +109,7 @@ static void connect_cb(uv_connect_t *req, int status) {
    * Write the letter 'Q' to gracefully kill the echo-server. This will not
    * effect our connection.
    */
-  uv_buf_t qsbuf = uv_buf_init((char*)"QS", 2);
+  uv_buf_t qsbuf = uv_buf_init((char*)"Q", 1);
   r = uv_write(&write_req, (uv_stream_t*) &tcp, &qsbuf, 1, NULL);
   TUV_ASSERT(r == 0);
 

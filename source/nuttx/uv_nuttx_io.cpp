@@ -132,7 +132,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
       }
       else if ( err != EINTR) {
         TDLOG("uv__io_poll abort for errno(%d)", err);
-        abort();
+        ABORT();
       }
       if (timeout == -1) {
         continue;

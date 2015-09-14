@@ -103,8 +103,10 @@ int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2) {
 // once
 
 void uv_once(uv_once_t* guard, void (*callback)(void)) {
-  if (pthread_once(guard, callback))
-    abort();
+  if (pthread_once(guard, callback)) {
+    TDLOG("uv_once abort");
+    ABORT();
+  }
 }
 
 
@@ -118,16 +120,22 @@ int uv_mutex_init(uv_mutex_t* mutex) {
   pthread_mutexattr_t attr;
   int err;
 
-  if (pthread_mutexattr_init(&attr))
-    abort();
+  if (pthread_mutexattr_init(&attr)) {
+    TDLOG("uv_mutex_init init abort");
+    ABORT();
+  }
 
-  if (pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK))
-    abort();
+  if (pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK)) {
+    TDLOG("uv_mutex_init settype abort");
+    ABORT();
+  }
 
   err = pthread_mutex_init(mutex, &attr);
 
-  if (pthread_mutexattr_destroy(&attr))
-    abort();
+  if (pthread_mutexattr_destroy(&attr)) {
+    TDLOG("uv_mutex_init destroy abort");
+    ABORT();
+  }
 
   return -err;
 #endif
@@ -135,14 +143,18 @@ int uv_mutex_init(uv_mutex_t* mutex) {
 
 
 void uv_mutex_destroy(uv_mutex_t* mutex) {
-  if (pthread_mutex_destroy(mutex))
-    abort();
+  if (pthread_mutex_destroy(mutex)) {
+    TDLOG("uv_mutex_destroy abort");
+    ABORT();
+  }
 }
 
 
 void uv_mutex_lock(uv_mutex_t* mutex) {
-  if (pthread_mutex_lock(mutex))
-    abort();
+  if (pthread_mutex_lock(mutex)) {
+    TDLOG("uv_mutex_lock abort");
+    ABORT();
+  }
 }
 
 
@@ -153,8 +165,10 @@ int uv_mutex_trylock(uv_mutex_t* mutex) {
    * a bug, should probably abort rather than return -EAGAIN.
    */
   err = pthread_mutex_trylock(mutex);
-  if (err && err != EBUSY && err != EAGAIN)
-    abort();
+  if (err && err != EBUSY && err != EAGAIN) {
+    TDLOG("uv_mutex_trylock abort");
+    ABORT();
+  }
 
   return -err;
 }
@@ -162,7 +176,7 @@ int uv_mutex_trylock(uv_mutex_t* mutex) {
 
 void uv_mutex_unlock(uv_mutex_t* mutex) {
   if (pthread_mutex_unlock(mutex))
-    abort();
+    ABORT();
 }
 
 
@@ -177,14 +191,18 @@ int uv_sem_init(uv_sem_t* sem, unsigned int value) {
 
 
 void uv_sem_destroy(uv_sem_t* sem) {
-  if (sem_destroy(sem))
-    abort();
+  if (sem_destroy(sem)) {
+    TDLOG("uv_sem_destroy abort");
+    ABORT();
+  }
 }
 
 
 void uv_sem_post(uv_sem_t* sem) {
-  if (sem_post(sem))
-    abort();
+  if (sem_post(sem)) {
+    TDLOG("uv_sem_post abort");
+    ABORT();
+  }
 }
 
 
@@ -195,8 +213,10 @@ void uv_sem_wait(uv_sem_t* sem) {
     r = sem_wait(sem);
   while (r == -1 && errno == EINTR);
 
-  if (r)
-    abort();
+  if (r) {
+    TDLOG("uv_sem_wait abort");
+    ABORT();
+  }
 }
 
 
@@ -210,7 +230,7 @@ int uv_sem_trywait(uv_sem_t* sem) {
   if (r) {
     if (errno == EAGAIN)
       return -EAGAIN;
-    abort();
+    ABORT();
   }
 
   return 0;
@@ -253,23 +273,31 @@ error2:
 
 
 void uv_cond_destroy(uv_cond_t* cond) {
-  if (pthread_cond_destroy(cond))
-    abort();
+  if (pthread_cond_destroy(cond)) {
+    TDLOG("uv_cond_destroy abort");
+    ABORT();
+  }
 }
 
 void uv_cond_signal(uv_cond_t* cond) {
-  if (pthread_cond_signal(cond))
-    abort();
+  if (pthread_cond_signal(cond)) {
+    TDLOG("uv_cond_signal abort");
+    ABORT();
+  }
 }
 
 void uv_cond_broadcast(uv_cond_t* cond) {
-  if (pthread_cond_broadcast(cond))
-    abort();
+  if (pthread_cond_broadcast(cond)) {
+    TDLOG("uv_cond_broadcast abort");
+    ABORT();
+  }
 }
 
 void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex) {
-  if (pthread_cond_wait(cond, mutex))
-    abort();
+  if (pthread_cond_wait(cond, mutex)) {
+    TDLOG("uv_cond_wait abort");
+    ABORT();
+  }
 }
 
 
@@ -291,6 +319,7 @@ int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
   if (r == ETIMEDOUT)
     return -ETIMEDOUT;
 
-  abort();
+  TDLOG("uv_cond_timedwait abort");
+  ABORT();
   return -EINVAL;  /* Satisfy the compiler. */
 }

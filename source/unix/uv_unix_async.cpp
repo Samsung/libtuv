@@ -122,6 +122,7 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   char buf[1024];
   unsigned n;
   ssize_t r;
+  int err;
 
   n = 0;
   for (;;) {
@@ -136,13 +137,15 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     if (r != -1)
       break;
 
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
+    err = get_errno();
+    if (err == EAGAIN || err == EWOULDBLOCK)
       break;
 
-    if (errno == EINTR)
+    if (err == EINTR)
       continue;
 
-    abort();
+    TDLOG("uv__async_io abort for errno(%d)", err);
+    ABORT();
   }
 
   wa = container_of(w, struct uv__async, io_watcher);
@@ -267,9 +270,12 @@ void uv__async_send(struct uv__async* wa) {
   if (r == len)
     return;
 
-  if (r == -1)
-    if (errno == EAGAIN || errno == EWOULDBLOCK)
+  if (r == -1) {
+    int err = get_errno();
+    if (err == EAGAIN || err == EWOULDBLOCK)
       return;
+  }
 
-  abort();
+  TDLOG("uv__async_send abort");
+  ABORT();
 }

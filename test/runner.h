@@ -62,6 +62,7 @@ typedef struct {
    * The time in milliseconds after which a single test or benchmark times out.
    */
   int timeout;
+  sem_t semsync;
 } task_entry_t, bench_entry_t;
 
 
@@ -87,7 +88,7 @@ typedef struct {
             __FILE__,                                     \
             __LINE__,                                     \
             #expr);                                       \
-    abort();                                              \
+    ABORT();                                              \
   }                                                       \
  } while (0)
 
@@ -111,7 +112,7 @@ typedef struct {
             __LINE__,                                     \
             msg);                                         \
     fflush(stderr);                                       \
-    abort();                                              \
+    ABORT();                                              \
   } while (0)
 
 /* Reserved test exit codes. */
@@ -171,7 +172,8 @@ int run_test_part(const char* test, const char* part);
 task_entry_t* get_helper(const char* test);
 int run_tests();
 
-
+int run_helper(task_entry_t* task);
+int wait_helper(task_entry_t* task);
 
 //-----------------------------------------------------------------------------
 // test function declaration

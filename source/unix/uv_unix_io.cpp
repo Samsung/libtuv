@@ -78,8 +78,10 @@ static void maybe_resize(uv_loop_t* loop, unsigned int len) {
   watchers = (uv__io_t**)realloc(loop->watchers,
                                  (nwatchers + 2) * sizeof(loop->watchers[0]));
 
-  if (watchers == NULL)
-    abort();
+  if (watchers == NULL) {
+    TDLOG("maybe_resize watchers NULL abort");
+    ABORT();
+  }
   for (i = loop->nwatchers; i < nwatchers; i++)
     watchers[i] = NULL;
   watchers[nwatchers] = (uv__io_t*)fake_watcher_list;

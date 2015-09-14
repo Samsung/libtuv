@@ -69,10 +69,6 @@
 #endif
 #define SIGPROF       27
 
-#define SHUT_RD       0
-#define SHUT_WR       1
-#define SHUT_RDWR     2
-
 #define TCP_NODELAY   1
 
 #define _SC_CLK_TCK           0x0006
@@ -143,6 +139,6 @@ ssize_t writev(int __fd, const struct iovec* __iovec, int __count);
 int getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen);
 
 /* Maximum queue length specifiable by listen.  */
-#define SOMAXCONN 128
+#define SOMAXCONN 8
 
 #endif // __uv__platform_nuttx_header__

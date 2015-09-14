@@ -57,7 +57,8 @@ static volatile int initialized;
 //-----------------------------------------------------------------------------
 
 static void uv__cancelled(struct uv__work* w) {
-  abort();
+  TDLOG("uv__cancelled async");
+  ABORT();
 }
 
 
@@ -134,17 +135,24 @@ static void init_once(void) {
     }
   }
 
-  if (uv_cond_init(&cond))
-    abort();
+  if (uv_cond_init(&cond)) {
+    TDLOG("init_once cond abort");
+    ABORT();
+  }
 
-  if (uv_mutex_init(&mutex))
-    abort();
+  if (uv_mutex_init(&mutex)) {
+    TDLOG("init_once mutex abort");
+    ABORT();
+  }
 
   QUEUE_INIT(&wq);
 
-  for (i = 0; i < nthreads; i++)
-    if (uv_thread_create(threads + i, worker, NULL))
-      abort();
+  for (i = 0; i < nthreads; i++) {
+    if (uv_thread_create(threads + i, worker, NULL)) {
+      TDLOG("init_once thread %d abort", i);
+      ABORT();
+    }
+  }
 
   initialized = 1;
 }

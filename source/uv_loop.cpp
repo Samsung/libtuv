@@ -78,14 +78,20 @@ int uv_loop_init(uv_loop_t* loop) {
   if (err)
     return err;
 
-  if (uv_rwlock_init(&loop->cloexec_lock))
-    abort();
+  if (uv_rwlock_init(&loop->cloexec_lock)) {
+    TDLOG("uv_loop_init rwlock abort");
+    ABORT();
+  }
 
-  if (uv_mutex_init(&loop->wq_mutex))
-    abort();
+  if (uv_mutex_init(&loop->wq_mutex)) {
+    TDLOG("uv_loop_init mutex abort");
+    ABORT();
+  }
 
-  if (uv_async_init(loop, &loop->wq_async, uv__work_done))
-    abort();
+  if (uv_async_init(loop, &loop->wq_async, uv__work_done)) {
+    TDLOG("uv_loop_init async abort");
+    ABORT();
+  }
 
   uv__handle_unref(&loop->wq_async);
   loop->wq_async.flags |= UV__HANDLE_INTERNAL;

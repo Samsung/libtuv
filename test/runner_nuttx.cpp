@@ -61,14 +61,13 @@ pid_t pid_helper;
 sem_t startsem;
 
 static int helper_procedure(int argc, char *argv[]) {
-  printf(">>> helper_procedure: [%s], [%s]\n", argv[1], argv[2]);
-
   task_entry_t* helper;
   helper = get_helper(argv[1]);
   TUV_ASSERT(helper);
 
-  sem_post(&startsem);
+  sem_post(&helper->semsync);
   helper->main();
+  sem_post(&helper->semsync);
 
   return 0;
 }
@@ -80,26 +79,28 @@ int run_helper(task_entry_t* task) {
     task->process_name,
     0
   };
+  pid_t pid_helper;
 
-  sem_init(&startsem, 0, 0);
+  sem_init(&task->semsync, 0, 0);
 
   pid_helper = task_create(task->process_name,
                            HELPER_PRIORITY, HELPER_STACKSIZE,
                            helper_procedure,
                            (char * const *)argv);
 
-  sem_wait(&startsem);
-  sem_destroy(&startsem);
+  sem_wait(&task->semsync);
 
   usleep(1000);
 }
 
+int wait_helper(task_entry_t* task) {
+  sem_wait(&task->semsync);
+  sem_destroy(&task->semsync);
+  return 0;
+}
+
 
 int run_test_one(task_entry_t* task) {
-  if (task->is_helper) {
-    run_helper(task);
-    return 0;
-  }
   return run_test_part(task->task_name, task->process_name);
 }
 

@@ -119,9 +119,12 @@ static void after_read(uv_stream_t* handle,
           uv_close((uv_handle_t*)handle, on_close);
           return;
         } else {
+          free(buf->base);
+          uv_close((uv_handle_t*)handle, on_close);
           uv_close(serverHandle, on_server_close);
           server_closed = 1;
-          break;
+          //break;
+          return;
         }
       }
     }
@@ -175,7 +178,7 @@ static void on_connection(uv_stream_t* server, int status) {
 
   default:
     TUV_ASSERT(0 && "Bad serverType");
-    abort();
+    ABORT();
   }
 
   /* associate server with stream */
@@ -231,6 +234,7 @@ HELPER_IMPL(tcp4_echo_server) {
   int r;
 
   server_closed = 0;
+  serverHandle = NULL;
 
   r = uv_loop_init(&loop);
   TUV_ASSERT(r == 0);
@@ -240,6 +244,8 @@ HELPER_IMPL(tcp4_echo_server) {
 
   r = uv_run(&loop, UV_RUN_DEFAULT);
   TUV_ASSERT(r == 0);
+
+  assert(server_closed);
 
   r = uv_loop_close(&loop);
   TUV_ASSERT(r == 0);

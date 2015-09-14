@@ -43,6 +43,16 @@
 
 #include <errno.h>
 
+#if DEBUG
+#define ABORT()                  \
+  do {                           \
+    TDLOG("!!!!! ABORT !!!!!");  \
+    abort();                     \
+  } while(0)
+#else
+#define ABORT() abort()
+#endif
+
 //-----------------------------------------------------------------------------
 // errorno < uv_errorno.h
 
