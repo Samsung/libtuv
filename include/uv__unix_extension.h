@@ -216,5 +216,17 @@ enum {
 };
 
 
+//-----------------------------------------------------------------------------
+// getaddrinfo
+
+#define UV_GETADDRINFO_PRIVATE_FIELDS                                         \
+  struct uv__work work_req;                                                   \
+  uv_getaddrinfo_cb cb;                                                       \
+  struct addrinfo* hints;                                                     \
+  char* hostname;                                                             \
+  char* service;                                                              \
+  struct addrinfo* addrinfo;                                                  \
+  int retcode;
+
 
 #endif // __uv_unix_extenstion_header__

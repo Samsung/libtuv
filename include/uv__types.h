@@ -57,6 +57,7 @@ typedef struct uv_pipe_s uv_pipe_t;
 
 // request types
 typedef struct uv_req_s uv_req_t;
+typedef struct uv_getaddrinfo_s uv_getaddrinfo_t;
 typedef struct uv_fs_s uv_fs_t;
 typedef struct uv_connect_s uv_connect_t;
 typedef struct uv_write_s uv_write_t;
@@ -93,6 +94,10 @@ typedef void (*uv_write_cb)(uv_write_t* req, int status);
 typedef void (*uv_connect_cb)(uv_connect_t* req, int status);
 typedef void (*uv_shutdown_cb)(uv_shutdown_t* req, int status);
 typedef void (*uv_connection_cb)(uv_stream_t* server, int status);
+
+typedef void (*uv_getaddrinfo_cb)(uv_getaddrinfo_t* req,
+                                  int status,
+                                  struct addrinfo* res);
 
 //-----------------------------------------------------------------------------
 

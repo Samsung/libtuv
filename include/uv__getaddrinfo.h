@@ -34,67 +34,35 @@
  * IN THE SOFTWARE.
  */
 
+#ifndef __uv__getaddrinfo_header__
+#define __uv__getaddrinfo_header__
+
 #ifndef __uv_header__
-#define __uv_header__
+#error Please include with uv.h
+#endif
 
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
-
-#include "queue.h"
-
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-#define container_of(ptr, type, member) \
-  ((type *) ((char *) (ptr) - offsetof(type, member)))
-
-
-#include "uv__types.h"    // types should be placed in the first
-#include "uv_platform.h"  // platform should be placed before extension
-#include "uv_extension.h" // extension should be placed before others
-
-#include "uv__error.h"
-#include "uv__handle.h"
-#include "uv__loop.h"
-#include "uv__idle.h"
-#include "uv__timer.h"
-#include "uv__inet.h"
-
-#include "uv__async.h"
-#include "uv__req.h"      // req should be placed before fs
-#include "uv__fs.h"
-#include "uv__fd.h"
-#include "uv__stream.h"
-#include "uv__tcp.h"
-#include "uv__pipe.h"
-#include "uv__thread.h"
-
-#include "uv__getaddrinfo.h"
-
-#include "uv__dir.h"
-#include "uv__util.h"
-
-#include "tuv_debuglog.h"
+/*
+ * uv_getaddrinfo_t is a subclass of uv_req_t.
+ *
+ * Request object for uv_getaddrinfo.
+ */
+struct uv_getaddrinfo_s {
+  UV_REQ_FIELDS
+  /* read-only */
+  uv_loop_t* loop;
+  /* struct addrinfo* addrinfo is marked as private, but it really isn't. */
+  UV_GETADDRINFO_PRIVATE_FIELDS
+};
 
 
-#undef UV_HANDLE_PRIVATE_FIELDS
-#undef UV_ASYNC_PRIVATE_FIELDS
-#undef UV_LOOP_PRIVATE_FIELDS
-#undef UV_IDLE_PRIVATE_FIELDS
-#undef UV_TIMER_PRIVATE_FIELDS
-#undef UV_FS_PRIVATE_FIELDS
-#undef UV_REQ_TYPE_PRIVATE
-#undef UV_REQ_PRIVATE_FIELDS
-#undef UV_FS_REQ_PRIVATE_FIELDS
-#undef UV_WORK_PRIVATE_FIELDS
-#undef UV_IO_PRIVATE_PLATFORM_FIELDS
-#undef UV_TCP_PRIVATE_FIELDS
-#undef UV_STREAM_PRIVATE_FIELDS
-#undef UV_PIPE_PRIVATE_FIELDS
-#undef UV_CONNECT_PRIVATE_FIELDS
-#undef UV_WRITE_PRIVATE_FIELDS
-#undef UV_SHUTDOWN_PRIVATE_FIELDS
-#undef UV_GETADDRINFO_PRIVATE_FIELDS
+int uv_getaddrinfo(uv_loop_t* loop,
+                   uv_getaddrinfo_t* req,
+                   uv_getaddrinfo_cb getaddrinfo_cb,
+                   const char* node,
+                   const char* service,
+                   const struct addrinfo* hints);
+void uv_freeaddrinfo(struct addrinfo* ai);
 
-#endif // __uv_header__
+
+
+#endif // __uv__getaddrinfo_header__

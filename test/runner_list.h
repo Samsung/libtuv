@@ -70,6 +70,10 @@
   TE(fs_open_dir, 5000)                                                       \
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
+  \
+  TE(getaddrinfo_basic, 5000)                                                 \
+  TE(getaddrinfo_basic_sync, 5000)                                            \
+  TE(getaddrinfo_concurrent, 5000)                                            \
 
 #else
 #define TEST_LIST_EXT(TE)

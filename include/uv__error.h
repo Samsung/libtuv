@@ -59,6 +59,22 @@
 #define UV__EOF     (-4095)
 #define UV__UNKNOWN (-4094)
 
+#define UV__EAI_ADDRFAMILY  (-3000)
+#define UV__EAI_AGAIN       (-3001)
+#define UV__EAI_BADFLAGS    (-3002)
+#define UV__EAI_CANCELED    (-3003)
+#define UV__EAI_FAIL        (-3004)
+#define UV__EAI_FAMILY      (-3005)
+#define UV__EAI_MEMORY      (-3006)
+#define UV__EAI_NODATA      (-3007)
+#define UV__EAI_NONAME      (-3008)
+#define UV__EAI_OVERFLOW    (-3009)
+#define UV__EAI_SERVICE     (-3010)
+#define UV__EAI_SOCKTYPE    (-3011)
+#define UV__EAI_BADHINTS    (-3013)
+#define UV__EAI_PROTOCOL    (-3014)
+
+
 #if defined(EAFNOSUPPORT)
 # define UV__EAFNOSUPPORT (-EAFNOSUPPORT)
 #else
@@ -152,6 +168,20 @@
 
 #define UV_ERRNO_MAP(XX)                                                      \
   XX(EAFNOSUPPORT, "address family not supported")                            \
+  XX(EAI_ADDRFAMILY, "address family not supported")                          \
+  XX(EAI_AGAIN, "temporary failure")                                          \
+  XX(EAI_BADFLAGS, "bad ai_flags value")                                      \
+  XX(EAI_BADHINTS, "invalid value for hints")                                 \
+  XX(EAI_CANCELED, "request canceled")                                        \
+  XX(EAI_FAIL, "permanent failure")                                           \
+  XX(EAI_FAMILY, "ai_family not supported")                                   \
+  XX(EAI_MEMORY, "out of memory")                                             \
+  XX(EAI_NODATA, "no address")                                                \
+  XX(EAI_NONAME, "unknown node or service")                                   \
+  XX(EAI_OVERFLOW, "argument buffer overflow")                                \
+  XX(EAI_PROTOCOL, "resolved protocol is unknown")                            \
+  XX(EAI_SERVICE, "service not available for socket type")                    \
+  XX(EAI_SOCKTYPE, "socket type not supported")                               \
   XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \

@@ -50,6 +50,7 @@
   XX(WRITE, write)                                                            \
   XX(SHUTDOWN, shutdown)                                                      \
   XX(FS, fs)                                                                  \
+  XX(GETADDRINFO, getaddrinfo)                                                \
 
 /*
   XX(REQ, req)                                                                \

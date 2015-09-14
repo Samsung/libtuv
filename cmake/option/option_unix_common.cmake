@@ -39,4 +39,5 @@ set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.cpp"
                       "${UNIX_PATH}/uv_unix_thread.cpp"
                       "${UNIX_PATH}/uv_unix_tcp.cpp"
                       "${UNIX_PATH}/uv_unix_stream.cpp"
+                      "${UNIX_PATH}/uv_unix_getaddrinfo.cpp"
                       )
