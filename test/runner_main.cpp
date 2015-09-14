@@ -92,6 +92,7 @@ int run_test_part(const char* test, const char* part) {
   return 255;
 }
 
+
 task_entry_t* get_helper(const char* test) {
   int r;
   task_entry_t* task;
@@ -141,6 +142,8 @@ int run_tests() {
     fprintf(stderr, "%s\n", result ? "failed" : "OK");
     entry++;
   }
+
+  return 0;
 }
 
 

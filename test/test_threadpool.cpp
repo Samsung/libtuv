@@ -71,7 +71,8 @@ TEST_IMPL(threadpool_queue_work_simple) {
   work_req.data = &data;
   r = uv_queue_work(uv_default_loop(), &work_req, work_cb, after_work_cb);
   TUV_ASSERT(r == 0);
-  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+  r = uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+  TUV_ASSERT(r == 0);
 
   TUV_ASSERT(work_cb_count == 1);
   TUV_ASSERT(after_work_cb_count == 1);

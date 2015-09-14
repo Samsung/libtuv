@@ -60,16 +60,20 @@ int platform_init(int argc, char **argv) {
 pid_t pid_helper;
 sem_t startsem;
 
+
 static int helper_procedure(int argc, char *argv[]) {
   task_entry_t* helper;
+  int ret;
   helper = get_helper(argv[1]);
   TUV_ASSERT(helper);
 
   sem_post(&helper->semsync);
-  helper->main();
+  ret = helper->main();
+  TUV_ASSERT(ret == 0);
+
   sem_post(&helper->semsync);
 
-  return 0;
+  return ret;
 }
 
 int run_helper(task_entry_t* task) {
@@ -91,6 +95,8 @@ int run_helper(task_entry_t* task) {
   sem_wait(&task->semsync);
 
   usleep(1000);
+
+  return 0;
 }
 
 int wait_helper(task_entry_t* task) {
@@ -116,4 +122,8 @@ extern "C" int tuvtester_entry(int argc, char *argv[]) {
     return run_test_part(argv[1], argv[2]);
   }
   return run_tests();
+}
+
+extern "C" int tuvtester_cleanup(void) {
+  uv_cleanup();
 }

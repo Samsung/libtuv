@@ -345,9 +345,12 @@ int platform_init(int argc, char **argv) {
 
 static void* helper_proc(void* data) {
   task_entry_t* task = (task_entry_t*)data;
+  int ret;
 
   sem_post(&task->semsync);
-  task->main();
+  ret = task->main();
+  TUV_ASSERT(ret == 0);
+
   sem_post(&task->semsync);
   return NULL;
 }

@@ -63,7 +63,7 @@ typedef struct {
    */
   int timeout;
   sem_t semsync;
-} task_entry_t, bench_entry_t;
+} task_entry_t;
 
 
 #define TEST_IMPL(name)                                                       \
@@ -74,8 +74,6 @@ typedef struct {
   int run_helper_##name(void);                                                \
   int run_helper_##name(void)
 
-#define HELPER_CALL(name)                                                     \
-  run_helper_##name()
 
 /* Have our own assert, so we are sure it does not get optimized away in
  * a release build.
@@ -169,9 +167,9 @@ void process_cleanup(process_info_t *p);
 
 int run_test_one(task_entry_t* task);
 int run_test_part(const char* test, const char* part);
-task_entry_t* get_helper(const char* test);
 int run_tests();
 
+task_entry_t* get_helper(const char* test);
 int run_helper(task_entry_t* task);
 int wait_helper(task_entry_t* task);
 

@@ -65,5 +65,10 @@ int uv_queue_work(uv_loop_t* loop,
 
 int uv_cancel(uv_req_t* req);
 
+/*
+ * for embed systems that need cleanup before exit
+ */
+void uv_cleanup(void);
+
 
 #endif /* __uv__threadpool_header__ */

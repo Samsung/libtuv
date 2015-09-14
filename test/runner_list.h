@@ -51,6 +51,8 @@
   \
   TE(error_message, 5000)                                                     \
   \
+  TE(threadpool_queue_work_simple, 5000)                                      \
+  \
   TE(tcp_open,5000)                                                           \
   TE(shutdown_eof,5000)                                                       \
 
@@ -74,8 +76,6 @@
   TE(getaddrinfo_basic, 5000)                                                 \
   TE(getaddrinfo_basic_sync, 5000)                                            \
   TE(getaddrinfo_concurrent, 5000)                                            \
-  \
-  TE(threadpool_queue_work_simple, 5000)                                      \
 
 #else
 #define TEST_LIST_EXT(TE)

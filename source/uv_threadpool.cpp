@@ -43,15 +43,15 @@
 //-----------------------------------------------------------------------------
 #define MAX_THREADPOOL_SIZE 16
 
-static uv_once_t once = UV_ONCE_INIT;
-static uv_cond_t cond;
-static uv_mutex_t mutex;
-static unsigned int nthreads;
-static uv_thread_t* threads;
-static uv_thread_t default_threads[2];
-static QUEUE exit_message;
-static QUEUE wq;
-static volatile int initialized;
+static uv_once_t _once = UV_ONCE_INIT;
+static uv_cond_t _cond;
+static uv_mutex_t _mutex;
+static unsigned int _nthreads;
+static uv_thread_t* _threads;
+static uv_thread_t _default_threads[2];
+static QUEUE _exit_message;
+static QUEUE _wq;
+static volatile int _initialized = 0;
 
 
 //-----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ static void uv__cancelled(struct uv__work* w) {
 
 
 /* To avoid deadlock with uv_cancel() it's crucial that the worker
- * never holds the global mutex and the loop-local mutex at the same time.
+ * never holds the global _mutex and the loop-local mutex at the same time.
  */
 static void worker(void* arg) {
   struct uv__work* w;
@@ -72,24 +72,24 @@ static void worker(void* arg) {
   (void) arg;
 
   for (;;) {
-    uv_mutex_lock(&mutex);
+    uv_mutex_lock(&_mutex);
 
-    while (QUEUE_EMPTY(&wq))
-      uv_cond_wait(&cond, &mutex);
+    while (QUEUE_EMPTY(&_wq))
+      uv_cond_wait(&_cond, &_mutex);
 
-    q = QUEUE_HEAD(&wq);
+    q = QUEUE_HEAD(&_wq);
 
-    if (q == &exit_message)
-      uv_cond_signal(&cond);
+    if (q == &_exit_message)
+      uv_cond_signal(&_cond);
     else {
       QUEUE_REMOVE(q);
       QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
                              executing. */
     }
 
-    uv_mutex_unlock(&mutex);
+    uv_mutex_unlock(&_mutex);
 
-    if (q == &exit_message)
+    if (q == &_exit_message)
       break;
 
     w = QUEUE_DATA(q, struct uv__work, wq);
@@ -106,10 +106,38 @@ static void worker(void* arg) {
 
 
 static void post(QUEUE* q) {
-  uv_mutex_lock(&mutex);
-  QUEUE_INSERT_TAIL(&wq, q);
-  uv_cond_signal(&cond);
-  uv_mutex_unlock(&mutex);
+  uv_mutex_lock(&_mutex);
+  QUEUE_INSERT_TAIL(&_wq, q);
+  uv_cond_signal(&_cond);
+  uv_mutex_unlock(&_mutex);
+}
+
+
+#if defined(__NUTTX__)
+static void cleanup(void) {
+#else
+__attribute__((destructor)) static void cleanup(void) {
+#endif
+  unsigned int i;
+
+  if (_initialized == 0)
+    return;
+
+  post(&_exit_message);
+
+  for (i = 0; i < _nthreads; i++)
+    if (uv_thread_join(_threads + i))
+      ABORT();
+
+  if (_threads != _default_threads)
+    free(_threads);
+
+  uv_mutex_destroy(&_mutex);
+  uv_cond_destroy(&_cond);
+
+  _threads = NULL;
+  _nthreads = 0;
+  _initialized = 0;
 }
 
 
@@ -117,44 +145,44 @@ static void init_once(void) {
   unsigned int i;
   const char* val;
 
-  nthreads = ARRAY_SIZE(default_threads);
+  _nthreads = ARRAY_SIZE(_default_threads);
   val = getenv("UV_THREADPOOL_SIZE");
   if (val != NULL)
-    nthreads = atoi(val);
-  if (nthreads == 0)
-    nthreads = 1;
-  if (nthreads > MAX_THREADPOOL_SIZE)
-    nthreads = MAX_THREADPOOL_SIZE;
+    _nthreads = atoi(val);
+  if (_nthreads == 0)
+    _nthreads = 1;
+  if (_nthreads > MAX_THREADPOOL_SIZE)
+    _nthreads = MAX_THREADPOOL_SIZE;
 
-  threads = default_threads;
-  if (nthreads > ARRAY_SIZE(default_threads)) {
-    threads = (uv_thread_t*)malloc(nthreads * sizeof(threads[0]));
-    if (threads == NULL) {
-      nthreads = ARRAY_SIZE(default_threads);
-      threads = default_threads;
+  _threads = _default_threads;
+  if (_nthreads > ARRAY_SIZE(_default_threads)) {
+    _threads = (uv_thread_t*)malloc(_nthreads * sizeof(_threads[0]));
+    if (_threads == NULL) {
+      _nthreads = ARRAY_SIZE(_default_threads);
+      _threads = _default_threads;
     }
   }
 
-  if (uv_cond_init(&cond)) {
+  if (uv_cond_init(&_cond)) {
     TDLOG("init_once cond abort");
     ABORT();
   }
 
-  if (uv_mutex_init(&mutex)) {
+  if (uv_mutex_init(&_mutex)) {
     TDLOG("init_once mutex abort");
     ABORT();
   }
 
-  QUEUE_INIT(&wq);
+  QUEUE_INIT(&_wq);
 
-  for (i = 0; i < nthreads; i++) {
-    if (uv_thread_create(threads + i, worker, NULL)) {
+  for (i = 0; i < _nthreads; i++) {
+    if (uv_thread_create(_threads + i, worker, NULL)) {
       TDLOG("init_once thread %d abort", i);
       ABORT();
     }
   }
 
-  initialized = 1;
+  _initialized = 1;
 }
 
 
@@ -164,7 +192,7 @@ void uv__work_submit(uv_loop_t* loop,
                      struct uv__work* w,
                      void (*work)(struct uv__work* w),
                      void (*done)(struct uv__work* w, int status)) {
-  uv_once(&once, init_once);
+  uv_once(&_once, init_once);
   w->loop = loop;
   w->work = work;
   w->done = done;
@@ -175,7 +203,7 @@ void uv__work_submit(uv_loop_t* loop,
 static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w) {
   int cancelled;
 
-  uv_mutex_lock(&mutex);
+  uv_mutex_lock(&_mutex);
   uv_mutex_lock(&w->loop->wq_mutex);
 
   cancelled = !QUEUE_EMPTY(&w->wq) && w->work != NULL;
@@ -183,7 +211,7 @@ static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w) {
     QUEUE_REMOVE(&w->wq);
 
   uv_mutex_unlock(&w->loop->wq_mutex);
-  uv_mutex_unlock(&mutex);
+  uv_mutex_unlock(&_mutex);
 
   if (!cancelled)
     return UV_EBUSY;
@@ -295,3 +323,11 @@ int uv_cancel(uv_req_t* req) {
 
   return uv__work_cancel(loop, req, wreq);
 }
+
+
+//-----------------------------------------------------------------------------
+#if defined(__NUTTX__)
+void uv_cleanup(void) {
+  cleanup();
+}
+#endif
