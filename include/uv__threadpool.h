@@ -1,3 +1,18 @@
+/* Copyright 2015 Samsung Electronics Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,20 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-/*
- * This file is private to libuv. It provides common functionality to both
- * Windows and Unix backends.
- */
-
-#ifndef UV_THREADPOOL_H_
-#define UV_THREADPOOL_H_
-
-struct uv__work {
-  void (*work)(struct uv__work *w);
-  void (*done)(struct uv__work *w, int status);
-  struct uv_loop_s* loop;
-  void* wq[2];
-};
+#ifndef __uv__threadpool_header__
+#define __uv__threadpool_header__
 
 
 void uv__work_submit(uv_loop_t* loop,
@@ -43,5 +46,24 @@ void uv__work_submit(uv_loop_t* loop,
 void uv__work_done(uv_async_t* handle);
 
 
-#endif /* UV_THREADPOOL_H_ */
+/*
+ * uv_work_t is a subclass of uv_req_t.
+ */
+struct uv_work_s {
+  UV_REQ_FIELDS
+  uv_loop_t* loop;
+  uv_work_cb work_cb;
+  uv_after_work_cb after_work_cb;
+  UV_WORK_PRIVATE_FIELDS
+};
 
+
+int uv_queue_work(uv_loop_t* loop,
+                  uv_work_t* req,
+                  uv_work_cb work_cb,
+                  uv_after_work_cb after_work_cb);
+
+int uv_cancel(uv_req_t* req);
+
+
+#endif /* __uv__threadpool_header__ */

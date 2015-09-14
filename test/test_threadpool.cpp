@@ -34,23 +34,50 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv_extenstion_header__
-#define __uv_extenstion_header__
+#include <assert.h>
+#include <stdio.h>
 
-#include "uv__unix_extension.h"
-
-//
-// structure extension for nuttx
-//
-
-#define UV_PLATFORM_LOOP_FIELDS                                               \
-  struct pollfd pollfds[TUV_POLL_EVENTS_SIZE];                                \
-  int npollfds;                                                               \
+#include <uv.h>
+#include "runner.h"
 
 
-#ifndef UV_STREAM_PRIVATE_PLATFORM_FIELDS
-# define UV_STREAM_PRIVATE_PLATFORM_FIELDS /* empty */
-#endif
+static int work_cb_count;
+static int after_work_cb_count;
+static uv_work_t work_req;
+static char data;
 
 
-#endif // __uv_extenstion_header__
+static void work_cb(uv_work_t* req) {
+  TUV_ASSERT(req == &work_req);
+  TUV_ASSERT(req->data == &data);
+  work_cb_count++;
+}
+
+
+static void after_work_cb(uv_work_t* req, int status) {
+  TUV_ASSERT(status == 0);
+  TUV_ASSERT(req == &work_req);
+  TUV_ASSERT(req->data == &data);
+  after_work_cb_count++;
+}
+
+
+TEST_IMPL(threadpool_queue_work_simple) {
+  int r;
+
+  work_cb_count = 0;
+  after_work_cb_count = 0;
+
+  work_req.data = &data;
+  r = uv_queue_work(uv_default_loop(), &work_req, work_cb, after_work_cb);
+  TUV_ASSERT(r == 0);
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+
+  TUV_ASSERT(work_cb_count == 1);
+  TUV_ASSERT(after_work_cb_count == 1);
+
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
+
+  return 0;
+}
+

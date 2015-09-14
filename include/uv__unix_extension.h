@@ -90,6 +90,10 @@
 */
 
 
+#define UV_WORK_PRIVATE_FIELDS                                                \
+  struct uv__work work_req;
+
+
 #define UV_ASYNC_PRIVATE_FIELDS                                               \
   uv_async_cb async_cb;                                                       \
   void* queue[2];                                                             \

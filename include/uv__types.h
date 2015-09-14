@@ -34,8 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv_types_header__
-#define __uv_types_header__
+#ifndef __uv__types_header__
+#define __uv__types_header__
 
 #ifndef __uv_header__
 #error Please include with uv.h
@@ -57,11 +57,12 @@ typedef struct uv_pipe_s uv_pipe_t;
 
 // request types
 typedef struct uv_req_s uv_req_t;
-typedef struct uv_getaddrinfo_s uv_getaddrinfo_t;
 typedef struct uv_fs_s uv_fs_t;
 typedef struct uv_connect_s uv_connect_t;
 typedef struct uv_write_s uv_write_t;
 typedef struct uv_shutdown_s uv_shutdown_t;
+typedef struct uv_getaddrinfo_s uv_getaddrinfo_t;
+typedef struct uv_work_s uv_work_t;
 
 // ext types
 typedef struct uv__io_s uv__io_t;
@@ -94,6 +95,9 @@ typedef void (*uv_write_cb)(uv_write_t* req, int status);
 typedef void (*uv_connect_cb)(uv_connect_t* req, int status);
 typedef void (*uv_shutdown_cb)(uv_shutdown_t* req, int status);
 typedef void (*uv_connection_cb)(uv_stream_t* server, int status);
+
+typedef void (*uv_work_cb)(uv_work_t* req);
+typedef void (*uv_after_work_cb)(uv_work_t* req, int status);
 
 typedef void (*uv_getaddrinfo_cb)(uv_getaddrinfo_t* req,
                                   int status,
@@ -128,6 +132,17 @@ typedef struct {
 
 
 //-----------------------------------------------------------------------------
+// uv__work
+
+struct uv__work {
+  void (*work)(struct uv__work *w);
+  void (*done)(struct uv__work *w, int status);
+  struct uv_loop_s* loop;
+  void* wq[2];
+};
 
 
-#endif // __uv_types_header__
+//-----------------------------------------------------------------------------
+
+
+#endif // __uv__types_header__

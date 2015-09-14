@@ -224,3 +224,74 @@ void uv__work_done(uv_async_t* handle) {
     w->done(w, err);
   }
 }
+
+
+//-----------------------------------------------------------------------------
+
+static void uv__queue_work(struct uv__work* w) {
+  uv_work_t* req = container_of(w, uv_work_t, work_req);
+
+  req->work_cb(req);
+}
+
+
+static void uv__queue_done(struct uv__work* w, int err) {
+  uv_work_t* req;
+
+  req = container_of(w, uv_work_t, work_req);
+  uv__req_unregister(req->loop, req);
+
+  if (req->after_work_cb == NULL)
+    return;
+
+  req->after_work_cb(req, err);
+}
+
+
+int uv_queue_work(uv_loop_t* loop,
+                  uv_work_t* req,
+                  uv_work_cb work_cb,
+                  uv_after_work_cb after_work_cb) {
+  if (work_cb == NULL)
+    return UV_EINVAL;
+
+  uv__req_init(loop, req, UV_WORK);
+  req->loop = loop;
+  req->work_cb = work_cb;
+  req->after_work_cb = after_work_cb;
+  uv__work_submit(loop, &req->work_req, uv__queue_work, uv__queue_done);
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+
+int uv_cancel(uv_req_t* req) {
+  struct uv__work* wreq;
+  uv_loop_t* loop;
+
+  switch (req->type) {
+  case UV_FS:
+    loop =  ((uv_fs_t*) req)->loop;
+    wreq = &((uv_fs_t*) req)->work_req;
+    break;
+  case UV_GETADDRINFO:
+    loop =  ((uv_getaddrinfo_t*) req)->loop;
+    wreq = &((uv_getaddrinfo_t*) req)->work_req;
+    break;
+/*
+  case UV_GETNAMEINFO:
+    loop = ((uv_getnameinfo_t*) req)->loop;
+    wreq = &((uv_getnameinfo_t*) req)->work_req;
+    break;
+*/
+  case UV_WORK:
+    loop =  ((uv_work_t*) req)->loop;
+    wreq = &((uv_work_t*) req)->work_req;
+    break;
+  default:
+    return UV_EINVAL;
+  }
+
+  return uv__work_cancel(loop, req, wreq);
+}

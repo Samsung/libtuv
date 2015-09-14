@@ -37,8 +37,6 @@
 #ifndef __uv_extenstion_header__
 #define __uv_extenstion_header__
 
-#include <uv_threadpool.h>
-
 #include "uv__unix_extension.h"
 
 //

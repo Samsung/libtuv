@@ -70,6 +70,7 @@
 #include "uv__pipe.h"
 #include "uv__thread.h"
 
+#include "uv__threadpool.h"
 #include "uv__getaddrinfo.h"
 
 #include "uv__dir.h"
