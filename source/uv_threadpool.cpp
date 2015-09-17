@@ -41,7 +41,7 @@
 
 
 //-----------------------------------------------------------------------------
-#define MAX_THREADPOOL_SIZE 16
+#define MAX_THREADPOOL_SIZE 4
 
 static uv_once_t _once = UV_ONCE_INIT;
 static uv_cond_t _cond;
@@ -74,8 +74,9 @@ static void worker(void* arg) {
   for (;;) {
     uv_mutex_lock(&_mutex);
 
-    while (QUEUE_EMPTY(&_wq))
+    while (QUEUE_EMPTY(&_wq)) {
       uv_cond_wait(&_cond, &_mutex);
+    }
 
     q = QUEUE_HEAD(&_wq);
 
@@ -108,8 +109,9 @@ static void worker(void* arg) {
 static void post(QUEUE* q) {
   uv_mutex_lock(&_mutex);
   QUEUE_INSERT_TAIL(&_wq, q);
-  uv_cond_signal(&_cond);
   uv_mutex_unlock(&_mutex);
+
+  uv_cond_signal(&_cond);
 }
 
 
@@ -144,6 +146,8 @@ __attribute__((destructor)) static void cleanup(void) {
 static void init_once(void) {
   unsigned int i;
   const char* val;
+
+  assert(_initialized==0);
 
   _nthreads = ARRAY_SIZE(_default_threads);
   val = getenv("UV_THREADPOOL_SIZE");
@@ -192,10 +196,12 @@ void uv__work_submit(uv_loop_t* loop,
                      struct uv__work* w,
                      void (*work)(struct uv__work* w),
                      void (*done)(struct uv__work* w, int status)) {
+
   uv_once(&_once, init_once);
   w->loop = loop;
   w->work = work;
   w->done = done;
+  QUEUE_INIT(&w->wq);
   post(&w->wq);
 }
 

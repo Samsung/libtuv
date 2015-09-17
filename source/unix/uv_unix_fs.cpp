@@ -489,13 +489,16 @@ static void uv__fs_work(struct uv__work* w) {
       if (r >= 0 && uv__cloexec(r, 1) != 0) {
         r = uv__close(r);
         if (r != 0 && r != -EINPROGRESS)
-          abort();
+          ABORT();
         r = -1;
       }
       if (req->cb != NULL)
         uv_rwlock_rdunlock(&req->loop->cloexec_lock);
       break;
-    default: abort();
+
+    default:
+      TDLOG("!!! file operation(%d) does not exist !!!", req->fs_type);
+      ABORT();
     }
 
 #undef X
@@ -503,11 +506,7 @@ static void uv__fs_work(struct uv__work* w) {
   while (r == -1 && errno == EINTR && retry_on_eintr);
 
   if (r == -1)
-#if defined(__NUTTX__)
     req->result = -get_errno();
-#else
-    req->result = -errno;
-#endif
   else
     req->result = r;
 

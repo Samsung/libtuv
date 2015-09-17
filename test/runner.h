@@ -168,6 +168,7 @@ void process_cleanup(process_info_t *p);
 int run_test_one(task_entry_t* task);
 int run_test_part(const char* test, const char* part);
 int run_tests();
+void run_sleep(int msec);
 
 task_entry_t* get_helper(const char* test);
 int run_helper(task_entry_t* task);

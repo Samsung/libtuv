@@ -45,6 +45,12 @@
 
 #include "runner.h"
 
+
+void run_sleep(int msec) {
+  usleep(msec * 1000);
+}
+
+
 #if 0
 
 /* Do platform-specific initialization. */

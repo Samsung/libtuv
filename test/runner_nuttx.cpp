@@ -51,6 +51,9 @@ int platform_init(int argc, char **argv) {
   return 0;
 }
 
+void run_sleep(int msec) {
+  usleep(msec * 1000);
+}
 
 //-----------------------------------------------------------------------------
 

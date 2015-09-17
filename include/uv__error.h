@@ -43,11 +43,11 @@
 
 #include <errno.h>
 
-#if DEBUG
+#if defined(DEBUG)
 #define ABORT()                  \
   do {                           \
     TDLOG("!!!!! ABORT !!!!!");  \
-    abort();                     \
+    exit(-1);                    \
   } while(0)
 #else
 #define ABORT() abort()
@@ -160,6 +160,11 @@
 # define UV__EPERM (-4048)
 #endif
 
+#if defined(ETIMEDOUT)
+# define UV__ETIMEDOUT (-ETIMEDOUT)
+#else
+# define UV__ETIMEDOUT (-4039)
+#endif
 
 
 
@@ -195,6 +200,7 @@
   XX(ENOSPC, "no space left on device")                                       \
   XX(ENOTDIR, "not a directory")                                              \
   XX(EPERM, "operation not permitted")                                        \
+  XX(ETIMEDOUT, "connection timed out")                                       \
   XX(EOF, "end of file")                                                      \
 
 //-----------------------------------------------------------------------------

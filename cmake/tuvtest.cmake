@@ -27,6 +27,7 @@ set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
                    "${TEST_ROOT}/echo_server.cpp"
                    "${TEST_ROOT}/test_getaddrinfo.cpp"
                    "${TEST_ROOT}/test_threadpool.cpp"
+                   "${TEST_ROOT}/test_condvar.cpp"
                    )
 
 set(TEST_PLATFORMFILES )
