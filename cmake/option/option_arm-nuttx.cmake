@@ -45,7 +45,6 @@ if(DEFINED TARGET_BOARD)
           "-march=armv7e-m"
           "-mfpu=fpv4-sp-d16"
           "-mfloat-abi=hard"
-          "-mfloat-abi=hard"
           )
   else()
     message(STATUS "WARNING: TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
