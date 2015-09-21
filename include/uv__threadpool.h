@@ -68,7 +68,9 @@ int uv_cancel(uv_req_t* req);
 /*
  * for embed systems that need cleanup before exit
  */
-void uv_cleanup(void);
+#if defined(__NUTTX__)
+extern "C" void uv_cleanup(void);
+#endif
 
 
 #endif /* __uv__threadpool_header__ */

@@ -126,7 +126,3 @@ extern "C" int tuvtester_entry(int argc, char *argv[]) {
   }
   return run_tests();
 }
-
-extern "C" int tuvtester_cleanup(void) {
-  uv_cleanup();
-}
