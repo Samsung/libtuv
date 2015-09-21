@@ -44,6 +44,8 @@
 
 #include "uv__unix_platform.h"
 
+#include <netdb.h>
+
 /* for testing */
 #define TUV_POLL_EVENTS_SIZE  32
 
