@@ -34,92 +34,68 @@
  * IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <uv.h>
-#include "uv_internal.h"
+
+#include "runner.h"
 
 
-//-----------------------------------------------------------------------------
+static int close_cb_called = 0;
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
+
+static void close_cb(uv_handle_t* handle) {
+  TUV_ASSERT(handle != NULL);
+  close_cb_called++;
 }
 
 
-//-----------------------------------------------------------------------------
-
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
-
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-  case UV_TTY:
-    uv__stream_close((uv_stream_t*)handle);
-    break;
-
-  case UV_TCP:
-    uv__tcp_close((uv_tcp_t*)handle);
-    break;
-
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
+static void timer_cb(uv_timer_t* handle) {
+  TUV_ASSERT(0 && "timer_cb should not have been called");
 }
 
 
-//-----------------------------------------------------------------------------
+TEST_IMPL(active) {
+  int r;
+  uv_timer_t timer;
 
-int uv_is_closing(const uv_handle_t* handle) {
-  return uv__is_closing(handle);
-}
+  r = uv_timer_init(uv_default_loop(), &timer);
+  TUV_ASSERT(r == 0);
 
+  /* uv_is_active() and uv_is_closing() should always return either 0 or 1. */
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &timer));
+  TUV_ASSERT(0 == uv_is_closing((uv_handle_t*) &timer));
 
-int uv_is_active(const uv_handle_t* handle) {
-  return uv__is_active(handle);
-}
+  r = uv_timer_start(&timer, timer_cb, 1000, 0);
+  TUV_ASSERT(r == 0);
 
+  TUV_ASSERT(1 == uv_is_active((uv_handle_t*) &timer));
+  TUV_ASSERT(0 == uv_is_closing((uv_handle_t*) &timer));
 
-void uv_ref(uv_handle_t* handle) {
-  uv__handle_ref(handle);
-}
+  r = uv_timer_stop(&timer);
+  TUV_ASSERT(r == 0);
 
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &timer));
+  TUV_ASSERT(0 == uv_is_closing((uv_handle_t*) &timer));
 
-void uv_unref(uv_handle_t* handle) {
-  uv__handle_unref(handle);
-}
+  r = uv_timer_start(&timer, timer_cb, 1000, 0);
+  TUV_ASSERT(r == 0);
 
+  TUV_ASSERT(1 == uv_is_active((uv_handle_t*) &timer));
+  TUV_ASSERT(0 == uv_is_closing((uv_handle_t*) &timer));
 
-//-----------------------------------------------------------------------------
+  uv_close((uv_handle_t*) &timer, close_cb);
 
-void uv_deinit(uv_loop_t* loop, uv_handle_t* handle) {
-  QUEUE* q;
-  uv_handle_t* h;
-  QUEUE_FOREACH(q, &loop->handles_queue) {
-    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
-    if (h == handle) {
-      uv__handle_deinit(handle);
-      break;
-    }
-  }
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &timer));
+  TUV_ASSERT(1 == uv_is_closing((uv_handle_t*) &timer));
+
+  r = uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+  TUV_ASSERT(r == 0);
+
+  TUV_ASSERT(close_cb_called == 1);
+
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
+
+  return 0;
 }

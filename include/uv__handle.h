@@ -150,6 +150,10 @@ struct uv_handle_s {
   (((h)->flags & UV__HANDLE_ACTIVE) != 0)
 
 
+#define uv__is_closing(h)                                                     \
+  (((h)->flags & (UV_CLOSING | UV_CLOSED)) != 0)
+
+
 #define uv__handle_start(h)                                                   \
   do {                                                                        \
     assert(((h)->flags & UV__HANDLE_CLOSING) == 0);                           \
@@ -222,7 +226,9 @@ void uv_ref(uv_handle_t*);
 void uv_unref(uv_handle_t*);
 void uv_deinit(uv_loop_t*, uv_handle_t*);
 
+int uv_is_closing(const uv_handle_t* handle);
 int uv_is_active(const uv_handle_t* handle);
+
 void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
 
 
