@@ -76,7 +76,6 @@
   TE(condvar_4, 5000)                                                         \
   \
   TE(fs_file_nametoolong, 5000)                                               \
-  TE(fs_stat_missing_path, 5000)                                              \
   TE(fs_fstat, 5000)                                                          \
   TE(fs_utime, 5000)                                                          \
   TE(fs_futime, 5000)                                                         \

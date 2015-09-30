@@ -60,8 +60,8 @@ void run_sleep(int msec) {
 #define HELPER_PRIORITY     100
 #define HELPER_STACKSIZE    2048
 
-pid_t pid_helper;
-sem_t startsem;
+static pid_t pid_helper;
+static sem_t startsem;
 
 
 static int helper_procedure(int argc, char *argv[]) {
@@ -86,7 +86,6 @@ int run_helper(task_entry_t* task) {
     task->process_name,
     0
   };
-  pid_t pid_helper;
 
   sem_init(&task->semsync, 0, 0);
 
@@ -104,6 +103,7 @@ int run_helper(task_entry_t* task) {
 
 int wait_helper(task_entry_t* task) {
   sem_wait(&task->semsync);
+  task_delete(pid_helper);
   sem_destroy(&task->semsync);
   return 0;
 }

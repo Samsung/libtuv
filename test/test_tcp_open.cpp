@@ -147,7 +147,6 @@ static void connect_cb(uv_connect_t* req, int status) {
 
   if (status == UV__ECONNREFUSED) {
     TDLOG("tcp_open Connection refused. Run server first.");
-    fflush(stderr);
     TUV_ASSERT(0);
   }
 
@@ -180,9 +179,6 @@ TEST_IMPL(tcp_open) {
   connect_cb_called = 0;
   write_cb_called = 0;
   close_cb_called = 0;
-
-  r = uv_loop_init(uv_default_loop());
-  TUV_ASSERT(r == 0);
 
   TUV_ASSERT(0 == uv_ip4_addr("127.0.0.1", TEST_PORT, &addr));
 

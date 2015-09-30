@@ -245,10 +245,9 @@ HELPER_IMPL(tcp4_echo_server) {
   r = uv_run(&loop, UV_RUN_DEFAULT);
   TUV_ASSERT(r == 0);
 
-  assert(server_closed);
+  assert(server_closed != 0);
 
-  r = uv_loop_close(&loop);
-  TUV_ASSERT(r == 0);
+  TUV_ASSERT(uv_loop_close(&loop) == 0);
 
   return 0;
 }

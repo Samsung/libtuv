@@ -601,6 +601,8 @@ TEST_IMPL(fs_file_noent) {
 
   /* TODO add EACCES test */
 
+  TUV_ASSERT(0 == uv_loop_close(loop));
+
   return 0;
 }
 
@@ -637,6 +639,8 @@ TEST_IMPL(fs_file_nametoolong) {
   TUV_ASSERT(open_cb_count == 0);
   uv_run(loop, UV_RUN_DEFAULT);
   TUV_ASSERT(open_cb_count == 1);
+
+  TUV_ASSERT(0 == uv_loop_close(loop));
 
   return 0;
 }
@@ -692,8 +696,6 @@ TEST_IMPL(fs_file_async) {
   loop = uv_default_loop();
 
   //---------------------------------------------------------------------------
-  r = uv_loop_init(loop);
-  TUV_ASSERT(r == 0);
   r = uv_fs_open(loop, &open_req1, filename1, O_WRONLY | O_CREAT,
                  S_IRUSR | S_IWUSR, create_cb);
   TUV_ASSERT(r == 0);
@@ -1110,6 +1112,8 @@ TEST_IMPL(fs_stat_missing_path) {
   TUV_ASSERT(req.result == UV_ENOENT);
   uv_fs_req_cleanup(&req);
 
+  TUV_ASSERT(0 == uv_loop_close(loop));
+
   return 0;
 }
 
@@ -1132,6 +1136,7 @@ TEST_IMPL(fs_open_dir) {
   r = uv_fs_open(loop, &req, path, O_RDONLY, 0, NULL);
 #if defined(__NUTTX__)
   TUV_ASSERT(r == -EISDIR);
+  uv_fs_req_cleanup(&req);
 #else
   TUV_ASSERT(r >= 0);
   TUV_ASSERT(req.result >= 0);
@@ -1141,9 +1146,10 @@ TEST_IMPL(fs_open_dir) {
 
   r = uv_fs_close(loop, &req, file, NULL);
   TUV_ASSERT(r == 0);
+  uv_fs_req_cleanup(&req);
+#endif
 
   TUV_ASSERT(0 == uv_loop_close(loop));
-#endif
 
   return 0;
 }

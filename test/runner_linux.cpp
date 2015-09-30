@@ -344,6 +344,9 @@ int main(int argc, char *argv[]) {
 
 #else
 
+static pthread_t tid = 0;
+
+
 /* Do platform-specific initialization. */
 int platform_init(int argc, char **argv) {
   return 0;
@@ -358,12 +361,12 @@ static void* helper_proc(void* data) {
   TUV_ASSERT(ret == 0);
 
   sem_post(&task->semsync);
+  pthread_exit(0);
   return NULL;
 }
 
 int run_helper(task_entry_t* task) {
   int r;
-  pthread_t tid;
   sem_init(&task->semsync, 0, 0);
   r = pthread_create(&tid, NULL, helper_proc, task);
   sem_wait(&task->semsync);
@@ -372,6 +375,7 @@ int run_helper(task_entry_t* task) {
 
 int wait_helper(task_entry_t* task) {
   sem_wait(&task->semsync);
+  pthread_join(tid, NULL);
   sem_destroy(&task->semsync);
   return 0;
 }

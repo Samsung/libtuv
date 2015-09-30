@@ -60,6 +60,8 @@ TEST_IMPL(active) {
   int r;
   uv_timer_t timer;
 
+  close_cb_called = 0;
+
   r = uv_timer_init(uv_default_loop(), &timer);
   TUV_ASSERT(r == 0);
 
