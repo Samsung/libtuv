@@ -231,6 +231,7 @@ int uv_is_active(const uv_handle_t* handle);
 
 void uv_close(uv_handle_t* handle, uv_close_cb close_cb);
 
+void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg);
 
 
 #ifdef UV__O_NONBLOCK

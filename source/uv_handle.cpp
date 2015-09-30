@@ -112,9 +112,25 @@ void uv_unref(uv_handle_t* handle) {
 
 //-----------------------------------------------------------------------------
 
+void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg) {
+  QUEUE* q;
+  uv_handle_t* h;
+
+  QUEUE_FOREACH(q, &loop->handles_queue) {
+    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
+    if (h->flags & UV__HANDLE_INTERNAL)
+      continue;
+    walk_cb(h, arg);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+
 void uv_deinit(uv_loop_t* loop, uv_handle_t* handle) {
   QUEUE* q;
   uv_handle_t* h;
+
   QUEUE_FOREACH(q, &loop->handles_queue) {
     h = QUEUE_DATA(q, uv_handle_t, handle_queue);
     if (h == handle) {

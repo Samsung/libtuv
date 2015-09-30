@@ -64,6 +64,7 @@
   TE(error_message, 5000)                                                     \
   \
   TE(threadpool_queue_work_simple, 5000)                                      \
+  TE(walk_handles, 5000)                                                      \
   \
   TE(tcp_open,5000)                                                           \
   TE(shutdown_eof,5000)                                                       \

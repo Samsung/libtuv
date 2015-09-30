@@ -29,6 +29,7 @@ set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
                    "${TEST_ROOT}/test_threadpool.cpp"
                    "${TEST_ROOT}/test_condvar.cpp"
                    "${TEST_ROOT}/test_active.cpp"
+                   "${TEST_ROOT}/test_walk_handles.cpp"
                    )
 
 set(TEST_PLATFORMFILES )
