@@ -689,6 +689,9 @@ TEST_IMPL(fs_file_async) {
   rename_cb_count = 0;
   create_cb_count = 0;
   write_cb_count = 0;
+  fsync_cb_count = 0;
+  fdatasync_cb_count = 0;
+  unlink_cb_count = 0;
 
   memset(&open_req1, 0, sizeof(open_req1));
   memset(&rename_req, 0, sizeof(rename_req));

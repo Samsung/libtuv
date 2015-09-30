@@ -140,6 +140,7 @@ __attribute__((destructor)) static void cleanup(void) {
   _threads = NULL;
   _nthreads = 0;
   _initialized = 0;
+  _once = UV_ONCE_INIT;
 }
 
 
