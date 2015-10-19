@@ -17,3 +17,9 @@ include("cmake/option/option_unix_common.cmake")
 include("cmake/option/option_linux_common.cmake")
 
 # i686 specific
+
+set(FLAGS_COMMON
+      ${FLAGS_COMMON}
+      -march=i686
+      -m32
+      )
