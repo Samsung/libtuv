@@ -38,6 +38,11 @@
 #define __uv__threadpool_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 void uv__work_submit(uv_loop_t* loop,
                      struct uv__work *w,
                      void (*work)(struct uv__work *w),
@@ -65,11 +70,16 @@ int uv_queue_work(uv_loop_t* loop,
 
 int uv_cancel(uv_req_t* req);
 
+
 /*
  * for embed systems that need cleanup before exit
  */
 #if defined(__NUTTX__)
-extern "C" void uv_cleanup(void);
+void uv_cleanup(void);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 

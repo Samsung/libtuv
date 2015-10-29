@@ -42,6 +42,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // fs
 
@@ -58,5 +64,11 @@ void uv__handle_platform_init(uv_handle_t* handle);
 void uv__idle_platform_init(uv_idle_t* handle);
 void uv__async_platform_init(uv_async_t* handle);
 void uv__timer_platform_init(uv_timer_t* handle);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv_unix_platform_header__

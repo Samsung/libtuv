@@ -41,6 +41,11 @@
 #include <sys/socket.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr);
 int uv_ip4_name(const struct sockaddr_in* src, char* dst, size_t size);
 int uv_inet_ntop(int af, const void* src, char* dst, size_t size);
@@ -116,5 +121,11 @@ struct uv_shutdown_s {
 
 
 int uv_shutdown(uv_shutdown_t* req, uv_stream_t* handle, uv_shutdown_cb cb);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv__tcp_header__

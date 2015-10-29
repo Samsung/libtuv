@@ -14,22 +14,22 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(TEST_MAINFILE "${TEST_ROOT}/runner_main.cpp")
+set(TEST_MAINFILE "${TEST_ROOT}/runner_main.c")
 
-set(TEST_UNITFILES "${TEST_ROOT}/test_idle.cpp"
-                   "${TEST_ROOT}/test_timer.cpp"
-                   "${TEST_ROOT}/test_timer_again.cpp"
-                   "${TEST_ROOT}/test_fs.cpp"
-                   "${TEST_ROOT}/test_cwd.cpp"
-                   "${TEST_ROOT}/test_error.cpp"
-                   "${TEST_ROOT}/test_tcp_open.cpp"
-                   "${TEST_ROOT}/test_shutdown_eof.cpp"
-                   "${TEST_ROOT}/echo_server.cpp"
-                   "${TEST_ROOT}/test_getaddrinfo.cpp"
-                   "${TEST_ROOT}/test_threadpool.cpp"
-                   "${TEST_ROOT}/test_condvar.cpp"
-                   "${TEST_ROOT}/test_active.cpp"
-                   "${TEST_ROOT}/test_walk_handles.cpp"
+set(TEST_UNITFILES "${TEST_ROOT}/test_idle.c"
+                   "${TEST_ROOT}/test_timer.c"
+                   "${TEST_ROOT}/test_timer_again.c"
+                   "${TEST_ROOT}/test_fs.c"
+                   "${TEST_ROOT}/test_cwd.c"
+                   "${TEST_ROOT}/test_error.c"
+                   "${TEST_ROOT}/test_tcp_open.c"
+                   "${TEST_ROOT}/test_shutdown_eof.c"
+                   "${TEST_ROOT}/echo_server.c"
+                   "${TEST_ROOT}/test_getaddrinfo.c"
+                   "${TEST_ROOT}/test_threadpool.c"
+                   "${TEST_ROOT}/test_condvar.c"
+                   "${TEST_ROOT}/test_active.c"
+                   "${TEST_ROOT}/test_walk_handles.c"
                    )
 
 set(TEST_PLATFORMFILES )

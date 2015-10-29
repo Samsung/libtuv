@@ -45,6 +45,14 @@
 #include <fcntl.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+struct msghdr;
+
+
 int uv__nonblock(int fd, int set);
 int uv__close(int fd);
 int uv__socket(int domain, int type, int protocol);
@@ -55,5 +63,11 @@ int uv__open_cloexec(const char* path, int flags);
 int uv__cloexec(int fd, int set);
 
 ssize_t uv__recvmsg(int fd, struct msghdr *msg, int flags);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv__fd_header__

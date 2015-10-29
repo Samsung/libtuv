@@ -14,20 +14,20 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.cpp"
-                    "${SOURCE_ROOT}/uv_loop.cpp"
-                    "${SOURCE_ROOT}/uv_idle.cpp"
-                    "${SOURCE_ROOT}/uv_run.cpp"
-                    "${SOURCE_ROOT}/uv_timer.cpp"
-                    "${SOURCE_ROOT}/uv_threadpool.cpp"
-                    "${SOURCE_ROOT}/uv_req.cpp"
-                    "${SOURCE_ROOT}/uv_fs.cpp"
-                    "${SOURCE_ROOT}/uv_async.cpp"
-                    "${SOURCE_ROOT}/uv_util.cpp"
-                    "${SOURCE_ROOT}/tuv_debuglog.cpp"
-                    "${SOURCE_ROOT}/uv_error.cpp"
-                    "${SOURCE_ROOT}/uv_dir.cpp"
-                    "${SOURCE_ROOT}/uv_inet.cpp"
+set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.c"
+                    "${SOURCE_ROOT}/uv_loop.c"
+                    "${SOURCE_ROOT}/uv_idle.c"
+                    "${SOURCE_ROOT}/uv_run.c"
+                    "${SOURCE_ROOT}/uv_timer.c"
+                    "${SOURCE_ROOT}/uv_threadpool.c"
+                    "${SOURCE_ROOT}/uv_req.c"
+                    "${SOURCE_ROOT}/uv_fs.c"
+                    "${SOURCE_ROOT}/uv_async.c"
+                    "${SOURCE_ROOT}/uv_util.c"
+                    "${SOURCE_ROOT}/tuv_debuglog.c"
+                    "${SOURCE_ROOT}/uv_error.c"
+                    "${SOURCE_ROOT}/uv_dir.c"
+                    "${SOURCE_ROOT}/uv_inet.c"
                     )
 
 set(LIB_TUV_SRCFILES

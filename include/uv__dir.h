@@ -38,7 +38,14 @@
 #define __uv__dir_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int uv_cwd(char* buffer, size_t* size);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __uv__dir_header__

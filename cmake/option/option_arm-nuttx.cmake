@@ -27,14 +27,14 @@ set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 set(NUTTX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
 
 set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
-                      "${NUTTX_PATH}/uv_nuttx.cpp"
-                      "${NUTTX_PATH}/uv_nuttx_clock.cpp"
-                      "${NUTTX_PATH}/uv_nuttx_io.cpp"
-                      "${NUTTX_PATH}/uv_nuttx_loop.cpp"
-                      "${NUTTX_PATH}/uv_nuttx_thread.cpp"
+                      "${NUTTX_PATH}/uv_nuttx.c"
+                      "${NUTTX_PATH}/uv_nuttx_clock.c"
+                      "${NUTTX_PATH}/uv_nuttx_io.c"
+                      "${NUTTX_PATH}/uv_nuttx_loop.c"
+                      "${NUTTX_PATH}/uv_nuttx_thread.c"
                       )
 
-set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.cpp")
+set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.c")
 
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "stm32f4disco")

@@ -385,13 +385,19 @@ int run_test_one(task_entry_t* task) {
 }
 
 int main(int argc, char *argv[]) {
-  TuvUseDebug usedebug;
+  int result;
+
+  InitDebugSettings();
+
   platform_init(argc, argv);
 
   if (argc>2) {
     return run_test_part(argv[1], argv[2]);
   }
-  return run_tests();
+  result = run_tests();
+  ReleaseDebugSettings();
+
+  return result;
 }
 
 #endif

@@ -117,7 +117,7 @@ int run_test_one(task_entry_t* task) {
 //
 // this is called from nuttx apps system tuvtester
 //
-extern "C" int tuvtester_entry(int argc, char *argv[]) {
+int tuvtester_entry(int argc, char *argv[]) {
   fprintf(stderr, ">> tuvtester_entry call ok\n");
   fflush(stderr);
   platform_init(argc, argv);

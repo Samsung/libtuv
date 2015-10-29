@@ -41,6 +41,12 @@
 #error Please include with uv.h
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // uv_idle_t
 
@@ -53,6 +59,11 @@ struct uv_idle_s {
 int uv_idle_init(uv_loop_t* loop, uv_idle_t* handle);
 int uv_idle_start(uv_idle_t* handle, uv_idle_cb cb);
 int uv_idle_stop(uv_idle_t* handle);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__idle_header__

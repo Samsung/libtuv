@@ -43,6 +43,12 @@
 
 #include <errno.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #if defined(DEBUG)
 #define ABORT()                  \
   do {                           \
@@ -216,5 +222,8 @@ typedef enum {
 const char* uv_strerror(int err);
 const char* uv_err_name(int err);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __uv__error_header__

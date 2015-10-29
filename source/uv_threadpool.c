@@ -334,7 +334,7 @@ int uv_cancel(uv_req_t* req) {
 
 //-----------------------------------------------------------------------------
 #if defined(__NUTTX__)
-extern "C" void uv_cleanup(void) {
+void uv_cleanup(void) {
   cleanup();
 }
 #endif

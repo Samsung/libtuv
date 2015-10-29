@@ -38,12 +38,22 @@
 #define __uv__pipe_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 struct uv_pipe_s {
   UV_HANDLE_FIELDS
   UV_STREAM_FIELDS
   int ipc; /* non-zero if this pipe is used for passing handles */
   UV_PIPE_PRIVATE_FIELDS
 };
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__pipe_header__

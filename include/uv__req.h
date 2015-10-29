@@ -42,6 +42,11 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 
 #define UV_REQ_TYPE_MAP(XX)                                                   \
@@ -118,5 +123,11 @@ void uv__req_init_(uv_loop_t* loop, uv_req_t* req, uv_req_type type);
 
 #define uv__req_init(loop, req, type) \
         uv__req_init_((loop), (uv_req_t*)(req), (type))
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv__req_header__

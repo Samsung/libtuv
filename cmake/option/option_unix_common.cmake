@@ -31,13 +31,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 # unix common source files
 set(UNIX_PATH "${SOURCE_ROOT}/unix")
 
-set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.cpp"
-                      "${UNIX_PATH}/uv_unix_async.cpp"
-                      "${UNIX_PATH}/uv_unix_io.cpp"
-                      "${UNIX_PATH}/uv_unix_fs.cpp"
-                      "${UNIX_PATH}/uv_unix_process.cpp"
-                      "${UNIX_PATH}/uv_unix_thread.cpp"
-                      "${UNIX_PATH}/uv_unix_tcp.cpp"
-                      "${UNIX_PATH}/uv_unix_stream.cpp"
-                      "${UNIX_PATH}/uv_unix_getaddrinfo.cpp"
+set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.c"
+                      "${UNIX_PATH}/uv_unix_async.c"
+                      "${UNIX_PATH}/uv_unix_io.c"
+                      "${UNIX_PATH}/uv_unix_fs.c"
+                      "${UNIX_PATH}/uv_unix_process.c"
+                      "${UNIX_PATH}/uv_unix_thread.c"
+                      "${UNIX_PATH}/uv_unix_tcp.c"
+                      "${UNIX_PATH}/uv_unix_stream.c"
+                      "${UNIX_PATH}/uv_unix_getaddrinfo.c"
                       )

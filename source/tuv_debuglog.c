@@ -26,7 +26,7 @@ int tuv_debug_level = TDBGLEV_INFO;
 int tuv_debug_level = TDBGLEV_ERR;
 #endif
 
-FILE *tuv_log_stream = stderr;
+FILE *tuv_log_stream;
 const char* tuv_debug_prefix[4] = { "", "ERR", "WRN", "INF" };
 #endif // ENABLE_DEBUG_LOG
 
@@ -38,6 +38,8 @@ void InitDebugSettings() {
 
   dbglevel = getenv("TUV_DEBUG_LEVEL");
   dbglogfile = getenv("TUV_DEBUG_LOGFILE");
+
+  tuv_log_stream = stderr;
 
   if (dbglevel) {
     tuv_debug_level = atoi(dbglevel);

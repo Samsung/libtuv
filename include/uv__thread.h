@@ -42,6 +42,11 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // uv_thread
 
@@ -100,6 +105,11 @@ void uv_rwlock_rdunlock(uv_rwlock_t* rwlock);
 void uv_rwlock_wrlock(uv_rwlock_t* rwlock);
 int uv_rwlock_trywrlock(uv_rwlock_t* rwlock);
 void uv_rwlock_wrunlock(uv_rwlock_t* rwlock);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif //__uv__thread_header__

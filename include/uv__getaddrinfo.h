@@ -41,6 +41,12 @@
 #error Please include with uv.h
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /*
  * uv_getaddrinfo_t is a subclass of uv_req_t.
  *
@@ -63,6 +69,10 @@ int uv_getaddrinfo(uv_loop_t* loop,
                    const struct addrinfo* hints);
 void uv_freeaddrinfo(struct addrinfo* ai);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__getaddrinfo_header__

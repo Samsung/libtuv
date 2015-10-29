@@ -41,6 +41,12 @@
 #error Please include with uv.h
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // uv_loop_t
 
@@ -84,6 +90,10 @@ int uv__platform_loop_init(uv_loop_t* loop);
 void uv__platform_loop_delete(uv_loop_t* loop);
 void uv__platform_invalidate_fd(uv_loop_t* loop, int fd);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__loop_header__

@@ -41,6 +41,12 @@
 #error Please include with uv.h
 #endif
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // uv_handle_t
 
@@ -238,6 +244,11 @@ void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg);
 # define UV__F_NONBLOCK UV__O_NONBLOCK
 #else
 # define UV__F_NONBLOCK 1
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 

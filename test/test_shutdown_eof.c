@@ -72,7 +72,7 @@ static void read_cb(uv_stream_t* t, ssize_t nread, const uv_buf_t* buf) {
   }
 
   if (nread > 0) {
-    TUV_ASSERT(false);
+    TUV_ASSERT(0);
     //TUV_ASSERT(!got_eof);
     //TUV_ASSERT(buf->base[0] == 'Q');
     //uv_buf_t qbuf = uv_buf_init((char*)"Q", 1);

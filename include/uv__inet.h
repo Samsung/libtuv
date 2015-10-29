@@ -38,11 +38,21 @@
 #define __uv__inet_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 int uv_listen(uv_stream_t* stream, int backlog, uv_connection_cb cb);
 int uv_accept(uv_stream_t* server, uv_stream_t* client);
 
 int uv_inet_ntop(int af, const void* src, char* dst, size_t size);
 int uv_inet_pton(int af, const char* src, void* dst);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__inet_header__

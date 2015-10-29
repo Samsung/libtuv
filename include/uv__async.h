@@ -42,6 +42,10 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //-----------------------------------------------------------------------------
 
 #define ACCESS_ONCE(type, var)                                                \
@@ -99,5 +103,8 @@ void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
 
 //-----------------------------------------------------------------------------
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __uv__async_header__

@@ -42,6 +42,11 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // uv_timer_t
 
@@ -57,6 +62,11 @@ int uv_timer_stop(uv_timer_t* handle);
 int uv_timer_again(uv_timer_t* handle);
 void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat);
 uint64_t uv_timer_get_repeat(const uv_timer_t* handle);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__timer_header__

@@ -21,6 +21,12 @@
 
 #include <stdio.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 extern int tuv_debug_level;
 extern FILE *tuv_log_stream;
 extern const char* tuv_debug_prefix[4];
@@ -50,26 +56,46 @@ extern const char* tuv_debug_prefix[4];
   USE DDDLOG for informations, set tuv_debug_level=3 to see them
 */
 
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #else /* !ENABLE_DEBUG_LOG */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #define TUV_DLOG(...)
 #define TDLOG(...)
 #define TDDLOG(...)
 #define TDDDLOG(...)
 
+
+#ifdef __cplusplus
+}
+#endif
+
+
 #endif /* ENABLE_DEBUG_LOG */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 void InitDebugSettings();
 void ReleaseDebugSettings();
 
-class TuvUseDebug {
-public:
-  explicit TuvUseDebug() {
-    InitDebugSettings();
-  }
-  ~TuvUseDebug() {
-    ReleaseDebugSettings();
-  }
-};
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* __tuv_debuglog_header__ */

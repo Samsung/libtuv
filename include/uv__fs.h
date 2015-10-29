@@ -45,6 +45,11 @@
 #include <fcntl.h>
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 
 struct uv_buf_s {
@@ -128,5 +133,11 @@ int uv_fs_futime(uv_loop_t* loop, uv_fs_t* req, uv_file file,
                  double atime, double mtime, uv_fs_cb cb);
 int uv_fs_utime(uv_loop_t* loop, uv_fs_t* req, const char* path,
                 double atime, double mtime, uv_fs_cb cb);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv__fs_header__

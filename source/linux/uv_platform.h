@@ -99,9 +99,7 @@ uint64_t uv__hrtime(uv_clocktype_t type);
 #define uv__update_time(loop)                                                 \
   loop->time = uv__hrtime(UV_CLOCK_FAST) / 1000000
 
-inline uint64_t uv__time_precise() {
-  return uv__hrtime(UV_CLOCK_PRECISE);
-}
+inline uint64_t uv__time_precise();
 
 
 //-----------------------------------------------------------------------------

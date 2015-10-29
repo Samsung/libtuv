@@ -38,6 +38,11 @@
 #define __uv_unix_extenstion_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #define UV_HANDLE_PRIVATE_FIELDS                                              \
   uv_handle_t* next_closing;                                                  \
 
@@ -231,6 +236,11 @@ enum {
   char* service;                                                              \
   struct addrinfo* addrinfo;                                                  \
   int retcode;
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv_unix_extenstion_header__

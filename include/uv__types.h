@@ -42,6 +42,11 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //-----------------------------------------------------------------------------
 // strcture types
 
@@ -68,6 +73,9 @@ typedef struct uv_work_s uv_work_t;
 typedef struct uv__io_s uv__io_t;
 typedef struct uv_buf_s uv_buf_t;
 
+// structure
+struct uv__async;
+struct addrinfo;
 
 //-----------------------------------------------------------------------------
 // callback types
@@ -145,6 +153,11 @@ struct uv__work {
 
 
 //-----------------------------------------------------------------------------
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif // __uv__types_header__

@@ -38,6 +38,11 @@
 #define __uv__stream_header__
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #define UV_STREAM_FIELDS                                                      \
   /* number of bytes queued for writing */                                    \
   size_t write_queue_size;                                                    \
@@ -89,5 +94,11 @@ int uv_write2(uv_write_t* req, uv_stream_t* handle, const uv_buf_t bufs[],
               unsigned int nbufs, uv_stream_t* send_handle, uv_write_cb cb);
 int uv_try_write(uv_stream_t* handle, const uv_buf_t bufs[],
                  unsigned int nbufs);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // __uv__stream_header__
