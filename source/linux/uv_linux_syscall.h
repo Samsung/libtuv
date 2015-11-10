@@ -41,18 +41,36 @@
 
 
 // architectecture dependent
-#define UV__O_CLOEXEC         0x80000
-#define UV__O_NONBLOCK        0x800
+#if defined(__alpha__)
+# define UV__O_CLOEXEC        0x200000
+#elif defined(__hppa__)
+# define UV__O_CLOEXEC        0x200000
+#elif defined(__sparc__)
+# define UV__O_CLOEXEC        0x400000
+#else
+# define UV__O_CLOEXEC        0x80000
+#endif
+
+#if defined(__alpha__)
+# define UV__O_NONBLOCK       0x4
+#elif defined(__hppa__)
+# define UV__O_NONBLOCK       0x10004
+#elif defined(__mips__)
+# define UV__O_NONBLOCK       0x80
+#elif defined(__sparc__)
+# define UV__O_NONBLOCK       0x4000
+#else
+# define UV__O_NONBLOCK       0x800
+#endif
 
 #define UV__EFD_CLOEXEC       UV__O_CLOEXEC
 #define UV__EFD_NONBLOCK      UV__O_NONBLOCK
 
+#define UV__IN_CLOEXEC        UV__O_CLOEXEC
+#define UV__IN_NONBLOCK       UV__O_NONBLOCK
+
 #define UV__SOCK_CLOEXEC      UV__O_CLOEXEC
-#if defined(SOCK_NONBLOCK)
-# define UV__SOCK_NONBLOCK    SOCK_NONBLOCK
-#else
-# define UV__SOCK_NONBLOCK    UV__O_NONBLOCK
-#endif
+#define UV__SOCK_NONBLOCK     UV__O_NONBLOCK
 
 /* epoll flags */
 #define UV__EPOLL_CLOEXEC     UV__O_CLOEXEC
