@@ -40,8 +40,6 @@
 
 #include "runner.h"
 
-char executable_path[EXEC_PATH_LENGTH];
-
 
 //-----------------------------------------------------------------------------
 // test function list

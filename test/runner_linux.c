@@ -53,6 +53,9 @@ void run_sleep(int msec) {
 
 #if 0
 
+char executable_path[EXEC_PATH_LENGTH];
+
+
 /* Do platform-specific initialization. */
 int platform_init(int argc, char **argv) {
 

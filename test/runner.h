@@ -153,8 +153,6 @@ typedef enum {
 #define EXEC_PATH_LENGTH 4096
 #endif
 
-extern char executable_path[EXEC_PATH_LENGTH];
-
 
 int platform_init(int argc, char **argv);
 
