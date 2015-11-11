@@ -14,11 +14,6 @@
 
 include("cmake/option/option_unix_common.cmake")
 
-set(FLAGS_COMMON
-      "${FLAGS_COMMON}"
-      "-D__NUTTX__"
-      )
-
 # override TUV_PLATFORM_PATH for NuttX
 # use "nuttx" for NuttX platform dependent source files
 set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
@@ -36,20 +31,6 @@ set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
 
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.c")
 
-if(DEFINED TARGET_BOARD)
-  if(${TARGET_BOARD} STREQUAL "stm32f4disco")
-    set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
-          "-mcpu=cortex-m4"
-          "-mthumb"
-          "-march=armv7e-m"
-          "-mfpu=fpv4-sp-d16"
-          "-mfloat-abi=hard"
-          )
-  else()
-    message(STATUS "WARNING: TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
-  endif()
-endif()
 
 if(NOT DEFINED TARGET_SYSTEMROOT OR "${TARGET_SYSTEMROOT}" STREQUAL "default")
   message(FATAL_ERROR "\nPlease set TARGET_SYSTEMROOT for NuttX include path\n")
