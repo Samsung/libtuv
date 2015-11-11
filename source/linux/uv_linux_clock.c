@@ -38,6 +38,10 @@
 
 #include <uv.h>
 
+/* Available from 2.6.32 onwards, some embeded platform has header file without defination of this! */
+#ifndef CLOCK_MONOTONIC_COARSE
+# define CLOCK_MONOTONIC_COARSE 6
+#endif
 
 uint64_t uv__hrtime(uv_clocktype_t type) {
   static clock_t fast_clock_id = -1;
