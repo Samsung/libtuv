@@ -12,23 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# linux common
-include("cmake/option/option_unix_common.cmake")
-include("cmake/option/option_linux_common.cmake")
+include(CMakeForceCompiler)
 
-# arm-linux specific
-if(DEFINED TARGET_BOARD)
-  if(${TARGET_BOARD} STREQUAL "rpi2")
-    # rpi2 specific
-    set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
-          "-mcpu=cortex-a7"
-          "-mfloat-abi=hard"
-          "-mfpu=neon-vfpv4"
-          )
-  else()
-    message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
-  endif()
-else()
-  message(FATAL_ERROR "TARGET_BOARD is undefined")
-endif()
+set(CMAKE_SYSTEM_NAME mbed)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+
+SET(CMAKE_C_COMPILER   arm-none-eabi-g++)
+SET(CMAKE_CXX_COMPILER arm-none-eabi-g++)
+
+# need to force compiler,
+# else it'll try to check and exit with 'unedefined _exit()
+CMAKE_FORCE_C_COMPILER(${CMAKE_C_COMPILER} GNU)
+CMAKE_FORCE_CXX_COMPILER(${CMAKE_CXX_COMPILER} GNU)

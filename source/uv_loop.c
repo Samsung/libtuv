@@ -50,6 +50,11 @@ static uv_loop_t* default_loop_ptr = NULL;
 int uv_loop_init(uv_loop_t* loop) {
   int err;
 
+#if defined(__TUV_RAW__)
+  // TODO: fix this
+  uv__time_init();
+#endif
+
   memset(loop, 0, sizeof(uv_loop_t));
   heap_init((struct heap*) &loop->timer_heap);
 
@@ -67,6 +72,8 @@ int uv_loop_init(uv_loop_t* loop) {
 
   loop->closing_handles = NULL;
   uv__update_time(loop);
+  // __TUV_MBED__
+  //TDDDLOG("uv_loop_init time:%llu", loop->time);
   uv__async_init(&loop->async_watcher);
   loop->backend_fd = -1;
   loop->emfile_fd = -1;

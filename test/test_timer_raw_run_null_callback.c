@@ -34,44 +34,24 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <uv.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include "runner.h"
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+TEST_IMPL(timer_null_callback) {
+  uv_timer_t handle;
 
+  TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &handle));
+  TUV_ASSERT(UV_EINVAL == uv_timer_start(&handle, NULL, 100, 100));
 
-//-----------------------------------------------------------------------------
+  // for platform that needs closing
+  uv_deinit(uv_default_loop(), (uv_handle_t*) &handle);
+  TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+  // jump to next test
+  run_tests_continue();
 
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+  return 0;
 }
-#endif
 
-
-#endif // __uv__util_header__

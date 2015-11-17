@@ -41,7 +41,7 @@ extern const char* tuv_debug_prefix[4];
     if (0 <= lvl && lvl <= tuv_debug_level && tuv_log_stream) { \
       fprintf(tuv_log_stream, "[%s] ", tuv_debug_prefix[lvl]); \
       fprintf(tuv_log_stream, __VA_ARGS__); \
-      fprintf(tuv_log_stream, "\n"); \
+      fprintf(tuv_log_stream, "\r\n"); \
       fflush(tuv_log_stream); \
     } \
     set_errno(errback); \

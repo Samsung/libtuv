@@ -14,23 +14,6 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-set(TEST_MAINFILE "${TEST_ROOT}/runner_main.c")
-
-set(TEST_UNITFILES "${TEST_ROOT}/test_idle.c"
-                   "${TEST_ROOT}/test_timer.c"
-                   "${TEST_ROOT}/test_timer_again.c"
-                   "${TEST_ROOT}/test_fs.c"
-                   "${TEST_ROOT}/test_cwd.c"
-                   "${TEST_ROOT}/test_error.c"
-                   "${TEST_ROOT}/test_tcp_open.c"
-                   "${TEST_ROOT}/test_shutdown_eof.c"
-                   "${TEST_ROOT}/echo_server.c"
-                   "${TEST_ROOT}/test_getaddrinfo.c"
-                   "${TEST_ROOT}/test_threadpool.c"
-                   "${TEST_ROOT}/test_condvar.c"
-                   "${TEST_ROOT}/test_active.c"
-                   "${TEST_ROOT}/test_walk_handles.c"
-                   )
 
 set(TEST_PLATFORMFILES )
 

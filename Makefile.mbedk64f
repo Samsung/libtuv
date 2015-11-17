@@ -12,23 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# linux common
-include("cmake/option/option_unix_common.cmake")
-include("cmake/option/option_linux_common.cmake")
 
-# arm-linux specific
-if(DEFINED TARGET_BOARD)
-  if(${TARGET_BOARD} STREQUAL "rpi2")
-    # rpi2 specific
-    set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
-          "-mcpu=cortex-a7"
-          "-mfloat-abi=hard"
-          "-mfpu=neon-vfpv4"
-          )
-  else()
-    message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
-  endif()
-else()
-  message(FATAL_ERROR "TARGET_BOARD is undefined")
-endif()
+TARGET_DIR ?= /media/$(USER)/MBED
+
+.phony: all
+
+
+all: tuv yotta flash
+
+
+tuv:
+	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make
+
+yotta:
+	cd embedding/mbedk64f; yotta build;
+
+flash: check_mbed
+	cp embedding/mbedk64f/build/frdm-k64f-gcc/source/mbedk64f.bin \
+		"$(TARGET_DIR)/."
+	@echo "Wait till LED flashing stops..."
+
+check_mbed:
+	@if [ ! -d "${TARGET_DIR}" ] ; then \
+		echo "MBED not mounted at ${TARGET_DIR}"; \
+		exit 1; \
+	fi
+
+clean:
+  TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make clean

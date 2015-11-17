@@ -34,44 +34,61 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <uv.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "runner.h"
 
 
 //-----------------------------------------------------------------------------
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+static unsigned int timer_run_once_timer_cb_called = 0;
 
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+static void timer_run_once_timer_cb(uv_timer_t* handle) {
+  timer_run_once_timer_cb_called++;
 }
-#endif
 
 
-#endif // __uv__util_header__
+typedef struct {
+  uv_loop_t* loop;
+  uv_timer_t timer_handle;
+} timer_param_t;
+
+
+TEST_IMPL(timer_run_once) {
+  timer_param_t* param;
+  uv_loop_t* loop;
+
+  param = (timer_param_t*)malloc(sizeof(timer_param_t));
+  loop = uv_default_loop();
+  param->loop = loop;
+
+  timer_run_once_timer_cb_called = 0;
+
+  TUV_ASSERT(0 == uv_timer_init(param->loop, &param->timer_handle));
+  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
+                                 timer_run_once_timer_cb, 0, 0));
+  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
+  TUV_ASSERT(1 == timer_run_once_timer_cb_called);
+
+  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
+                                timer_run_once_timer_cb, 1, 0));
+  // slow systems may have nano second resolution
+  // give some time to sleep so that time tick is changed
+  tuvp_usleep(1000);
+  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
+  TUV_ASSERT(2 == timer_run_once_timer_cb_called);
+
+  uv_close((uv_handle_t*)&param->timer_handle, NULL);
+  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
+
+  // for platforms that needs cleaning
+  TUV_ASSERT(0 == uv_loop_close(param->loop));
+
+  // cleanup tuv param
+  free(param);
+
+  // jump to next test
+  run_tests_continue();
+
+  return 0;
+}

@@ -34,44 +34,17 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include <uv.h>
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int uv__platform_loop_init(uv_loop_t* loop) {
 
-
-//-----------------------------------------------------------------------------
-
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
-
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+  return 0;
 }
-#endif
 
 
-#endif // __uv__util_header__
+void uv__platform_loop_delete(uv_loop_t* loop) {
+
+}
+

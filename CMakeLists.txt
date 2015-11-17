@@ -18,6 +18,18 @@ project(libtuv)
 set(LIBTUV_VERSION_MAJOR 0)
 set(LIBTUV_VERSION_MINOR 1)
 
+#
+# + unix_common: unix like, posix, multi-tasking
+#     + linux_common
+#         + arm-linux
+#         + i686-linux
+#         + x86_64-linux
+#     + arm-nuttx
+# + (mtsk_common: multi-tasking
+#     + (TBD)
+# + raw_common: single task, big-while-loop
+#     + arm-mbed
+#
 include(cmake/options.cmake)
 include(cmake/libtuv.cmake)
 if (DEFINED BUILDTESTER)

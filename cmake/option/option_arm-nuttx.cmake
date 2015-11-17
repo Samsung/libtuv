@@ -47,8 +47,10 @@ if(DEFINED TARGET_BOARD)
           "-mfloat-abi=hard"
           )
   else()
-    message(STATUS "WARNING: TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
+    message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
   endif()
+else()
+  message(FATAL_ERROR "TARGET_BOARD is undefined")
 endif()
 
 if(NOT DEFINED TARGET_SYSTEMROOT OR "${TARGET_SYSTEMROOT}" STREQUAL "default")

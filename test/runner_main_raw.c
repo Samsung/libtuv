@@ -103,7 +103,55 @@ task_entry_t* get_helper(const char* test) {
   return NULL;
 }
 
+static int cur_task = 0;
+static int cur_entry = 0;
 
+void run_tests_init(void) {
+  cur_task = 0;
+  cur_entry = 0;
+}
+
+
+void run_tests_one(void) {
+  task_entry_t* task_group = NULL;
+  task_entry_t* task = NULL;
+
+  while (1) {
+    switch (cur_task) {
+    case 0 :
+      if (!cur_entry)
+        fprintf(stderr, "Run Helpers...\r\n");
+      task_group = HELPERS;
+      break;
+    case 2 :
+      if (!cur_entry)
+        fprintf(stderr, "Stopping Helpers...\r\n");
+      task_group = HELPERS;
+      break;
+    case 1 :
+      task_group = TASKS;
+      break;
+    default:
+      return;
+    }
+    task = &task_group[cur_entry];
+    if (task && task->task_name) {
+      fprintf(stderr, "[%-30s]\r\n", task->task_name);
+
+      switch (cur_task) {
+      case 0 : run_helper(task); break;
+      case 1 : run_test_one(task); break;
+      case 2 : wait_helper(task); break;
+      }
+      cur_entry++;
+      return;
+    }
+    cur_entry = 0;
+    cur_task++;
+  }
+}
+
+#if 0
 int run_tests() {
   int entry;
   int result;
@@ -145,5 +193,4 @@ int run_tests() {
 
   return 0;
 }
-
-
+#endif

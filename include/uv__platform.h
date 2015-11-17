@@ -34,12 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
-
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#ifndef __uv__platform_header__
+#define __uv__platform_header__
 
 
 #ifdef __cplusplus
@@ -48,25 +44,12 @@ extern "C" {
 
 
 //-----------------------------------------------------------------------------
+// platform init functions
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
-
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
+void uv__handle_platform_init(uv_handle_t* handle);
+void uv__idle_platform_init(uv_idle_t* handle);
+void uv__async_platform_init(uv_async_t* handle);
+void uv__timer_platform_init(uv_timer_t* handle);
 
 
 #ifdef __cplusplus
@@ -74,4 +57,4 @@ size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
 #endif
 
 
-#endif // __uv__util_header__
+#endif // __uv__platform_header__

@@ -90,10 +90,13 @@ static void uv__run_closing_handles(uv_loop_t* loop) {
   p = loop->closing_handles;
   loop->closing_handles = NULL;
 
+  TDDDLOG(">> uv__run_closing_handles p(%p)", p);
+
   while (p) {
     q = p->next_closing;
     uv__finish_close(p);
     p = q;
+    TDDDLOG(">> uv__run_closing_handles p(%p)", p);
   }
 }
 
@@ -141,21 +144,22 @@ int uv_backend_timeout(const uv_loop_t* loop) {
 }
 
 
-int uv_run(uv_loop_t* loop, uv_run_mode mode) {
+int uv_run(uv_loop_t* loop) {
   int timeout;
   int r;
   int ran_pending;
+  uv_run_mode mode;
 
-#if defined(__TUV_MBED__)
-  assert(mode == UV_RUN_ONCE);
-#endif
-
+  mode = UV_RUN_ONCE;
   r = uv__loop_alive(loop);
   if (!r) {
     uv__update_time(loop);
   }
 
   while (r != 0 && loop->stop_flag == 0) {
+
+    TDDDLOG(">>> in raw loop r(%d)", r);
+
     uv__update_time(loop);
     uv__run_timers(loop);
     ran_pending = uv__run_pending(loop);
@@ -186,8 +190,6 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
 
   if (loop->stop_flag != 0)
     loop->stop_flag = 0;
-
-  //TDDDLOG(":: time: %lu", loop->time);
 
   return r;
 }

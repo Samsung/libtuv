@@ -34,12 +34,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
-
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#ifndef __tuv__port_header__
+#define __tuv__port_header__
 
 
 #ifdef __cplusplus
@@ -48,25 +44,16 @@ extern "C" {
 
 
 //-----------------------------------------------------------------------------
+// platform port functions
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+// system
+void tuvp_msleep(int msec);
+void tuvp_usleep(int usec);
 
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
+// socket
+int tuvp_socket(int domain, int type, int protocol);
+int tuvp_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+uint16_t tuvp_htons(uint16_t hostshort);
 
 
 #ifdef __cplusplus
@@ -74,4 +61,4 @@ size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
 #endif
 
 
-#endif // __uv__util_header__
+#endif // __tuv__port_header__

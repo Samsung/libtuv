@@ -64,7 +64,7 @@ static void* uv__thread_start(void *arg)
 }
 
 
-int uv_thread_create(uv_thread_t *tid, void (*entry)(void *arg), void *arg) {
+int uv_thread_create(uv_thread_t *tid, uv_thread_cb entry, void *arg) {
   struct thread_ctx* ctx;
   int err;
 

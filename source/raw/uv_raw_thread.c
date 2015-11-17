@@ -34,112 +34,154 @@
  * IN THE SOFTWARE.
  */
 
-#include <assert.h>
-#include <string.h>
+#include <stdlib.h> // malloc(), free()
+#include <stdio.h>
 
 #include <uv.h>
-#include "uv_internal.h"
 
 
 //-----------------------------------------------------------------------------
+// thread emulation with minar::scheduler
 
-void uv__make_close_pending(uv_handle_t* handle) {
-  assert(handle->flags & UV_CLOSING);
-  assert(!(handle->flags & UV_CLOSED));
-  handle->next_closing = handle->loop->closing_handles;
-  handle->loop->closing_handles = handle;
+
+int tuv_task_create(uv_thread_t *tid,
+                    uv_thread_cb entry, uv_thread_cb loop, void *arg) {
+
+  return tuvp_task_create(tid, entry, loop, arg);
 }
 
 
-//-----------------------------------------------------------------------------
+int uv_thread_join(uv_thread_t *tid) {
+  return 0;
+}
 
-void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
-  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
 
-  handle->flags |= UV_CLOSING;
-  handle->close_cb = close_cb;
-
-  switch (handle->type) {
-#if !defined(__TUV_MBED__)
-  case UV_TTY:
-    uv__stream_close((uv_stream_t*)handle);
-    break;
-
-  case UV_TCP:
-    uv__tcp_close((uv_tcp_t*)handle);
-    break;
-#else
-  #pragma message "__TUV_MBED__ FIX THIS"
-#endif
-
-  case UV_IDLE:
-    uv__idle_close((uv_idle_t*)handle);
-    break;
-
-  case UV_ASYNC:
-    uv__async_close((uv_async_t*)handle);
-    break;
-
-  case UV_TIMER:
-    uv__timer_close((uv_timer_t*)handle);
-    break;
-
-  default:
-    assert(0);
-  }
-
-  uv__make_close_pending(handle);
+int uv_thread_equal(const uv_thread_t* t1, const uv_thread_t* t2) {
+  return 1;
 }
 
 
 //-----------------------------------------------------------------------------
+// once
 
-int uv_is_closing(const uv_handle_t* handle) {
-  return uv__is_closing(handle);
-}
-
-
-int uv_is_active(const uv_handle_t* handle) {
-  return uv__is_active(handle);
-}
-
-
-void uv_ref(uv_handle_t* handle) {
-  uv__handle_ref(handle);
-}
-
-
-void uv_unref(uv_handle_t* handle) {
-  uv__handle_unref(handle);
-}
-
-
-//-----------------------------------------------------------------------------
-
-void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg) {
-  QUEUE* q;
-  uv_handle_t* h;
-
-  QUEUE_FOREACH(q, &loop->handles_queue) {
-    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
-    if (h->flags & UV__HANDLE_INTERNAL)
-      continue;
-    walk_cb(h, arg);
+void uv_once(uv_once_t* guard, void (*callback)(void)) {
+  if (*guard == UV_ONCE_INIT) {
+    callback();
+    *guard = ~UV_ONCE_INIT;
   }
 }
 
 
 //-----------------------------------------------------------------------------
+// mutex
 
-void uv_deinit(uv_loop_t* loop, uv_handle_t* handle) {
-  QUEUE* q;
-  uv_handle_t* h;
+int uv_mutex_init(uv_mutex_t* mutex) {
+  *mutex = 1;
+  return 0;
+}
 
-  QUEUE_FOREACH(q, &loop->handles_queue) {
-    h = QUEUE_DATA(q, uv_handle_t, handle_queue);
-    if (h == handle) {
-      uv__handle_deinit(handle);
-      break;
-    }
-  }
+
+void uv_mutex_destroy(uv_mutex_t* mutex) {
+  *mutex = 0;
+}
+
+
+void uv_mutex_lock(uv_mutex_t* mutex) {
+  (*mutex)++;
+}
+
+
+void uv_mutex_unlock(uv_mutex_t* mutex) {
+  if(*mutex > 1)
+    *(mutex)--;
+}
+
+
+//-----------------------------------------------------------------------------
+// semaphore
+
+int uv_sem_init(uv_sem_t* sem, unsigned int value) {
+  *sem = value;
+  return 0;
+}
+
+
+void uv_sem_destroy(uv_sem_t* sem) {
+  *sem = 0;
+}
+
+
+void uv_sem_post(uv_sem_t* sem) {
+  (*sem)++;
+}
+
+
+void uv_sem_wait(uv_sem_t* sem) {
+  int r;
+
+  do
+    r = *sem;
+  while (r == 0);
+  (*sem)--;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// condition
+
+int uv_cond_init(uv_cond_t* cond) {
+  *cond = 1;
+  return 0;
+}
+
+
+void uv_cond_destroy(uv_cond_t* cond) {
+  *cond = 0;
+}
+
+void uv_cond_signal(uv_cond_t* cond) {
+  (*cond)++;
+}
+
+void uv_cond_broadcast(uv_cond_t* cond) {
+  *cond = 2;
+}
+
+void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex) {
+}
+
+
+#undef NANOSEC
+#define NANOSEC ((uint64_t) 1e9)
+
+int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
+  return 0;
+}
+
+
+//-----------------------------------------------------------------------------
+
+int uv_rwlock_init(uv_rwlock_t* rwlock) {
+  return 0;
+}
+
+
+void uv_rwlock_destroy(uv_rwlock_t* rwlock) {
+}
+
+
+void uv_rwlock_rdlock(uv_rwlock_t* rwlock) {
+}
+
+
+void uv_rwlock_rdunlock(uv_rwlock_t* rwlock) {
+}
+
+
+void uv_rwlock_wrlock(uv_rwlock_t* rwlock) {
+}
+
+
+void uv_rwlock_wrunlock(uv_rwlock_t* rwlock) {
 }

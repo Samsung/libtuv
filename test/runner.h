@@ -42,7 +42,12 @@
 #include <stdlib.h>
 
 
-#if defined(__NUTTX__)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+#if defined(__NUTTX__) || defined(__TUV_RAW__)
 #define EMBED_LOW_MEMORY
 #endif
 
@@ -62,7 +67,7 @@ typedef struct {
    * The time in milliseconds after which a single test or benchmark times out.
    */
   int timeout;
-  sem_t semsync;
+  uv_sem_t semsync;
 } task_entry_t;
 
 
@@ -82,7 +87,7 @@ typedef struct {
  do {                                                     \
   if (!(expr)) {                                          \
     fprintf(stderr,                                       \
-            "Assertion failed in %s on line %d: %s\n",    \
+            "Assertion failed in %s on line %d: %s\r\n",  \
             __FILE__,                                     \
             __LINE__,                                     \
             #expr);                                       \
@@ -94,7 +99,7 @@ typedef struct {
  do {                                                     \
   if (!(expr)) {                                          \
     fprintf(stderr,                                       \
-            "Failed in %s on line %d: %s\n",              \
+            "Failed in %s on line %d: %s\r\n",            \
             __FILE__,                                     \
             __LINE__,                                     \
             #expr);                                       \
@@ -105,7 +110,7 @@ typedef struct {
 #define TUV_FATAL(msg)                                    \
   do {                                                    \
     fprintf(stderr,                                       \
-            "Fatal error in %s on line %d: %s\n",         \
+            "Fatal error in %s on line %d: %s\r\n",       \
             __FILE__,                                     \
             __LINE__,                                     \
             msg);                                         \
@@ -134,6 +139,7 @@ typedef struct {
   int n;
 } dowait_args;
 
+#if !defined(__TUV_MBED__)
 /* tcp server */
 typedef struct {
   uv_write_t req;
@@ -145,7 +151,9 @@ typedef enum {
   TEST_UDP,
   TEST_PIPE
 } stream_type;
-
+#else
+#pragma message "__TUV_MBED__ fix this"
+#endif
 
 #ifdef PATH_MAX
 #define EXEC_PATH_LENGTH PATH_MAX
@@ -153,8 +161,6 @@ typedef enum {
 #define EXEC_PATH_LENGTH 4096
 #endif
 
-
-int platform_init(int argc, char **argv);
 
 int process_start(const char* name, const char* part, process_info_t* p,
                   int is_helper);
@@ -165,12 +171,23 @@ void process_cleanup(process_info_t *p);
 
 int run_test_one(task_entry_t* task);
 int run_test_part(const char* test, const char* part);
-int run_tests();
+int run_tests(void);
 void run_sleep(int msec);
 
 task_entry_t* get_helper(const char* test);
 int run_helper(task_entry_t* task);
 int wait_helper(task_entry_t* task);
+
+
+// for raw systems
+void run_tests_init(void);
+void run_tests_one(void);
+void run_tests_continue(void);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // test function declaration
@@ -192,5 +209,6 @@ HELPER_LIST_ALL(HELPER_DECLARE)
 
 #undef TEST_DECLARE
 #undef HELPER_DECLARE
+
 
 #endif // __tuv_test_runner_header__

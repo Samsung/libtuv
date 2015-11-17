@@ -16,11 +16,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tuv_debuglog.h"
+#include "tuv__debuglog.h"
 
 #ifdef ENABLE_DEBUG_LOG
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TUV_MBED__)
 int tuv_debug_level = TDBGLEV_INFO;
 #else
 int tuv_debug_level = TDBGLEV_ERR;
@@ -52,8 +52,8 @@ void InitDebugSettings() {
     if (logstream != NULL)
       tuv_log_stream = logstream;
   }
-  //fprintf(stderr, "DBG LEV = %d", tuv_debug_level);
-  //fprintf(stderr, "DBG OUT = %s", (dbglogfile==NULL?"(stderr)":dbglogfile));
+  //fprintf(stderr, "DBG LEV = %d\r\n", tuv_debug_level);
+  //fprintf(stderr, "DBG OUT = %s\r\n", (dbglogfile==NULL?"(stderr)":dbglogfile));
 #endif // ENABLE_DEBUG_LOG
 }
 

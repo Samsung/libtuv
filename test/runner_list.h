@@ -35,6 +35,7 @@
  */
 
 
+#if !defined(__TUV_RAW__)
 #define TEST_LIST_ALL(TE)                                                     \
   TE(idle_basic, 5000)                                                        \
   TE(active, 5000)                                                            \
@@ -69,6 +70,22 @@
   TE(tcp_open,5000)                                                           \
   TE(shutdown_eof,5000)                                                       \
 
+#else
+#define TEST_LIST_ALL(TE)                                                     \
+  TE(idle_basic, 5000)                                                        \
+  TE(active, 5000)                                                            \
+  TE(timer_init, 5000)                                                        \
+  TE(timer, 5000)                                                             \
+  TE(timer_start_twice, 5000)                                                 \
+  TE(timer_order, 5000)                                                       \
+  TE(timer_run_once, 5000)                                                    \
+  TE(timer_null_callback, 5000)                                               \
+  TE(timer_again, 5000)                                                       \
+  TE(timer_huge_timeout, 5000)                                                \
+  TE(timer_huge_repeat, 5000)                                                 \
+
+#endif
+
 // shutdown_eof should be last of tcp test, it'll stop "echo_sevrer"
 
 #if defined(__linux__)
@@ -90,6 +107,11 @@
 
 #endif
 
+#if !defined(__TUV_RAW__)
 #define HELPER_LIST_ALL(TE)                                                   \
   TE(tcp4_echo_server, tcp4_echo_server)                                      \
 
+#else
+#define HELPER_LIST_ALL(TE)                                                   \
+
+#endif

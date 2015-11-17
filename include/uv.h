@@ -54,29 +54,43 @@
 #include "uv_platform.h"  // platform should be placed before extension
 #include "uv_extension.h" // extension should be placed before others
 
+#include "uv__raw.h"
+
 #include "uv__error.h"
 #include "uv__handle.h"
 #include "uv__loop.h"
 #include "uv__idle.h"
+#include "uv__util.h"
+
 #include "uv__timer.h"
 #include "uv__inet.h"
 
 #include "uv__async.h"
 #include "uv__req.h"      // req should be placed before fs
+#if !defined(__TUV_RAW__) // temp block
 #include "uv__fs.h"
+#else
+#pragma message "__TUV_RAW__ FIX THESE"
+#endif
 #include "uv__fd.h"
 #include "uv__stream.h"
+#if !defined(__TUV_RAW__)
 #include "uv__tcp.h"
+#endif
 #include "uv__pipe.h"
 #include "uv__thread.h"
 
 #include "uv__threadpool.h"
+#if !defined(__TUV_RAW__)
 #include "uv__getaddrinfo.h"
 
 #include "uv__dir.h"
-#include "uv__util.h"
+#endif
 
-#include "tuv_debuglog.h"
+#include "uv__platform.h"
+
+#include "tuv__port.h"
+#include "tuv__debuglog.h"
 
 
 #undef UV_HANDLE_PRIVATE_FIELDS

@@ -36,6 +36,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <uv.h>
 
@@ -65,44 +66,54 @@ static void uv__cancelled(struct uv__work* w) {
 /* To avoid deadlock with uv_cancel() it's crucial that the worker
  * never holds the global _mutex and the loop-local mutex at the same time.
  */
-static void worker(void* arg) {
+static void worker_init(void* arg) {
+  TDDDLOG(">> worker_init %p\r\n", arg);
+}
+
+
+static void worker_stop(void* arg) {
+}
+
+static void worker_loop(void* arg) {
   struct uv__work* w;
   QUEUE* q;
 
   (void) arg;
+  TDDDLOG(">> worker_loop %p\r\n", arg);
 
-  for (;;) {
-    uv_mutex_lock(&_mutex);
+#if 0
+  uv_mutex_lock(&_mutex);
 
-    while (QUEUE_EMPTY(&_wq)) {
-      uv_cond_wait(&_cond, &_mutex);
-    }
-
-    q = QUEUE_HEAD(&_wq);
-
-    if (q == &_exit_message)
-      uv_cond_signal(&_cond);
-    else {
-      QUEUE_REMOVE(q);
-      QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
-                             executing. */
-    }
-
-    uv_mutex_unlock(&_mutex);
-
-    if (q == &_exit_message)
-      break;
-
-    w = QUEUE_DATA(q, struct uv__work, wq);
-    w->work(w);
-
-    uv_mutex_lock(&w->loop->wq_mutex);
-    w->work = NULL;  /* Signal uv_cancel() that the work req is done
-                        executing. */
-    QUEUE_INSERT_TAIL(&w->loop->wq, &w->wq);
-    uv_async_send(&w->loop->wq_async);
-    uv_mutex_unlock(&w->loop->wq_mutex);
+  while (QUEUE_EMPTY(&_wq)) {
+    uv_cond_wait(&_cond, &_mutex);
   }
+
+  q = QUEUE_HEAD(&_wq);
+
+  if (q == &_exit_message)
+    uv_cond_signal(&_cond);
+  else {
+    QUEUE_REMOVE(q);
+    QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
+                           executing. */
+  }
+
+  uv_mutex_unlock(&_mutex);
+
+  if (q == &_exit_message) {
+    worker_stop(arg);
+  }
+
+  w = QUEUE_DATA(q, struct uv__work, wq);
+  w->work(w);
+
+  uv_mutex_lock(&w->loop->wq_mutex);
+  w->work = NULL;  /* Signal uv_cancel() that the work req is done
+                      executing. */
+  QUEUE_INSERT_TAIL(&w->loop->wq, &w->wq);
+  uv_async_send(&w->loop->wq_async);
+  uv_mutex_unlock(&w->loop->wq_mutex);
+#endif
 }
 
 
@@ -181,7 +192,7 @@ static void init_once(void) {
   QUEUE_INIT(&_wq);
 
   for (i = 0; i < _nthreads; i++) {
-    if (uv_thread_create(_threads + i, worker, NULL)) {
+    if (tuv_task_create(_threads + i, worker_init, worker_loop, NULL)) {
       TDLOG("init_once thread %d abort", i);
       ABORT();
     }
@@ -306,6 +317,7 @@ int uv_cancel(uv_req_t* req) {
   uv_loop_t* loop;
 
   switch (req->type) {
+#if !defined(__TUV_MBED__)
   case UV_FS:
     loop =  ((uv_fs_t*) req)->loop;
     wreq = &((uv_fs_t*) req)->work_req;
@@ -320,6 +332,9 @@ int uv_cancel(uv_req_t* req) {
     wreq = &((uv_getnameinfo_t*) req)->work_req;
     break;
 */
+#else
+  #pragma message "__TUV_MBED__ fix this"
+#endif
   case UV_WORK:
     loop =  ((uv_work_t*) req)->loop;
     wreq = &((uv_work_t*) req)->work_req;

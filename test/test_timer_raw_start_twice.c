@@ -34,44 +34,90 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <uv.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-//-----------------------------------------------------------------------------
-
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
-
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
+#include "runner.h"
 
 
 
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
+static int once_cb_called = 0;
+static int once_close_cb_called = 0;
 
 
-#ifdef __cplusplus
+static void once_close_cb(uv_handle_t* handle) {
+  TUV_ASSERT(handle != NULL);
+  TUV_ASSERT(0 == uv_is_active(handle));
+
+  once_close_cb_called++;
 }
-#endif
 
 
-#endif // __uv__util_header__
+static void once_cb(uv_timer_t* handle) {
+  TUV_ASSERT(handle != NULL);
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) handle));
+
+  once_cb_called++;
+
+  uv_close((uv_handle_t*)handle, once_close_cb);
+
+  /* Just call this randomly for the code coverage. */
+  uv_update_time(uv_default_loop());
+}
+
+
+static void never_cb(uv_timer_t* handle) {
+  TUV_FATAL("never_cb should never be called");
+}
+
+
+//-----------------------------------------------------------------------------
+
+typedef struct {
+  uv_loop_t* loop;
+  uv_timer_t once;
+} timer_param_t;
+
+static int timer_loop(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+  return uv_run(param->loop, UV_RUN_ONCE);
+}
+
+static int timer_final(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+
+  TUV_ASSERT(once_cb_called == 1);
+
+  // for platforms that needs cleaning
+  TUV_ASSERT(0 == uv_loop_close(param->loop));
+
+  // cleanup tuv param
+  free(param);
+
+  // jump to next test
+  run_tests_continue();
+
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+
+TEST_IMPL(timer_start_twice) {
+  timer_param_t* param = (timer_param_t*)malloc(sizeof(timer_param_t));
+  param->loop = uv_default_loop();
+
+  int r;
+
+  once_cb_called = 0;
+  once_close_cb_called = 0;
+
+  r = uv_timer_init(param->loop, &param->once);
+  TUV_ASSERT(r == 0);
+  r = uv_timer_start(&param->once, never_cb, 86400 * 1000, 0);
+  TUV_ASSERT(r == 0);
+  r = uv_timer_start(&param->once, once_cb, 10, 0);
+  TUV_ASSERT(r == 0);
+
+  tuv_run(param->loop, timer_loop, timer_final, param);
+
+  return 0;
+}

@@ -1,0 +1,13 @@
+{
+  "name": "mbedk64f",
+  "version": "0.0.0",
+  "bin": "./source",
+  "private": true,
+  "description": "tuvtester on mbed frdm-k64f board",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "mbed-drivers": "~0.11.2",
+    "sockets": "^1.0.2"
+  }
+}

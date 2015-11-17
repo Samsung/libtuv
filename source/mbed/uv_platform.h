@@ -34,44 +34,77 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
-
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#ifndef __uv__platform_mbed_header__
+#define __uv__platform_mbed_header__
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define TUV_DECLARE_MBED_DEFS
+#include "tuv_mbed_port.h"
+
+//-----------------------------------------------------------------------------
+
+#define UV__POLLIN    POLLIN    /* 0x01 */
+#define UV__POLLOUT   POLLOUT   /* 0x02 */
+#define UV__POLLERR   POLLERR   /* 0x04 */
+#define UV__POLLHUP   POLLHUP   /* 0x08 */
 
 
 //-----------------------------------------------------------------------------
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
+int get_errno(void);
+void set_errno(int err);
+
+
+#define SAVE_ERRNO(block)                                                     \
+  do {                                                                        \
+    int _saved_errno = get_errno();                                           \
+    do { block; } while (0);                                                  \
+    set_errno(_saved_errno);                                                  \
+  }                                                                           \
+  while (0)
+
+
+//-----------------------------------------------------------------------------
+// mbed date time extension
+
+typedef enum {
+  UV_CLOCK_PRECISE = 0,  /* Use the highest resolution clock available. */
+  UV_CLOCK_FAST = 1      /* Use the fastest clock with <= 1ms granularity. */
+} uv_clocktype_t;
+
+// in mbed/uv_clock.cpp
+uint64_t uv__hrtime(uv_clocktype_t type);
+
+#define uv__update_time(loop)                                                 \
+  loop->time = uv__hrtime(UV_CLOCK_FAST) / 1000000
+
+inline uint64_t uv__time_precise();
+
+void uv__time_init(void);
+
+//-----------------------------------------------------------------------------
+// mbed thread and mutex emulation
+
+#define UV_ONCE_INIT PTHREAD_ONCE_INIT
+
+typedef tuvp_thread_t uv_thread_t;
+typedef tuvp_once_t uv_once_t;
+typedef tuvp_mutex_t uv_mutex_t;
+typedef tuvp_sem_t uv_sem_t;
+typedef tuvp_cond_t uv_cond_t;
+typedef tuvp_rwlock_t uv_rwlock_t;
+
+
+int tuv_task_create(uv_thread_t* tid, uv_thread_cb entry,
+                    uv_thread_cb loop, void* arg);
+
+
+//-----------------------------------------------------------------------------
+
+struct iovec
+{
+  void* iov_base;
+  size_t iov_len;
 };
 
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
-}
-#endif
-
-
-#endif // __uv__util_header__
+#endif // __uv__platform_mbed_header__

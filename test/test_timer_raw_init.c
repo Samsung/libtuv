@@ -34,44 +34,55 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <uv.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "runner.h"
 
 
 //-----------------------------------------------------------------------------
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+typedef struct {
+  uv_loop_t* loop;
+  uv_timer_t handle;
+} timer_param_t;
 
 
-//-----------------------------------------------------------------------------
-//
+static int timer_loop(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+  uv_loop_t* loop = param->loop;
 
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+  uv_run(loop, UV_RUN_ONCE);
+  // make this loop run once
+  return 0;
 }
-#endif
 
+static int timer_final(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+  uv_loop_t* loop = param->loop;
 
-#endif // __uv__util_header__
+  TUV_ASSERT(0 == uv_loop_close(loop));
+
+  free(param);
+
+  // jump to next test
+  run_tests_continue();
+
+  return 0;
+}
+
+TEST_IMPL(timer_init) {
+  timer_param_t* param = (timer_param_t*)malloc(sizeof(timer_param_t));
+  param->loop = uv_default_loop();
+
+  TUV_ASSERT(0 == uv_timer_init(param->loop, &param->handle));
+  TUV_ASSERT(0 == uv_timer_get_repeat(&param->handle));
+  TUV_ASSERT(0 == uv_is_active((uv_handle_t*) &param->handle));
+
+  // for platforms that needs cleaning
+  uv_close((uv_handle_t*) &param->handle, NULL);
+
+  tuv_run(param->loop, timer_loop, timer_final, param);
+
+  return 0;
+}
+

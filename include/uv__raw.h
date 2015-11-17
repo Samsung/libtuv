@@ -34,13 +34,10 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#ifndef __uv__raw_header__
+#define __uv__raw_header__
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
+#if defined(__TUV_RAW__)
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,30 +45,18 @@ extern "C" {
 
 
 //-----------------------------------------------------------------------------
+// for raw ... TDB
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+typedef int (*tuv_loop_cb)(void*);
+typedef int (*tuv_final_cb)(void*);
 
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
+int tuv_run(uv_loop_t*, tuv_loop_cb, tuv_final_cb, void*);
 
 
 #ifdef __cplusplus
 }
 #endif
 
+#endif
 
-#endif // __uv__util_header__
+#endif // __uv__raw_header__

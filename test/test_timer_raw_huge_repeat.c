@@ -34,44 +34,72 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <uv.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "runner.h"
 
 
 //-----------------------------------------------------------------------------
 
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
+static uv_timer_t tiny_timer;
+static uv_timer_t huge_timer1;
+static uv_timer_t huge_timer2;
 
 
-//-----------------------------------------------------------------------------
-//
+static int huge_repeat_cb_ncalls;
 
-uv_buf_t uv_buf_init(char* base, unsigned int len);
+static void huge_repeat_cb(uv_timer_t* handle) {
+  if (huge_repeat_cb_ncalls == 0)
+    TUV_ASSERT(handle == &huge_timer1);
+  else
+    TUV_ASSERT(handle == &tiny_timer);
 
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+  if (++huge_repeat_cb_ncalls == 10) {
+    uv_close((uv_handle_t*) &tiny_timer, NULL);
+    uv_close((uv_handle_t*) &huge_timer1, NULL);
+  }
 }
-#endif
+
+//-----------------------------------------------------------------------------
+
+typedef struct {
+  uv_loop_t* loop;
+} timer_param_t;
 
 
-#endif // __uv__util_header__
+static int timer_loop(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+  return uv_run(param->loop, UV_RUN_ONCE);
+}
+
+static int timer_final(void* vparam) {
+  timer_param_t* param = (timer_param_t*)vparam;
+
+  // for platforms that needs cleaning
+  TUV_ASSERT(0 == uv_loop_close(param->loop));
+
+  // cleanup tuv param
+  free(param);
+
+  // jump to next test
+  run_tests_continue();
+
+  return 0;
+}
+
+
+TEST_IMPL(timer_huge_repeat) {
+  timer_param_t* param = (timer_param_t*)malloc(sizeof(timer_param_t));
+  param->loop = uv_default_loop();
+
+  huge_repeat_cb_ncalls = 0;
+
+  TUV_ASSERT(0 == uv_timer_init(param->loop, &tiny_timer));
+  TUV_ASSERT(0 == uv_timer_init(param->loop, &huge_timer1));
+  TUV_ASSERT(0 == uv_timer_start(&tiny_timer, huge_repeat_cb, 2, 2));
+  TUV_ASSERT(0 == uv_timer_start(&huge_timer1, huge_repeat_cb, 1, (uint64_t) -1));
+
+  tuv_run(param->loop, timer_loop, timer_final, param);
+
+  return 0;
+}

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-/* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
+ /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,44 +34,37 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
+#include <uv.h>
 
+// only for mbed to start clock
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static uint64_t __current_time = 0; // time in nano-seconds
 
-
-//-----------------------------------------------------------------------------
-
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
-
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
-
-
-
-//-----------------------------------------------------------------------------
-//
-#define debugf    printf
-
-
-#ifdef __cplusplus
+void uv__time_init(void) {
+  if (__current_time == 0) {
+    tuvp_timer_init();
+    tuvp_timer_start();
+    __current_time = 1000000; // at least should be bigger than this
+  }
 }
-#endif
 
 
-#endif // __uv__util_header__
+uint64_t uv__hrtime(uv_clocktype_t type) {
+  int timevalue;
+
+  // simple implementation with mbed clock, but there's an issue:
+  // with 32bit integer, maximum of 2^31-1 microseconds i.e. 30 minutes
+  // if this function is called after 30 minutes that time can be lost
+  // so, this implementation assumes this function is called within
+  // every 30 minutes.
+  timevalue = tuvp_timer_usec();
+  tuvp_timer_restart();
+  __current_time += ((uint64_t)timevalue) * 1000; // to nano
+  return __current_time;
+}
+
+
+inline uint64_t uv__time_precise() {
+  return uv__hrtime(UV_CLOCK_PRECISE);
+}

@@ -34,44 +34,25 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__util_header__
-#define __uv__util_header__
+#include <unistd.h>
 
-#ifndef __uv_header__
-#error Please include with uv.h
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-//-----------------------------------------------------------------------------
-
-struct uv_buf_s {
-  char* base;
-  size_t len;
-};
-
-
-//-----------------------------------------------------------------------------
-//
-
-uv_buf_t uv_buf_init(char* base, unsigned int len);
-
-size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs);
+#include <uv.h>
 
 
 
 //-----------------------------------------------------------------------------
-//
-#define debugf    printf
 
+int uv__make_pipe(int fds[2], int flags) {
+  if (tuvp_pipe(fds))
+    return -errno;
 
-#ifdef __cplusplus
+  uv__cloexec(fds[0], 1);
+  uv__cloexec(fds[1], 1);
+
+  if (flags & UV__F_NONBLOCK) {
+    uv__nonblock(fds[0], 1);
+    uv__nonblock(fds[1], 1);
+  }
+
+  return 0;
 }
-#endif
-
-
-#endif // __uv__util_header__

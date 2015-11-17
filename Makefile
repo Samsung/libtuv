@@ -77,7 +77,9 @@ clean:
 #   TUV_PLATFORM=i686-linux
 #       ; x86 32bit linux
 #   TUV_PLATFORM=x86_64-linux
-#       ; x86 32bit linux
+#       ; x86 64bit linux
 #   TUV_PLATFORM=arm-linux TUV_BOARD=rpi2
-#       ; arm linux raspberry pi 2
+#       ; arm linux on raspberry pi 2
+#   TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4disco
+#       ; arm nuttx on STM32F4-Discovery with BB
 #
