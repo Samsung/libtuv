@@ -74,7 +74,7 @@ static void worker_init(void* arg) {
 static void worker_stop(void* arg) {
 }
 
-static void worker_loop(void* arg) {
+static int worker_loop(void* arg) {
   struct uv__work* w;
   QUEUE* q;
 
@@ -114,6 +114,7 @@ static void worker_loop(void* arg) {
   uv_async_send(&w->loop->wq_async);
   uv_mutex_unlock(&w->loop->wq_mutex);
 #endif
+  return 0;
 }
 
 
@@ -126,11 +127,9 @@ static void post(QUEUE* q) {
 }
 
 
-#if defined(__NUTTX__)
 static void cleanup(void) {
-#else
-__attribute__((destructor)) static void cleanup(void) {
-#endif
+
+#if 0
   unsigned int i;
 
   if (_initialized == 0)
@@ -152,6 +151,7 @@ __attribute__((destructor)) static void cleanup(void) {
   _nthreads = 0;
   _initialized = 0;
   _once = UV_ONCE_INIT;
+#endif
 }
 
 
@@ -348,8 +348,6 @@ int uv_cancel(uv_req_t* req) {
 
 
 //-----------------------------------------------------------------------------
-#if defined(__NUTTX__)
 void uv_cleanup(void) {
   cleanup();
 }
-#endif

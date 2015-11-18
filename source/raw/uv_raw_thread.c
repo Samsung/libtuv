@@ -45,14 +45,23 @@
 
 
 int tuv_task_create(uv_thread_t *tid,
-                    uv_thread_cb entry, uv_thread_cb loop, void *arg) {
+                    tuv_taskentry_cb entry, tuv_taskloop_cb loop, void *arg) {
 
   return tuvp_task_create(tid, entry, loop, arg);
 }
 
 
-int uv_thread_join(uv_thread_t *tid) {
-  return 0;
+int tuv_task_running(uv_thread_t *tid) {
+  if (!tid) return 0;
+  // waiting for the thread to join is not possible for raw systems
+  // if the tid is valid and running, return 1,
+  // if invalid(null) return 0
+  return tuvp_task_is_running(*tid);
+}
+
+int tuv_task_close(uv_thread_t *tid) {
+  // free internal task related memory allocations if any
+  return tuvp_task_close(*tid);
 }
 
 
@@ -117,46 +126,42 @@ void uv_sem_post(uv_sem_t* sem) {
 
 
 void uv_sem_wait(uv_sem_t* sem) {
-  int r;
-
-  do
-    r = *sem;
-  while (r == 0);
   (*sem)--;
 }
 
 
 
 //-----------------------------------------------------------------------------
-// condition
+// condition emulation
+// 1 is inital value.
+// 0 when destroyed
+// 2 when signaled
+// 9 when broadcasted
 
 int uv_cond_init(uv_cond_t* cond) {
   *cond = 1;
   return 0;
 }
 
-
 void uv_cond_destroy(uv_cond_t* cond) {
   *cond = 0;
 }
 
 void uv_cond_signal(uv_cond_t* cond) {
-  (*cond)++;
-}
-
-void uv_cond_broadcast(uv_cond_t* cond) {
   *cond = 2;
 }
 
-void uv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex) {
+void uv_cond_broadcast(uv_cond_t* cond) {
+  *cond = 9;
 }
 
+int tuv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex) {
+  return (*cond > 1);
+}
 
-#undef NANOSEC
-#define NANOSEC ((uint64_t) 1e9)
-
-int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
-  return 0;
+int tuv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
+  // how can we treat this raw(mbed) system?
+  return (*cond > 1);
 }
 
 

@@ -83,7 +83,7 @@ int tuvp_timer_usec(void);
 int tuvp_pipe(int fds[2]);
 
 // thread emulation
-typedef void* tuvp_thread_t;         // minar::callback_handle_t
+typedef void* tuvp_thread_t;
 typedef uint32_t tuvp_thread_attr_t;
 typedef uint32_t tuvp_once_t;
 typedef uint32_t tuvp_mutex_t;
@@ -91,11 +91,14 @@ typedef uint32_t tuvp_sem_t;
 typedef uint32_t tuvp_cond_t;
 typedef uint32_t tuvp_rwlock_t;
 
-// should be same as uv_thread_cb
-typedef void (*tuv_thread_cb)(void* arg);
+
+typedef void (*tuv_taskentry_cb)(void* arg);
+typedef int (*tuv_taskloop_cb)(void* arg);
 
 int tuvp_task_create(tuvp_thread_t *thread,
-                     tuv_thread_cb entry, tuv_thread_cb loop, void *arg);
+                     tuv_taskentry_cb entry, tuv_taskloop_cb loop, void *arg);
+int tuvp_task_is_running(tuvp_thread_t thread);
+int tuvp_task_close(tuvp_thread_t thread);
 
 
 #ifdef __cplusplus

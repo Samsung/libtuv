@@ -14,31 +14,93 @@
  */
 
 #include <errno.h>
+#include <assert.h>
 
 #include "mbed-drivers/mbed.h"
 
 #include "tuv_mbed_port.h"
 
 
+typedef struct taskparam_t {
+  tuv_taskentry_cb entry;
+  tuv_taskloop_cb loop;
+  void* data;
+  minar::callback_handle_t hloop;
+} taskparam;
+
+
+static void task_entry(void *vparam) {
+  taskparam* pparam = (taskparam*)vparam;
+  if (pparam->entry) {
+    pparam->entry(pparam->data);
+  }
+}
+
+
+static void task_loop(void *vparam) {
+  taskparam* pparam = (taskparam*)vparam;
+  int ret = 0;
+  if (pparam->loop) {
+    ret = pparam->loop(pparam->data);
+  }
+  if (!ret) {
+    minar::Scheduler::cancelCallback(pparam->hloop);
+    pparam->hloop = NULL;
+  }
+}
+
+
 int tuvp_task_create(tuvp_thread_t *thread,
-                     tuv_thread_cb entry, tuv_thread_cb loop, void *arg) {
+                     tuv_taskentry_cb entry, tuv_taskloop_cb loop, void *arg) {
 
+  taskparam* pparam;
+
+  pparam = (taskparam*)malloc(sizeof(taskparam));
+  assert(pparam);
+  pparam->entry = entry;
+  pparam->loop = loop;
+  pparam->data = arg;
+  pparam->hloop = NULL;
+
+  *thread = NULL;
+
+  mbed::util::FunctionPointer1<void, void*> pstr(task_entry);
+  mbed::util::FunctionPointer1<void, void*> ploop(task_loop);
   minar::callback_handle_t handle;
-  mbed::util::FunctionPointer1<void, void*> pstr(entry);
-  mbed::util::FunctionPointer1<void, void*> ploop(loop);
 
-  handle = minar::Scheduler::postCallback(pstr.bind(arg)).
-                      delay(minar::milliseconds(5)).
+  handle = minar::Scheduler::postCallback(pstr.bind((void*)pparam)).
+                      delay(minar::milliseconds(1)).
                       getHandle();
   if (handle) {
-    handle = minar::Scheduler::postCallback(ploop.bind(arg)).
-                        delay(minar::milliseconds(10)).
-                        period(minar::milliseconds(10)).
+    pparam->hloop = minar::Scheduler::postCallback(ploop.bind((void*)pparam)).
+                        delay(minar::milliseconds(2)).
+                        period(1).  // in ticks, needs to adjust this value.
                         getHandle();
-    if (handle) {
-      *thread = (tuvp_thread_t)handle;
+    if (pparam->hloop) {
+      *thread = (tuvp_thread_t)pparam;
       return 0;
     }
+    minar::Scheduler::cancelCallback(handle);
   }
+  free(pparam);
   return errno ? -errno : -ENOMEM;
+}
+
+
+int tuvp_task_is_running(tuvp_thread_t thread) {
+  if (!thread) return 0;
+  taskparam* pparam = (taskparam*)thread;
+  if (pparam->hloop) return 1;
+  return 0;
+}
+
+
+int tuvp_task_close(tuvp_thread_t thread) {
+  if (!thread) return -1;
+  taskparam* pparam = (taskparam*)thread;
+  if (pparam->hloop) {
+    minar::Scheduler::cancelCallback(pparam->hloop);
+  }
+  free(pparam);
+  return 0;
 }

@@ -83,6 +83,8 @@
   TE(timer_again, 5000)                                                       \
   TE(timer_huge_timeout, 5000)                                                \
   TE(timer_huge_repeat, 5000)                                                 \
+  \
+  TE(condvar_1, 5000)                                                         \
 
 #endif
 
@@ -101,6 +103,9 @@
   TE(getaddrinfo_basic, 5000)                                                 \
   TE(getaddrinfo_basic_sync, 5000)                                            \
   TE(getaddrinfo_concurrent, 5000)                                            \
+
+#elif defined(__TUV_RAW__)
+#define TEST_LIST_EXT(TE)                                                     \
 
 #else
 #define TEST_LIST_EXT(TE)                                                     \

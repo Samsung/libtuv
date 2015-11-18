@@ -94,10 +94,13 @@ typedef tuvp_sem_t uv_sem_t;
 typedef tuvp_cond_t uv_cond_t;
 typedef tuvp_rwlock_t uv_rwlock_t;
 
+int tuv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex);
 
-int tuv_task_create(uv_thread_t* tid, uv_thread_cb entry,
-                    uv_thread_cb loop, void* arg);
 
+int tuv_task_create(uv_thread_t* tid, tuv_taskentry_cb entry,
+                    tuv_taskloop_cb loop, void* arg);
+int tuv_task_running(uv_thread_t *tid);
+int tuv_task_close(uv_thread_t *tid);
 
 //-----------------------------------------------------------------------------
 

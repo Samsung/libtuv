@@ -59,4 +59,5 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_timer_raw_again.c"
       "${TEST_ROOT}/test_timer_raw_huge_timeout.c"
       "${TEST_ROOT}/test_timer_raw_huge_repeat.c"
+      "${TEST_ROOT}/test_condvar_raw.c"
       )
