@@ -88,7 +88,7 @@ static int condvar_1_loop(void* vparam) {
   run_sleep(100);
   r = tuv_cond_wait(&param->wc.cond, &param->wc.mutex);
   uv_mutex_unlock(&param->wc.mutex);
-  if (r) {
+  if (r == 0) {
     // keep the loop going
     return 1;
   }

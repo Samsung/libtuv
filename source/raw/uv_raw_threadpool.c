@@ -67,7 +67,7 @@ static void uv__cancelled(struct uv__work* w) {
  * never holds the global _mutex and the loop-local mutex at the same time.
  */
 static void worker_init(void* arg) {
-  TDDDLOG(">> worker_init %p\r\n", arg);
+  TDDDLOG(">> worker_init arg(%p)", arg);
 }
 
 
@@ -79,7 +79,7 @@ static int worker_loop(void* arg) {
   QUEUE* q;
 
   (void) arg;
-  TDDDLOG(">> worker_loop %p\r\n", arg);
+  TDDDLOG(">> worker_loop arg(%p)", arg);
 
 #if 0
   uv_mutex_lock(&_mutex);
@@ -160,6 +160,8 @@ static void init_once(void) {
   const char* val;
 
   assert(_initialized==0);
+
+  TDDDLOG(">> init_once for worker\r\n");
 
   _nthreads = ARRAY_SIZE(_default_threads);
   val = getenv("UV_THREADPOOL_SIZE");

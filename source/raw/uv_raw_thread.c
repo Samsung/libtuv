@@ -156,12 +156,12 @@ void uv_cond_broadcast(uv_cond_t* cond) {
 }
 
 int tuv_cond_wait(uv_cond_t* cond, uv_mutex_t* mutex) {
-  return (*cond > 1);
+  return (*cond > 1) ? 1 : 0;
 }
 
 int tuv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
   // how can we treat this raw(mbed) system?
-  return (*cond > 1);
+  return (*cond > 1) ? 1 : 0;
 }
 
 
