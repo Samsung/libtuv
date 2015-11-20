@@ -44,8 +44,14 @@ static void task_loop(void *vparam) {
     ret = pparam->loop(pparam->data);
   }
   if (!ret) {
-    minar::Scheduler::cancelCallback(pparam->hloop);
+    if (pparam->loop)
+      minar::Scheduler::cancelCallback(pparam->hloop);
     pparam->hloop = NULL;
+  }
+  else if (ret == -1) {
+    if (pparam->loop)
+      minar::Scheduler::cancelCallback(pparam->hloop);
+    free(pparam);
   }
 }
 

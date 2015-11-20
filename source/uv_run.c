@@ -165,10 +165,10 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
     if ((mode == UV_RUN_ONCE && !ran_pending) || mode == UV_RUN_DEFAULT)
       timeout = uv_backend_timeout(loop);
 
-#if !defined(__TUV_MBED__)
-    uv__io_poll(loop, timeout);
+#if defined(__TUV_RAW__)
+    uv__async_check(loop);
 #else
-  #pragma message __TUV_MBED__ FIX THIS
+    uv__io_poll(loop, timeout);
 #endif
     uv__run_closing_handles(loop);
 

@@ -34,54 +34,53 @@
  * IN THE SOFTWARE.
  */
 
-#include <uv.h>
+#include <assert.h>
+#include <stdio.h>
 
+#include <uv.h>
 #include "runner.h"
+
+
+static int work_cb_count;
+static int after_work_cb_count;
+static uv_work_t work_req;
+static char data;
+
+
+static void work_cb(uv_work_t* req) {
+  TUV_ASSERT(req == &work_req);
+  TUV_ASSERT(req->data == &data);
+  work_cb_count++;
+}
+
+
+static void after_work_cb(uv_work_t* req, int status) {
+  TUV_ASSERT(status == 0);
+  TUV_ASSERT(req == &work_req);
+  TUV_ASSERT(req->data == &data);
+  after_work_cb_count++;
+}
 
 
 //-----------------------------------------------------------------------------
 
-static unsigned int timer_run_once_timer_cb_called = 0;
+typedef struct {
+  uv_loop_t* loop;
+} queuework_param_t;
 
-static void timer_run_once_timer_cb(uv_timer_t* handle) {
-  timer_run_once_timer_cb_called++;
+
+static int queuework_loop(void* vparam) {
+  queuework_param_t* param = (queuework_param_t*)vparam;
+  return uv_run(param->loop, UV_RUN_ONCE);
 }
 
 
-typedef struct {
-  uv_loop_t* loop;
-  uv_timer_t timer_handle;
-} timer_param_t;
+static int queuework_final(void* vparam) {
+  queuework_param_t* param = (queuework_param_t*)vparam;
 
+  TUV_ASSERT(work_cb_count == 1);
+  TUV_ASSERT(after_work_cb_count == 1);
 
-TEST_IMPL(timer_run_once) {
-  timer_param_t* param;
-  uv_loop_t* loop;
-
-  param = (timer_param_t*)malloc(sizeof(timer_param_t));
-  loop = uv_default_loop();
-  param->loop = loop;
-
-  timer_run_once_timer_cb_called = 0;
-
-  TUV_ASSERT(0 == uv_timer_init(param->loop, &param->timer_handle));
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                 timer_run_once_timer_cb, 0, 0));
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(1 == timer_run_once_timer_cb_called);
-
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                timer_run_once_timer_cb, 1, 0));
-  // slow systems may have nano second resolution
-  // give some time to sleep so that time tick is changed
-  tuv_usleep(1000);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(2 == timer_run_once_timer_cb_called);
-
-  uv_close((uv_handle_t*)&param->timer_handle, NULL);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-
-  // for platforms that needs cleaning
   TUV_ASSERT(0 == uv_loop_close(param->loop));
 
   // cleanup tuv param
@@ -92,3 +91,24 @@ TEST_IMPL(timer_run_once) {
 
   return 0;
 }
+
+
+TEST_IMPL(threadpool_queue_work_simple) {
+  queuework_param_t* param =
+                        (queuework_param_t*)malloc(sizeof(queuework_param_t));
+  param->loop = uv_default_loop();
+
+  int r;
+
+  work_cb_count = 0;
+  after_work_cb_count = 0;
+
+  work_req.data = &data;
+  r = uv_queue_work(param->loop, &work_req, work_cb, after_work_cb);
+  TUV_ASSERT(r == 0);
+
+  tuv_run(param->loop, queuework_loop, queuework_final, param);
+
+  return 0;
+}
+

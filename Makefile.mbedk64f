@@ -24,13 +24,16 @@ all: tuv yotta flash
 tuv:
 	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make
 
+
 yotta:
 	cd embedding/mbedk64f; yotta build;
 
+
 flash: check_mbed
-	cp embedding/mbedk64f/build/frdm-k64f-gcc/source/mbedk64f.bin \
+	cp embedding/mbedk64f/build/frdm-k64f-gcc/source/tuvtester.bin \
 		"$(TARGET_DIR)/."
 	@echo "Wait till LED flashing stops..."
+
 
 check_mbed:
 	@if [ ! -d "${TARGET_DIR}" ] ; then \
@@ -38,5 +41,7 @@ check_mbed:
 		exit 1; \
 	fi
 
+
 clean:
-  TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make clean
+	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make clean
+	rm -rf embedding/mbedk64f/build/*

@@ -18,11 +18,11 @@
 #include "tuv_mbed_port.h"
 
 
-void tuvp_msleep(int msec) {
+void uv_sleep(int msec) {
   wait_ms(msec);
 }
 
-void tuvp_usleep(int usec) {
+void tuv_usleep(int usec) {
   wait_us(usec);
 }
 

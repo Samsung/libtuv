@@ -169,11 +169,8 @@ int uv_run(uv_loop_t* loop) {
     if ((mode == UV_RUN_ONCE && !ran_pending) || mode == UV_RUN_DEFAULT)
       timeout = uv_backend_timeout(loop);
 
-#if !defined(__TUV_MBED__)
-    uv__io_poll(loop, timeout);
-#else
-  #pragma message __TUV_MBED__ FIX THIS
-#endif
+    uv__async_check(loop);
+    //uv__io_poll(loop, timeout);
     uv__run_closing_handles(loop);
 
     if (mode == UV_RUN_ONCE) {

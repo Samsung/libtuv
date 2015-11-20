@@ -18,10 +18,10 @@
 #include "uv__unix_platform.h"
 
 
-inline void tuvp_msleep(int msec) {
+inline void uv_sleep(int msec) {
   usleep(msec*1000);
 }
 
-inline void tuvp_usleep(int usec) {
+inline void tuv_usleep(int usec) {
   usleep(usec);
 }

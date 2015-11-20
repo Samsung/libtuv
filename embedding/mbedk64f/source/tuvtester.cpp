@@ -30,7 +30,7 @@ int platform_init() {
 }
 
 void run_sleep(int msec) {
-  tuvp_msleep(msec);
+  uv_sleep(msec);
 }
 
 int run_helper(task_entry_t* task) {
@@ -43,14 +43,26 @@ int wait_helper(task_entry_t* task) {
   return 0;
 }
 
+static void call_cleanup(void) {
+  uv_cleanup();
+}
+
 int run_test_one(task_entry_t* task) {
   int result;
 
-  result = run_test_part(task->task_name, task->process_name);
+  if (task) {
+    result = run_test_part(task->task_name, task->process_name);
+  }
+  else {
+    result = 255;
+  }
+
   if (result) {
     if (result == 255) {
       // end of test
-      ReleaseDebugSettings();
+      minar::Scheduler::postCallback(call_cleanup)
+                        .delay(minar::milliseconds(1))
+                        ;
     }
     else {
       printf("!!! Failed to run [%s]\r\n", task->task_name);
@@ -110,7 +122,7 @@ void app_start(int, char**){
 
   minar::Scheduler::postCallback(blinky)
                     .period(minar::milliseconds(1000))
-                    .delay(minar::milliseconds(1000))
+                    .delay(minar::milliseconds(2000))
                     ;
 
   minar::Scheduler::postCallback(call_tuv_tester)

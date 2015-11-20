@@ -49,6 +49,7 @@
   TE(timer_huge_timeout, 5000)                                                \
   TE(timer_huge_repeat, 5000)                                                 \
   \
+  TE(async, 5000)                                                             \
   TE(condvar_2, 5000)                                                         \
   TE(condvar_3, 5000)                                                         \
   TE(cwd, 5000)                                                               \
@@ -84,7 +85,12 @@
   TE(timer_huge_timeout, 5000)                                                \
   TE(timer_huge_repeat, 5000)                                                 \
   \
+  TE(async, 5000)                                                             \
   TE(condvar_1, 5000)                                                         \
+  \
+  TE(threadpool_queue_work_simple, 5000)                                      \
+  TE(walk_handles, 5000)                                                      \
+
 
 #endif
 

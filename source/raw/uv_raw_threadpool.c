@@ -54,6 +54,8 @@ static QUEUE _exit_message;
 static QUEUE _wq;
 static volatile int _initialized = 0;
 
+static uv_thread_t _task_cleanup;
+
 
 //-----------------------------------------------------------------------------
 
@@ -67,26 +69,25 @@ static void uv__cancelled(struct uv__work* w) {
  * never holds the global _mutex and the loop-local mutex at the same time.
  */
 static void worker_init(void* arg) {
-  TDDDLOG(">> worker_init arg(%p)", arg);
 }
 
 
 static void worker_stop(void* arg) {
 }
 
+
 static int worker_loop(void* arg) {
   struct uv__work* w;
   QUEUE* q;
 
   (void) arg;
-  TDDDLOG(">> worker_loop arg(%p)", arg);
 
-#if 0
   uv_mutex_lock(&_mutex);
 
-  while (QUEUE_EMPTY(&_wq)) {
-    uv_cond_wait(&_cond, &_mutex);
-  }
+  if (!tuv_cond_wait(&_cond, &_mutex))
+    return 1;
+  if (QUEUE_EMPTY(&_wq))
+    return 1;
 
   q = QUEUE_HEAD(&_wq);
 
@@ -101,7 +102,7 @@ static int worker_loop(void* arg) {
   uv_mutex_unlock(&_mutex);
 
   if (q == &_exit_message) {
-    worker_stop(arg);
+    return 0;
   }
 
   w = QUEUE_DATA(q, struct uv__work, wq);
@@ -113,8 +114,8 @@ static int worker_loop(void* arg) {
   QUEUE_INSERT_TAIL(&w->loop->wq, &w->wq);
   uv_async_send(&w->loop->wq_async);
   uv_mutex_unlock(&w->loop->wq_mutex);
-#endif
-  return 0;
+
+  return 1;
 }
 
 
@@ -127,19 +128,20 @@ static void post(QUEUE* q) {
 }
 
 
-static void cleanup(void) {
+//-----------------------------------------------------------------------------
 
-#if 0
+static void cleanup_init(void* arg) {
+}
+
+
+static int cleanup_loop(void* arg) {
   unsigned int i;
 
-  if (_initialized == 0)
-    return;
-
-  post(&_exit_message);
-
-  for (i = 0; i < _nthreads; i++)
-    if (uv_thread_join(_threads + i))
-      ABORT();
+  for (i = 0; i < _nthreads; i++) {
+    if (tuv_task_running(_threads + i)) {
+      return 1;
+    }
+  }
 
   if (_threads != _default_threads)
     free(_threads);
@@ -151,7 +153,20 @@ static void cleanup(void) {
   _nthreads = 0;
   _initialized = 0;
   _once = UV_ONCE_INIT;
-#endif
+
+  TDDDLOG("tuvtester ended.");
+
+  ReleaseDebugSettings();
+
+  return -1; // -1 will self close the task and free the memory
+}
+
+
+static void cleanup(void) {
+  if (_initialized == 0)
+    return;
+  post(&_exit_message);
+  tuv_task_create(&_task_cleanup, cleanup_init, cleanup_loop, NULL);
 }
 
 
@@ -160,8 +175,6 @@ static void init_once(void) {
   const char* val;
 
   assert(_initialized==0);
-
-  TDDDLOG(">> init_once for worker\r\n");
 
   _nthreads = ARRAY_SIZE(_default_threads);
   val = getenv("UV_THREADPOOL_SIZE");
@@ -277,8 +290,9 @@ void uv__work_done(uv_async_t* handle) {
 //-----------------------------------------------------------------------------
 
 static void uv__queue_work(struct uv__work* w) {
-  uv_work_t* req = container_of(w, uv_work_t, work_req);
+  uv_work_t* req;
 
+  req = container_of(w, uv_work_t, work_req);
   req->work_cb(req);
 }
 

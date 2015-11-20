@@ -132,6 +132,7 @@ void run_tests_one(void) {
       task_group = TASKS;
       break;
     default:
+      run_test_one(NULL);
       return;
     }
     task = &task_group[cur_entry];

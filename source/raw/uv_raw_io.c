@@ -170,7 +170,6 @@ void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 }
 
 
-
 void uv__io_close(uv_loop_t* loop, uv__io_t* w) {
   uv__io_stop(loop, w, UV__POLLIN | UV__POLLOUT);
   QUEUE_REMOVE(&w->pending_queue);

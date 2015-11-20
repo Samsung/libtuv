@@ -34,54 +34,57 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <uv.h>
 
 #include "runner.h"
 
 
-//-----------------------------------------------------------------------------
+static char magic_cookie[] = "magic cookie";
+static int seen_timer_handle;
+static uv_timer_t timer;
 
-static unsigned int timer_run_once_timer_cb_called = 0;
 
-static void timer_run_once_timer_cb(uv_timer_t* handle) {
-  timer_run_once_timer_cb_called++;
+static void walk_cb(uv_handle_t* handle, void* arg) {
+  TUV_ASSERT(arg == (void*)magic_cookie);
+
+  if (handle == (uv_handle_t*)&timer) {
+    seen_timer_handle++;
+  } else {
+    TUV_ASSERT(0 && "unexpected handle");
+  }
 }
 
 
+static void timer_cb(uv_timer_t* handle) {
+  TUV_ASSERT(handle == &timer);
+
+  uv_walk(handle->loop, walk_cb, magic_cookie);
+  uv_close((uv_handle_t*)handle, NULL);
+}
+
+
+//-----------------------------------------------------------------------------
+
 typedef struct {
   uv_loop_t* loop;
-  uv_timer_t timer_handle;
-} timer_param_t;
+} walk_param_t;
 
+static int walk_loop(void* vparam) {
+  walk_param_t* param = (walk_param_t*)vparam;
+  return uv_run(param->loop, UV_RUN_ONCE);
+}
 
-TEST_IMPL(timer_run_once) {
-  timer_param_t* param;
-  uv_loop_t* loop;
+static int walk_final(void* vparam) {
+  walk_param_t* param = (walk_param_t*)vparam;
 
-  param = (timer_param_t*)malloc(sizeof(timer_param_t));
-  loop = uv_default_loop();
-  param->loop = loop;
-
-  timer_run_once_timer_cb_called = 0;
-
-  TUV_ASSERT(0 == uv_timer_init(param->loop, &param->timer_handle));
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                 timer_run_once_timer_cb, 0, 0));
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(1 == timer_run_once_timer_cb_called);
-
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                timer_run_once_timer_cb, 1, 0));
-  // slow systems may have nano second resolution
-  // give some time to sleep so that time tick is changed
-  tuv_usleep(1000);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(2 == timer_run_once_timer_cb_called);
-
-  uv_close((uv_handle_t*)&param->timer_handle, NULL);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-
-  // for platforms that needs cleaning
+  TUV_ASSERT(seen_timer_handle == 1);
+  /* Loop is finished, walk_cb should not see our timer handle. */
+  seen_timer_handle = 0;
+  uv_walk(param->loop, walk_cb, magic_cookie);
+  TUV_ASSERT(seen_timer_handle == 0);
   TUV_ASSERT(0 == uv_loop_close(param->loop));
 
   // cleanup tuv param
@@ -89,6 +92,29 @@ TEST_IMPL(timer_run_once) {
 
   // jump to next test
   run_tests_continue();
+
+  return 0;
+}
+
+
+TEST_IMPL(walk_handles) {
+  walk_param_t* param = (walk_param_t*)malloc(sizeof(walk_param_t));
+  param->loop = uv_default_loop();
+
+  int r;
+
+  seen_timer_handle = 0;
+
+  r = uv_timer_init(param->loop, &timer);
+  TUV_ASSERT(r == 0);
+
+  r = uv_timer_start(&timer, timer_cb, 1, 0);
+  TUV_ASSERT(r == 0);
+
+  /* Start event loop, expect to see the timer handle in walk_cb. */
+  TUV_ASSERT(seen_timer_handle == 0);
+
+  tuv_run(param->loop, walk_loop, walk_final, param);
 
   return 0;
 }

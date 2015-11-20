@@ -57,68 +57,10 @@ int uv__async_make_pending(int* pending) {
 }
 
 
-static int uv__async_eventfd() {
-  // no eventfd for mbed
-  return -ENOSYS;
-}
-
-
-static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
-#if 0
-  struct uv__async* wa;
-  char buf[1024];
-  unsigned n;
-  ssize_t r;
-  int err;
-
-  n = 0;
-  for (;;) {
-    r = read(w->fd, buf, sizeof(buf));
-
-    if (r > 0)
-      n += r;
-
-    if (r == sizeof(buf))
-      continue;
-
-    if (r != -1)
-      break;
-
-    err = get_errno();
-    if (err == EAGAIN || err == EWOULDBLOCK)
-      break;
-
-    if (err == EINTR)
-      continue;
-
-    TDLOG("uv__async_io abort for errno(%d)", err);
-    ABORT();
-  }
-
-  wa = container_of(w, struct uv__async, io_watcher);
-
-#if defined(__linux__)
-  if (wa->wfd == -1) {
-    uint64_t val;
-    assert(n == sizeof(val));
-    memcpy(&val, buf, sizeof(val));  /* Avoid alignment issues. */
-    wa->cb(loop, wa, val);
-    return;
-  }
-#endif
-
-  wa->cb(loop, wa, n);
-#endif
-}
-
-
 //-----------------------------------------------------------------------------
 //
 
 void uv__async_init(struct uv__async* wa) {
-  QUEUE_INIT(&(wa->io_watcher.pending_queue));
-  QUEUE_INIT(&(wa->io_watcher.watcher_queue));
-  wa->io_watcher.fd = -1;
   wa->wfd = -1;
 }
 
@@ -130,81 +72,29 @@ void uv__async_close(uv_async_t* handle) {
 
 
 void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
-  if (wa->io_watcher.fd == -1)
-    return;
-
-  if (wa->wfd != -1) {
-    if (wa->wfd != wa->io_watcher.fd)
-      uv__close(wa->wfd);
-    wa->wfd = -1;
-  }
-
-  uv__io_stop(loop, &wa->io_watcher, UV__POLLIN);
-  uv__close(wa->io_watcher.fd);
-  wa->io_watcher.fd = -1;
+  wa->wfd = -1;
 }
 
 
 int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
-  int pipefd[2];
-  int err;
-
-  if (wa->io_watcher.fd != -1)
+  if (wa->wfd >=0)
     return 0;
 
-  err = uv__async_eventfd();
-  if (err >= 0) {
-    pipefd[0] = err;
-    pipefd[1] = -1;
-  }
-  else if (err == -ENOSYS) {
-    err = uv__make_pipe(pipefd, UV__F_NONBLOCK);
-  }
-
-  if (err < 0)
-    return err;
-
-  uv__io_init(&wa->io_watcher, uv__async_io, pipefd[0]);
-  uv__io_start(loop, &wa->io_watcher, UV__POLLIN);
-  wa->wfd = pipefd[1];
+  wa->wfd = 0;
   wa->cb = cb;
-
   return 0;
 }
 
 
 void uv__async_send(struct uv__async* wa) {
-  const void* buf;
-  ssize_t len;
-  int fd;
-  int r;
+  wa->wfd = 2;
+}
 
-  buf = "";
-  len = 1;
-  fd = wa->wfd;
 
-#if defined(__linux__)
-  if (fd == -1) {
-    static const uint64_t val = 1;
-    buf = &val;
-    len = sizeof(val);
-    fd = wa->io_watcher.fd;  /* eventfd */
+void uv__async_check(uv_loop_t* loop) {
+  struct uv__async* wa = &loop->async_watcher;
+  if (wa->wfd > 1) {
+    wa->cb(loop, wa, 1);
+    wa->wfd = 0;
   }
-#endif
-
-  do
-    r = write(fd, buf, len);
-  while (r == -1 && errno == EINTR);
-
-  if (r == len)
-    return;
-
-  if (r == -1) {
-    int err = get_errno();
-    if (err == EAGAIN || err == EWOULDBLOCK)
-      return;
-  }
-
-  TDLOG("uv__async_send abort");
-  ABORT();
 }

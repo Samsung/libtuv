@@ -60,4 +60,7 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_timer_raw_huge_timeout.c"
       "${TEST_ROOT}/test_timer_raw_huge_repeat.c"
       "${TEST_ROOT}/test_condvar_raw.c"
+      "${TEST_ROOT}/test_async_raw.c"
+      "${TEST_ROOT}/test_threadpool_raw_queue_work_simple.c"
+      "${TEST_ROOT}/test_walk_handles_raw.c"
       )

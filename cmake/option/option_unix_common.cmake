@@ -60,4 +60,5 @@ set(TEST_UNITFILES "${TEST_ROOT}/test_idle.c"
                    "${TEST_ROOT}/test_condvar.c"
                    "${TEST_ROOT}/test_active.c"
                    "${TEST_ROOT}/test_walk_handles.c"
+                   "${TEST_ROOT}/test_async.c"
                    )

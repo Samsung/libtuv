@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # application name
-set(MBEDMODULE "mbedk64f")
+set(MBEDMODULE "tuvtester")
 
 # add include jerry-core
 set(TUVROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
@@ -23,14 +23,13 @@ include_directories(${TUVROOT}/source/mbed)
 include_directories(${TUVROOT}/test)
 
 # compile flags
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -mlittle-endian
-                                   -mthumb
-                                   -mcpu=cortex-m4
-                                   )
+set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS}
+                  -mlittle-endian
+                  -mthumb
+                  -mcpu=cortex-m4
+                  )
 add_definitions("-D__TUV_MBED__")
 add_definitions("-D__TUV_RAW__")
-
-
 
 # link tuv and tuvtester
 set(TUVLIBSPATH ${CMAKE_CURRENT_LIST_DIR}/../libtuv)

@@ -47,8 +47,8 @@ extern "C" {
 // platform port functions
 
 // system
-void tuvp_msleep(int msec);
-void tuvp_usleep(int usec);
+void uv_sleep(int msec);
+void tuv_usleep(int usec);
 
 // socket
 int tuvp_socket(int domain, int type, int protocol);

@@ -34,61 +34,111 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <uv.h>
 
 #include "runner.h"
 
+static uv_thread_t _thread;
+static uv_mutex_t _mutex;
 
-//-----------------------------------------------------------------------------
+static uv_timer_t _timer;
+static uv_async_t _async;
 
-static unsigned int timer_run_once_timer_cb_called = 0;
+static int _async_cb_called;
+static int _timer_cb_called;
+static int _close_cb_called;
 
-static void timer_run_once_timer_cb(uv_timer_t* handle) {
-  timer_run_once_timer_cb_called++;
+
+static void thread_cb(void *arg) {
+  int n;
+  int r;
+
+  for (;;) {
+    uv_mutex_lock(&_mutex);
+    n = _async_cb_called;
+    uv_mutex_unlock(&_mutex);
+
+    if (n == 3) {
+      break;
+    }
+
+    r = uv_async_send(&_async);
+    TUV_ASSERT(r == 0);
+
+    uv_sleep(1);
+  }
 }
 
 
-typedef struct {
-  uv_loop_t* loop;
-  uv_timer_t timer_handle;
-} timer_param_t;
+static void close_cb(uv_handle_t* handle) {
+  TUV_ASSERT(handle != NULL);
+  _close_cb_called++;
+}
 
 
-TEST_IMPL(timer_run_once) {
-  timer_param_t* param;
-  uv_loop_t* loop;
+static void async_cb(uv_async_t* handle) {
+  int n;
 
-  param = (timer_param_t*)malloc(sizeof(timer_param_t));
-  loop = uv_default_loop();
-  param->loop = loop;
+  TUV_ASSERT(handle == &_async);
 
-  timer_run_once_timer_cb_called = 0;
+  uv_mutex_lock(&_mutex);
+  n = ++_async_cb_called;
+  uv_mutex_unlock(&_mutex);
 
-  TUV_ASSERT(0 == uv_timer_init(param->loop, &param->timer_handle));
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                 timer_run_once_timer_cb, 0, 0));
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(1 == timer_run_once_timer_cb_called);
+  if (n == 3) {
+    uv_close((uv_handle_t*)&_async, close_cb);
+  }
+}
 
-  TUV_ASSERT(0 == uv_timer_start(&param->timer_handle,
-                                timer_run_once_timer_cb, 1, 0));
-  // slow systems may have nano second resolution
-  // give some time to sleep so that time tick is changed
-  tuv_usleep(1000);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
-  TUV_ASSERT(2 == timer_run_once_timer_cb_called);
 
-  uv_close((uv_handle_t*)&param->timer_handle, NULL);
-  TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
+static void timer_cb(uv_timer_t* timer) {
+  int r;
 
-  // for platforms that needs cleaning
-  TUV_ASSERT(0 == uv_loop_close(param->loop));
+  TUV_ASSERT(timer == &_timer);
+  _timer_cb_called++;
 
-  // cleanup tuv param
-  free(param);
+  r = uv_thread_create(&_thread, thread_cb, NULL);
+  TUV_ASSERT(r == 0);
+  uv_mutex_unlock(&_mutex);
 
-  // jump to next test
-  run_tests_continue();
+  uv_close((uv_handle_t*)timer, NULL);
+}
+
+
+TEST_IMPL(async) {
+  int r;
+  uv_loop_t* loop = uv_default_loop();
+
+  _async_cb_called = 0;
+  _timer_cb_called = 0;
+  _close_cb_called = 0;
+
+  r = uv_mutex_init(&_mutex);
+  TUV_ASSERT(r == 0);
+  uv_mutex_lock(&_mutex);
+
+  r = uv_async_init(loop, &_async, async_cb);
+  TUV_ASSERT(r == 0);
+
+  r = uv_timer_init(loop, &_timer);
+  TUV_ASSERT(r == 0);
+  r = uv_timer_start(&_timer, timer_cb, 250, 0);
+  TUV_ASSERT(r == 0);
+
+  r = uv_run(loop, UV_RUN_DEFAULT);
+  TUV_ASSERT(r == 0);
+
+  TUV_ASSERT(_async_cb_called == 3);
+  TUV_ASSERT(_close_cb_called == 1);
+  TUV_ASSERT(_timer_cb_called == 1);
+
+  TUV_ASSERT(0 == uv_thread_join(&_thread));
+
+  uv_mutex_destroy(&_mutex);
+  TUV_ASSERT(0 == uv_loop_close(loop));
 
   return 0;
 }

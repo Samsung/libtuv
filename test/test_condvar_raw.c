@@ -68,7 +68,7 @@ static void worker_entry(void* arg) {
 }
 
 static int worker_loop(void* arg) {
-  // stop the loop... or maybe give NULL to loop address?
+  // stop the loop
   return 0;
 }
 
@@ -77,6 +77,7 @@ typedef struct {
   uv_loop_t* loop;
   uv_thread_t thread;
   worker_config wc;
+  int waitcond;
 } condvar_1_param_t;
 
 
@@ -84,15 +85,17 @@ static int condvar_1_loop(void* vparam) {
   condvar_1_param_t* param = (condvar_1_param_t*)vparam;
   int r;
 
-  uv_mutex_lock(&param->wc.mutex);
-  run_sleep(100);
-  r = tuv_cond_wait(&param->wc.cond, &param->wc.mutex);
-  uv_mutex_unlock(&param->wc.mutex);
-  if (r == 0) {
-    // keep the loop going
-    return 1;
+  if (param->waitcond) {
+    uv_mutex_lock(&param->wc.mutex);
+    run_sleep(100);
+    r = tuv_cond_wait(&param->wc.cond, &param->wc.mutex);
+    uv_mutex_unlock(&param->wc.mutex);
+    if (r == 0) {
+      // keep the loop going
+      return 1;
+    }
+    param->waitcond = 0;
   }
-
   // check task has closed(something like thread joined)
   r = tuv_task_running(&param->thread);
   // r=1 for task needs to run, return 1 so that loop keeps going
@@ -114,6 +117,8 @@ static int condvar_1_final(void* vparam) {
 
   // jump to next test
   run_tests_continue();
+
+  return 0;
 }
 
 
@@ -124,6 +129,7 @@ TEST_IMPL(condvar_1) {
 
   memset(&param->wc, 0, sizeof(param->wc));
   param->wc.data = param;
+  param->waitcond = 1;
 
   TUV_ASSERT(0 == uv_cond_init(&param->wc.cond));
   TUV_ASSERT(0 == uv_mutex_init(&param->wc.mutex));
