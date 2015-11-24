@@ -82,4 +82,7 @@ clean:
 #       ; arm linux on raspberry pi 2
 #   TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4disco
 #       ; arm nuttx on STM32F4-Discovery with BB
+#   TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f
+#       ; arm mbed on FRDM-K64F
+#       ; use Makefile.mbedk64f file: `make -f Makefile.mbedk64f`
 #

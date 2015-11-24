@@ -27,7 +27,7 @@ set(LIBTUV_VERSION_MINOR 1)
 #     + arm-nuttx
 # + (mtsk_common: multi-tasking
 #     + (TBD)
-# + raw_common: single task, big-while-loop
+# + raw_common: single task, big-while-loop, event driven
 #     + arm-mbed
 #
 include(cmake/options.cmake)
