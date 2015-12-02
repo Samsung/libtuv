@@ -35,7 +35,6 @@
  */
 
 #include <string.h>
-#include <unistd.h> // usleep
 #include <uv.h>
 
 
@@ -342,7 +341,7 @@ TEST_IMPL(timer_run_once) {
   TUV_ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 1, 0));
   // slow systems may have nano second resolution
   // give some time to sleep so that time tick is changed
-  uv_usleep(1000);
+  tuv_usleep(1000);
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
   TUV_ASSERT(2 == timer_run_once_timer_cb_called);
 

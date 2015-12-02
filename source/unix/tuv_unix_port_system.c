@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include <unistd.h> // usleep
+
 #include <uv.h>
 
 #include "uv__unix_platform.h"
