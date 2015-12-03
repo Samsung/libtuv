@@ -54,7 +54,7 @@
 #include "uv_platform.h"  // platform should be placed before extension
 #include "uv_extension.h" // extension should be placed before others
 
-#include "uv__raw.h"
+#include "tuv__port.h"
 
 #include "uv__error.h"
 #include "uv__handle.h"
@@ -74,9 +74,7 @@
 #endif
 #include "uv__fd.h"
 #include "uv__stream.h"
-#if !defined(__TUV_RAW__)
 #include "uv__tcp.h"
-#endif
 #include "uv__pipe.h"
 #include "uv__thread.h"
 
@@ -89,7 +87,6 @@
 
 #include "uv__platform.h"
 
-#include "tuv__port.h"
 #include "tuv__debuglog.h"
 
 

@@ -152,6 +152,11 @@ void run_tests_one(void) {
   }
 }
 
+
+// dummy for api emulator
+void apiemul_main(void) {
+}
+
 #if 0
 int run_tests() {
   int entry;
@@ -195,3 +200,4 @@ int run_tests() {
   return 0;
 }
 #endif
+

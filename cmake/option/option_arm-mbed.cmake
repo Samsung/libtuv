@@ -14,10 +14,13 @@
 
 include("cmake/option/option_raw_common.cmake")
 
-# unix common source files
+# mbed common source files
 set(MBED_PATH "${SOURCE_ROOT}/mbed")
 
 set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
+                     "${MBED_PATH}/uv_mbed.c"
+                     "${MBED_PATH}/uv_mbed_tcp.c"
+                     "${MBED_PATH}/uv_mbed_stream.c"
                       )
 
 #set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_mbed.c")

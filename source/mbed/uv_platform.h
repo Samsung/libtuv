@@ -80,7 +80,7 @@ uint64_t uv__hrtime(uv_clocktype_t type);
 
 inline uint64_t uv__time_precise();
 
-void uv__time_init(void);
+void tuv__time_init(void);
 
 //-----------------------------------------------------------------------------
 // mbed thread and mutex emulation
@@ -109,5 +109,10 @@ struct iovec
   void* iov_base;
   size_t iov_len;
 };
+
+
+//-----------------------------------------------------------------------------
+
+void tuv__platform_init(void);
 
 #endif // __uv__platform_mbed_header__

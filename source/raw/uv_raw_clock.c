@@ -41,7 +41,7 @@
 
 static uint64_t __current_time = 0; // time in nano-seconds
 
-void uv__time_init(void) {
+void tuv__time_init(void) {
   if (__current_time == 0) {
     tuvp_timer_init();
     tuvp_timer_start();

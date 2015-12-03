@@ -16,12 +16,24 @@
 #ifndef __MBED_PORT_HEADER__
 #define __MBED_PORT_HEADER__
 
+// socket and file descriptor buffer size
+#define TUV_MAX_FF_COUNT    16    // just an offset
+#define TUV_MAX_FD_COUNT    32    // number of file descriptors to provide
+#define TUV_MAX_SD_COUNT    32    // number of socket descriptors to provide
+
+
 #define POLLIN        0x01
 #define POLLOUT       0x02
 #define POLLERR       0x04
 #define POLLHUP       0x08
 
 #define PTHREAD_ONCE_INIT    0x12348765
+
+
+//----------------------------------------------------------------------------
+// from LWIP, lwip/sockets.h
+//
+#define SOL_SOCKET      0xfff     /* options for socket level */
 
 #define AF_UNSPEC       0
 #define AF_INET         2
@@ -33,18 +45,30 @@
 #define IPPROTO_UDP     17
 #define IPPROTO_UDPLITE 136
 
+#ifndef socklen_t
+#  define socklen_t uint32_t
+#endif
+
+/* Socket protocol types (TCP/UDP/RAW) */
+#ifndef SOCK_STREAM
+#define SOCK_STREAM     1
+#define SOCK_DGRAM      2
+#define SOCK_RAW        3
+#endif
+
+#ifndef SO_REUSEADDR
+#define  SO_REUSEADDR   0x0004 /* Allow local address reuse */
+#define  SO_KEEPALIVE   0x0008 /* keep connections alive */
+#endif
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef socklen_t
-#  define socklen_t uint32_t
-#endif
-
-#if defined(TUV_DECLARE_MBED_DEFS)
-
-
+//----------------------------------------------------------------------------
+// from LWIP, lwip/sockets.h
+//
 
 /** For compatibility with BSD code */
 struct in_addr {
@@ -66,11 +90,26 @@ struct sockaddr {
   char    sa_data[14];
 };
 
-#endif // TUV_DECLARE_MBED_DEFS
+
+//-----------------------------------------------------------------------------
+// from linux
+
+struct pollfd {
+  int   fd;         /* file descriptor */
+  short events;     /* requested events */
+  short revents;    /* returned events */
+};
+
+//-----------------------------------------------------------------------------
+//
+typedef int uv_os_sock_t;
 
 
 //-----------------------------------------------------------------------------
-// only for mbed apis
+// platform port
+
+// platform itself
+void tuvp_platform_init();
 
 // timer
 void tuvp_timer_init(void);
@@ -92,6 +131,7 @@ typedef uint32_t tuvp_cond_t;
 typedef uint32_t tuvp_rwlock_t;
 
 
+// task, for thread emulation with mbed scheduler
 typedef void (*tuv_taskentry_cb)(void* arg);
 typedef int (*tuv_taskloop_cb)(void* arg);
 
@@ -99,6 +139,28 @@ int tuvp_task_create(tuvp_thread_t *thread,
                      tuv_taskentry_cb entry, tuv_taskloop_cb loop, void *arg);
 int tuvp_task_is_running(tuvp_thread_t thread);
 int tuvp_task_close(tuvp_thread_t thread);
+
+
+// socket
+
+// Maximum queue length specifiable by listen.
+#define SOMAXCONN 8
+
+void tuvp_tcp_init(void);
+int tuvp_socket(int domain, int type, int protocol);
+int tuvp_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+int tuvp_setsockopt(int sockfd, int level, int optname, const void *optval,
+                    socklen_t optlen);
+int tuvp_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+int tuvp_listen(int sockfd, int backlog);
+uint16_t tuvp_htons(uint16_t hostshort);
+int tuvp_net_poll(struct pollfd* fds, int nfds);
+int tuvp_close(int sockfd);
+
+int tuvp_getsockname(int sockfd, struct sockaddr* addr, socklen_t* addrlen);
+
+ssize_t tuvp_write(int fd, const void* buf, size_t count);
+ssize_t tuvp_read(int sockfd, void *buf, size_t count);
 
 
 #ifdef __cplusplus

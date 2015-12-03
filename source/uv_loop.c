@@ -51,8 +51,7 @@ int uv_loop_init(uv_loop_t* loop) {
   int err;
 
 #if defined(__TUV_RAW__)
-  // TODO: fix this
-  uv__time_init();
+  tuv__platform_init();
 #endif
 
   memset(loop, 0, sizeof(uv_loop_t));

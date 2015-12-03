@@ -113,6 +113,14 @@ typedef void (*uv_getaddrinfo_cb)(uv_getaddrinfo_t* req,
                                   int status,
                                   struct addrinfo* res);
 
+
+//-----------------------------------------------------------------------------
+// for porting libtuv on simple systems like mbed
+
+typedef int (*tuv_loop_cb)(void*);
+typedef int (*tuv_final_cb)(void*);
+
+
 //-----------------------------------------------------------------------------
 
 typedef struct {

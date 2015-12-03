@@ -20,6 +20,8 @@
 
 #include <uv.h>
 
+static int __platform_initialized = 0;
+
 
 static void tuv__run_clear(uv_loop_t* loop) {
   loop->raw_loopcb = NULL;
@@ -28,13 +30,16 @@ static void tuv__run_clear(uv_loop_t* loop) {
 }
 
 
+// TODO:
+//  calling loop very 1msec is power consuming in mbed. need to fix this.
+//  need to find a way to poll network event with timeout
+
 static void handle_loopfinal(void* ploop) {
 
   uv_loop_t* loop;
   int result;
 
   loop = (uv_loop_t*)ploop;
-  //printf(">> handle_loopfinal %p\r\n", loop);
   result = loop->raw_loopcb(loop->raw_param);
 
   if (result) {
@@ -43,11 +48,9 @@ static void handle_loopfinal(void* ploop) {
                         .tolerance(minar::milliseconds(1))
                         .delay(minar::milliseconds(1))
                         ;
-    //printf(">> handle_loopfinal loop again\r\n");
   }
   else {
     result = loop->raw_finalcb(loop->raw_param);
-    //printf(">> handle_loopfinal final ok\r\n");
     if (result == 0)
       tuv__run_clear(loop);
   }
@@ -70,3 +73,11 @@ int tuv_run(uv_loop_t* loop, tuv_loop_cb loopcb, tuv_final_cb fincb,
   return 0;
 }
 
+void tuvp_platform_init(void) {
+  if (__platform_initialized)
+    return;
+
+  __platform_initialized = 1;
+
+  tuvp_tcp_init();
+}

@@ -34,29 +34,12 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef __uv__raw_header__
-#define __uv__raw_header__
+#include <uv.h>
 
-#if defined(__TUV_RAW__)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "tuv_mbed_port.h"
 
 
-//-----------------------------------------------------------------------------
-// for raw ... TDB
-
-typedef int (*tuv_loop_cb)(void*);
-typedef int (*tuv_final_cb)(void*);
-
-int tuv_run(uv_loop_t*, tuv_loop_cb, tuv_final_cb, void*);
-
-
-#ifdef __cplusplus
+void tuv__platform_init(void) {
+  tuvp_platform_init();
+  tuv__time_init();
 }
-#endif
-
-#endif
-
-#endif // __uv__raw_header__

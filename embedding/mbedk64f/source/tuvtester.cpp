@@ -34,7 +34,7 @@ void run_sleep(int msec) {
 }
 
 int run_helper(task_entry_t* task) {
-  (void)task;
+  task->main();
   return 0;
 }
 
@@ -84,50 +84,4 @@ int tuvtester_entry(void) {
   minar::Scheduler::postCallback(run_tests_one);
 
   return 0;
-}
-
-
-//----------------------------------------------------------------------------
-
-static void call_tuv_tester(void) {
-  tuvtester_entry();
-  printf("\r\ntuvtester_entry call OK\r\n");
-}
-
-static void blinky(void) {
-  static DigitalOut led1(LED1);
-  static DigitalOut led2(LED2);
-  static DigitalOut led3(LED3);
-  static int bl = 0;
-
-  led1 = bl & 1 ? 0 : 1;
-  led2 = bl & 2 ? 0 : 1;
-  led3 = bl & 4 ? 0 : 1;
-
-  bl++;
-
-  if (bl < 16) {
-    printf("LED bl(%d) %d %d %d\r\n",
-            bl, led1.read(), led2.read(), led3.read());
-    if (bl == 15) {
-      printf("Too many message, stop...\r\n");
-    }
-  }
-}
-
-void app_start(int, char**){
-  // set 115200 baud rate for stdout
-  static Serial pc(USBTX, USBRX);
-  pc.baud(115200);
-
-  minar::Scheduler::postCallback(blinky)
-                    .period(minar::milliseconds(1000))
-                    .delay(minar::milliseconds(2000))
-                    ;
-
-  minar::Scheduler::postCallback(call_tuv_tester)
-                    .delay(minar::milliseconds(500))
-                    ;
-
-  printf("\r\n\r\n app_start OK\r\n");
 }

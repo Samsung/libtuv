@@ -139,7 +139,6 @@ typedef struct {
   int n;
 } dowait_args;
 
-#if !defined(__TUV_MBED__)
 /* tcp server */
 typedef struct {
   uv_write_t req;
@@ -151,9 +150,6 @@ typedef enum {
   TEST_UDP,
   TEST_PIPE
 } stream_type;
-#else
-#pragma message "__TUV_MBED__ fix this"
-#endif
 
 #ifdef PATH_MAX
 #define EXEC_PATH_LENGTH PATH_MAX
@@ -177,6 +173,10 @@ void run_sleep(int msec);
 task_entry_t* get_helper(const char* test);
 int run_helper(task_entry_t* task);
 int wait_helper(task_entry_t* task);
+
+
+// tuv unit test entry function
+int tuvtester_entry(void);
 
 
 // for raw systems

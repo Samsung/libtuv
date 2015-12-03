@@ -44,10 +44,11 @@ set(PLATFORM_SRCFILES
       )
 
 set(TEST_MAINFILE
-      "${TEST_ROOT}/runner_main_raw.c"
+      "${TEST_ROOT}/raw_main.c"
       )
 
 set(TEST_UNITFILES
+      "${TEST_ROOT}/runner_main_raw.c"
       "${TEST_ROOT}/test_idle_raw.c"
       "${TEST_ROOT}/test_active_raw.c"
       "${TEST_ROOT}/test_timer_raw_init.c"
@@ -63,4 +64,11 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_async_raw.c"
       "${TEST_ROOT}/test_threadpool_raw_queue_work_simple.c"
       "${TEST_ROOT}/test_walk_handles_raw.c"
+
+      "${TEST_ROOT}/echo_server_raw.c"
+      )
+
+set(TEST_APIEMULFILES
+      "${TEST_ROOT}/apiemul_main.c"
+      "${TEST_ROOT}/apiemul_socket.c"
       )

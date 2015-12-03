@@ -15,14 +15,14 @@
 # application name
 set(MBEDMODULE "tuvtester")
 
-# add include jerry-core
+# add includes
 set(TUVROOT ${CMAKE_CURRENT_LIST_DIR}/../../..)
 include_directories(${TUVROOT}/include)
 include_directories(${TUVROOT}/source)
 include_directories(${TUVROOT}/source/mbed)
 include_directories(${TUVROOT}/test)
 
-# compile flags
+# compile flags...
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS}
                   -mlittle-endian
                   -mthumb
@@ -31,11 +31,15 @@ set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS}
 add_definitions("-D__TUV_MBED__")
 add_definitions("-D__TUV_RAW__")
 
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/tuv_mbed_ipaddress.h)
+  add_definitions("-D__TUV_MBED_IPEXIST__")
+endif()
+
 # link tuv and tuvtester
 set(TUVLIBSPATH ${CMAKE_CURRENT_LIST_DIR}/../libtuv)
 
-set(TUVLIBSFILES "")
-set(TUVLIBSFILES ${TUVLIBSFILES} ${TUVLIBSPATH}/libtuv.a)
-set(TUVLIBSFILES ${TUVLIBSFILES} ${TUVLIBSPATH}/libtuvtester.a)
+set(TUVLIBSFILES ${TUVLIBSPATH}/libtuv.a
+                 ${TUVLIBSPATH}/libtuvtester.a
+                 )
 
 target_link_libraries(${MBEDMODULE} ${TUVLIBSFILES})

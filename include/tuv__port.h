@@ -50,10 +50,9 @@ extern "C" {
 void uv_sleep(int msec);
 void tuv_usleep(int usec);
 
-// socket
-int tuvp_socket(int domain, int type, int protocol);
-int tuvp_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
-uint16_t tuvp_htons(uint16_t hostshort);
+
+// running
+int tuv_run(uv_loop_t*, tuv_loop_cb, tuv_final_cb, void*);
 
 
 #ifdef __cplusplus

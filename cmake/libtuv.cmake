@@ -24,8 +24,9 @@ set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.c"
                     "${SOURCE_ROOT}/uv_req.c"
 
                     "${SOURCE_ROOT}/uv_async.c"
-
+                    "${SOURCE_ROOT}/uv_util.c"
                     "${SOURCE_ROOT}/tuv_debuglog.c"
+                    "${SOURCE_ROOT}/uv_error.c"
 
                     "${SOURCE_ROOT}/uv_inet.c"
                     )

@@ -18,23 +18,40 @@ TARGET_DIR ?= /media/$(USER)/MBED
 .phony: all
 
 
-all: tuv yotta flash
+# tuv and tuvtester
+all: tuv yotta
 
 
+# api emulation tester: socket, file
+apiemul: apiemultester yotta
+
+
+#-----------------------------------------------------------------------------
+# libtuv and tuvtester
 tuv:
 	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make
 
 
+# yotta binary build
 yotta:
 	cd embedding/mbedk64f; yotta build;
 
 
+# flash to mbed board. binary should be always 'tuvtester'
 flash: check_mbed
 	cp embedding/mbedk64f/build/frdm-k64f-gcc/source/tuvtester.bin \
 		"$(TARGET_DIR)/."
 	@echo "Wait till LED flashing stops..."
 
 
+#-----------------------------------------------------------------------------
+# libtuv and api emulator tester
+apiemultester:
+	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f TUV_BUILDTESTER=no \
+	 TUV_BUILDAPIEMULTESTER=yes make
+
+
+#-----------------------------------------------------------------------------
 check_mbed:
 	@if [ ! -d "${TARGET_DIR}" ] ; then \
 		echo "MBED not mounted at ${TARGET_DIR}"; \
