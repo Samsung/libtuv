@@ -65,26 +65,3 @@ call:
 
 clean:
 	rm -rf $(OUTPUT_ROOT)
-
-#
-# make option
-#   VERBOSE=1
-#       ; verbose output if set
-#   TUV_BUILD_TYPE=release
-#       ; release build or else debug build
-#   TUV_BUILDTESTER=yes
-#       ; build also unit test program, default is yes
-#
-# support platform+board
-#   TUV_PLATFORM=i686-linux
-#       ; x86 32bit linux
-#   TUV_PLATFORM=x86_64-linux
-#       ; x86 64bit linux
-#   TUV_PLATFORM=arm-linux TUV_BOARD=rpi2
-#       ; arm linux on raspberry pi 2
-#   TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4disco
-#       ; arm nuttx on STM32F4-Discovery with BB
-#   TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f
-#       ; arm mbed on FRDM-K64F
-#       ; use Makefile.mbedk64f file: `make -f Makefile.mbedk64f`
-#
