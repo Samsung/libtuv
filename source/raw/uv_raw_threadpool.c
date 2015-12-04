@@ -364,6 +364,6 @@ int uv_cancel(uv_req_t* req) {
 
 
 //-----------------------------------------------------------------------------
-void uv_cleanup(void) {
+void tuv_cleanup(void) {
   cleanup();
 }

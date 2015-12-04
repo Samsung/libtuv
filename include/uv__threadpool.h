@@ -75,7 +75,7 @@ int uv_cancel(uv_req_t* req);
  * for embed systems that need cleanup before exit
  */
 #if defined(__NUTTX__) || defined(__TUV_RAW__)
-void uv_cleanup(void);
+void tuv_cleanup(void);
 #endif
 
 #ifdef __cplusplus
