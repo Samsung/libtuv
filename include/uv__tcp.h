@@ -51,7 +51,6 @@ extern "C" {
 
 int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr);
 int uv_ip4_name(const struct sockaddr_in* src, char* dst, size_t size);
-int uv_inet_ntop(int af, const void* src, char* dst, size_t size);
 
 
 /*
