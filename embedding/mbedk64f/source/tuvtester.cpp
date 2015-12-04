@@ -22,6 +22,7 @@
 #include <uv.h>
 
 #include "runner.h"
+#include "raw_main.h"
 
 
 /* Do platform-specific initialization. */
@@ -75,13 +76,11 @@ void run_tests_continue(void) {
   minar::Scheduler::postCallback(run_tests_one);
 }
 
-int tuvtester_entry(void) {
+void tuvtester_entry(void) {
   InitDebugSettings();
 
   platform_init();
   run_tests_init();
 
   minar::Scheduler::postCallback(run_tests_one);
-
-  return 0;
 }

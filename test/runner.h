@@ -175,10 +175,6 @@ int run_helper(task_entry_t* task);
 int wait_helper(task_entry_t* task);
 
 
-// tuv unit test entry function
-int tuvtester_entry(void);
-
-
 // for raw systems
 void run_tests_init(void);
 void run_tests_one(void);
