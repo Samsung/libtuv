@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <uv.h>
 
-#include "raw_main.h"
+#include "raw_main.h" // in test/ folder
 
 static DigitalOut led1(LED1);
 static DigitalOut led2(LED2);
@@ -43,11 +43,13 @@ static void blinky(void) {
 }
 
 /*
- * app_start() is entry function in mbed. it calls call_tuv_tester()
- * in libtuv raw_main.c. call_tuv_tester() will branch by build configuration
- * 1) __TUV_APIEMUL__: system api (socket, file) emulator tester
+ * app_start() is entry function in mbed.
+ * it calls call_tuv_tester() in libtuv raw_main.c
+ * call_tuv_tester() will branch by build configuration; __TUV_APIEMUL__
+ *
+ * 1) __TUV_APIEMUL__: system api (socket, file) emulation test
  *    which calls apiemultester_entry() in apiemultester.cpp
- * 2) undefined: tuv api unit tester
+ * 2) undefined: tuv api unit test
  *    which calls tuvtester_entry() in tuvtester.cpp
  */
 

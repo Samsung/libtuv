@@ -41,6 +41,10 @@
 #define TUV_DECLARE_MBED_DEFS
 #include "tuv_mbed_port.h"
 
+#define TUV_POLL_EVENTS_SIZE    (TUV_MAX_FD_COUNT+TUV_MAX_SD_COUNT)
+
+#define TUV_MBED_IOV_MAX        TUV_POLL_EVENTS_SIZE /* check this */
+
 //-----------------------------------------------------------------------------
 
 #define UV__POLLIN    POLLIN    /* 0x01 */
@@ -101,14 +105,6 @@ int tuv_task_create(uv_thread_t* tid, tuv_taskentry_cb entry,
                     tuv_taskloop_cb loop, void* arg);
 int tuv_task_running(uv_thread_t *tid);
 int tuv_task_close(uv_thread_t *tid);
-
-//-----------------------------------------------------------------------------
-
-struct iovec
-{
-  void* iov_base;
-  size_t iov_len;
-};
 
 
 //-----------------------------------------------------------------------------

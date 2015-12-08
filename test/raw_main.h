@@ -22,13 +22,12 @@ extern "C" {
 #endif
 
 
-void apiemultester_entry(void);
 void tuvtester_entry(void);
 
 // to make tuv to control which tester to begin
 void call_tuv_tester(void);
-  // can call regular unit tester
-  // can call api emulator for raw system
+  // can call regular unit tester, tuvtester_entry()
+  // can call api emulator for raw system, apiemultester_entry()
 
 
 #ifdef __cplusplus

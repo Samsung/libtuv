@@ -17,6 +17,9 @@
 
 #include "tuv_mbed_port.h"
 
+#include <uv.h>
+
+
 static Timer __tuv_mbed_timer;
 
 

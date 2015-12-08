@@ -20,6 +20,8 @@
 
 #include "tuv_mbed_port.h"
 
+#include <uv.h>
+
 
 typedef struct taskparam_t {
   tuv_taskentry_cb entry;
@@ -79,8 +81,8 @@ int tuvp_task_create(tuvp_thread_t *thread,
                       getHandle();
   if (handle) {
     pparam->hloop = minar::Scheduler::postCallback(ploop.bind((void*)pparam)).
-                        delay(minar::milliseconds(2)).
-                        period(1).  // in ticks, needs to adjust this value.
+                        delay(minar::milliseconds(10)).
+                        period(minar::milliseconds(10)).
                         getHandle();
     if (pparam->hloop) {
       *thread = (tuvp_thread_t)pparam;

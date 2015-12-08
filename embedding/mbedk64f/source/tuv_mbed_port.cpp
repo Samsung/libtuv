@@ -14,6 +14,7 @@
  */
 
 #include <errno.h>
+#include <stdio.h>
 
 #include "mbed-drivers/mbed.h"
 #include "tuv_mbed_port.h"
@@ -80,4 +81,11 @@ void tuvp_platform_init(void) {
   __platform_initialized = 1;
 
   tuvp_tcp_init();
+}
+
+
+void exit(int status) {
+  TDLOG("!!! EXIT !!! status(%d)\r\n\r\n", status);
+  mbed_die();
+  while(1);
 }

@@ -21,6 +21,9 @@
 #define TUV_MAX_FD_COUNT    32    // number of file descriptors to provide
 #define TUV_MAX_SD_COUNT    32    // number of socket descriptors to provide
 
+#define STDIN_FILNO         0
+#define STDOUT_FILNO        1
+#define STDERR_FILENO       2
 
 #define POLLIN        0x01
 #define POLLOUT       0x02
@@ -31,12 +34,22 @@
 
 
 //----------------------------------------------------------------------------
-// from LWIP, lwip/sockets.h
-//
+
+/* from LWIP, lwip/sockets.h */
 #define SOL_SOCKET      0xfff     /* options for socket level */
 
+/* Options for level IPPROTO_TCP */
+#define TCP_NODELAY     0x01
+#define TCP_KEEPALIVE   0x02
+#define TCP_KEEPIDLE    0x03
+#define TCP_KEEPINTVL   0x04
+#define TCP_KEEPCNT     0x05
+
+/* from sal/socket_types.h, shoudld sync with it */
 #define AF_UNSPEC       0
-#define AF_INET         2
+#define AF_INET4        1
+#define AF_INET6        2
+#define AF_INET         AF_INET4
 #define PF_INET         AF_INET
 #define PF_UNSPEC       AF_UNSPEC
 
@@ -57,8 +70,18 @@
 #endif
 
 #ifndef SO_REUSEADDR
-#define  SO_REUSEADDR   0x0004 /* Allow local address reuse */
-#define  SO_KEEPALIVE   0x0008 /* keep connections alive */
+#define  SO_REUSEADDR   0x0004    /* Allow local address reuse */
+#define  SO_KEEPALIVE   0x0008    /* keep connections alive */
+#endif
+
+#define SO_ERROR        0x1007    /* get error status and clear */
+
+
+/* socket shutdown how */
+#ifndef SHUT_RD
+#define SHUT_RD         0
+#define SHUT_WR         1
+#define SHUT_RDWR       2
 #endif
 
 
@@ -67,10 +90,8 @@ extern "C" {
 #endif
 
 //----------------------------------------------------------------------------
-// from LWIP, lwip/sockets.h
-//
 
-/** For compatibility with BSD code */
+/* For compatibility with BSD code */
 struct in_addr {
   uint32_t s_addr;
 };
@@ -92,7 +113,6 @@ struct sockaddr {
 
 
 //-----------------------------------------------------------------------------
-// from linux
 
 struct pollfd {
   int   fd;         /* file descriptor */
@@ -100,13 +120,23 @@ struct pollfd {
   short revents;    /* returned events */
 };
 
+
+struct iovec
+{
+  void* iov_base;
+  size_t iov_len;
+};
+
+
 //-----------------------------------------------------------------------------
-//
+
 typedef int uv_os_sock_t;
 
 
 //-----------------------------------------------------------------------------
 // platform port
+
+void exit(int status);
 
 // platform itself
 void tuvp_platform_init();
@@ -151,16 +181,28 @@ int tuvp_socket(int domain, int type, int protocol);
 int tuvp_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
 int tuvp_setsockopt(int sockfd, int level, int optname, const void *optval,
                     socklen_t optlen);
+int tuvp_getsockopt(int sockfd, int level, int optname, void *optval,
+                    socklen_t *optlen);
 int tuvp_bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 int tuvp_listen(int sockfd, int backlog);
+int tuvp_connect(int sockfd, const struct sockaddr*addr, socklen_t addrlen);
+
 uint16_t tuvp_htons(uint16_t hostshort);
 int tuvp_net_poll(struct pollfd* fds, int nfds);
+int tuvp_poll(struct pollfd *fds, int nfds, int timeout);
 int tuvp_close(int sockfd);
 
+
+int tuvp_shutdown(int sockfd, int how);
+
 int tuvp_getsockname(int sockfd, struct sockaddr* addr, socklen_t* addrlen);
+int tuvp_getpeername(int sockfd, struct sockaddr* addr, socklen_t* addrlen);
 
 ssize_t tuvp_write(int fd, const void* buf, size_t count);
 ssize_t tuvp_read(int sockfd, void *buf, size_t count);
+
+ssize_t tuvp_readv(int fd, const struct iovec* iiovec, int count);
+ssize_t tuvp_writev(int fd, const struct iovec* iiovec, int count);
 
 
 #ifdef __cplusplus

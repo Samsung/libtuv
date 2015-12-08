@@ -191,6 +191,8 @@ enum {
 //
 
 #define UV_PLATFORM_LOOP_FIELDS                                               \
+  struct pollfd pollfds[TUV_POLL_EVENTS_SIZE];                                \
+  int npollfds;                                                               \
 
 
 #ifndef UV_STREAM_PRIVATE_PLATFORM_FIELDS

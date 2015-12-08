@@ -16,10 +16,11 @@
 #include <uv.h>
 
 #include "raw_main.h"
+#include "apiemul.h"
 
 
 void call_tuv_tester(void) {
-#if defined(__TUV_RAW_APIEMUL__)
+#if defined(__TUV_APIEMUL__)
   apiemultester_entry();
 #else
   tuvtester_entry();

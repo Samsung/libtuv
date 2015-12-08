@@ -50,7 +50,7 @@ static uv_handle_t* serverHandle;
 
 
 //-----------------------------------------------------------------------------
-#if 0
+
 static void on_close(uv_handle_t* peer) {
   free(peer);
 }
@@ -58,10 +58,10 @@ static void on_close(uv_handle_t* peer) {
 static void on_server_close(uv_handle_t* handle) {
   TUV_ASSERT(handle == serverHandle);
 }
-#endif
+
 
 //-----------------------------------------------------------------------------
-#if 0
+
 static void after_write(uv_write_t* req, int status) {
   write_req_t* wr;
 
@@ -147,7 +147,6 @@ static void echo_alloc(uv_handle_t* handle,
   buf->len = suggested_size;
 }
 
-#endif
 
 static void on_connection(uv_stream_t* server, int status) {
   uv_stream_t* stream;
@@ -159,7 +158,7 @@ static void on_connection(uv_stream_t* server, int status) {
     return;
   }
   TUV_ASSERT(status == 0);
-  TDDDLOG("on_connection server(%p)", server);
+  TDDDLOG("echo server test on_connection server(%p)", server);
 
   switch (serverType) {
   case TEST_TCP:
@@ -189,9 +188,10 @@ static void on_connection(uv_stream_t* server, int status) {
   r = uv_accept(server, stream);
   TUV_ASSERT(r == 0);
 
-  //r = uv_read_start(stream, echo_alloc, after_read);
-  //TUV_ASSERT(r == 0);
+  r = uv_read_start(stream, echo_alloc, after_read);
+  TUV_ASSERT(r == 0);
 }
+
 
 //-----------------------------------------------------------------------------
 

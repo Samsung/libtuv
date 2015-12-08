@@ -19,8 +19,9 @@ set(MBED_PATH "${SOURCE_ROOT}/mbed")
 
 set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
                      "${MBED_PATH}/uv_mbed.c"
-                     "${MBED_PATH}/uv_mbed_tcp.c"
+                     "${MBED_PATH}/uv_mbed_io.c"
                      "${MBED_PATH}/uv_mbed_stream.c"
+                     "${MBED_PATH}/uv_mbed_tcp.c"
                       )
 
 #set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_mbed.c")

@@ -21,6 +21,9 @@ extern "C" {
 #endif
 
 
+#define APIEMUL_DUMP_HEAP_ADDRESS 1
+
+
 int apiemultester_entry(void);
 
 void apiemul_main(void);

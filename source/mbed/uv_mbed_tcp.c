@@ -72,12 +72,9 @@ int uv__tcp_bind(uv_tcp_t* tcp,
   int err;
   int on;
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
   /* Cannot set IPv6-only mode on non-IPv6 socket. */
   if ((flags & UV_TCP_IPV6ONLY) && addr->sa_family != AF_INET6)
     return -EINVAL;
-#endif
 
   err = maybe_new_socket(tcp,
                          addr->sa_family,
@@ -94,11 +91,9 @@ int uv__tcp_bind(uv_tcp_t* tcp,
 #ifdef IPV6_V6ONLY
   if (addr->sa_family == AF_INET6) {
     on = (flags & UV_TCP_IPV6ONLY) != 0;
-    if (setsockopt(tcp->io_watcher.fd,
-                   IPPROTO_IPV6,
-                   IPV6_V6ONLY,
-                   &on,
-                   sizeof on) == -1) {
+    if (tuvp_setsockopt(tcp->io_watcher.fd,
+                        IPPROTO_IPV6, IPV6_V6ONLY,
+                        &on, sizeof on) == -1) {
       return -get_errno();
     }
   }
@@ -113,11 +108,8 @@ int uv__tcp_bind(uv_tcp_t* tcp,
     TDDLOG("uv__tcp_bind delayed_error(%d)", tcp->delayed_error);
   }
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
   if (addr->sa_family == AF_INET6)
     tcp->flags |= UV_HANDLE_IPV6;
-#endif
 
   return 0;
 }
@@ -145,13 +137,10 @@ int uv__tcp_connect(uv_connect_t* req,
 
   handle->delayed_error = 0;
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
   do {
     set_errno(0);
-    r = connect(uv__stream_fd(handle), addr, addrlen);
+    r = tuvp_connect(uv__stream_fd(handle), addr, addrlen);
   } while (r == -1 && get_errno() == EINTR);
-#endif
 
   if (r == -1) {
     if (get_errno() == EINPROGRESS)
@@ -182,24 +171,23 @@ int uv__tcp_connect(uv_connect_t* req,
 
 
 int uv__tcp_nodelay(int fd, int on) {
-#pragma __TUV_MBED__ FIX THIS
-#if 0
-  if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on)))
+  if (tuvp_setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on))) {
     return -get_errno();
-#endif
+  }
   return 0;
 }
 
 
 int uv__tcp_keepalive(int fd, int on, unsigned int delay) {
-#pragma __TUV_MBED__ FIX THIS
-#if 0
-  if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &on, sizeof(on)))
+  if (tuvp_setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &on, sizeof(on))) {
     return -get_errno();
+  }
 
 #ifdef TCP_KEEPIDLE
-  if (on && setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE, &delay, sizeof(delay)))
+  if (on && tuvp_setsockopt(fd, IPPROTO_TCP, TCP_KEEPIDLE,
+                            &delay, sizeof(delay))) {
     return -get_errno();
+  }
 #endif
 
   /* Solaris/SmartOS, if you don't support keep-alive,
@@ -207,19 +195,18 @@ int uv__tcp_keepalive(int fd, int on, unsigned int delay) {
    */
   /* FIXME(bnoordhuis) That's possibly because sizeof(delay) should be 1. */
 #if defined(TCP_KEEPALIVE) && !defined(__sun)
-  if (on && setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE, &delay, sizeof(delay)))
+  if (on && tuvp_setsockopt(fd, IPPROTO_TCP, TCP_KEEPALIVE,
+                            &delay, sizeof(delay))) {
     return -get_errno();
+  }
 #endif
-#endif // 0
+
   return 0;
 }
 
 
 void uv__tcp_close(uv_tcp_t* handle) {
-#pragma __TUV_MBED__ FIX THIS
-#if 0
   uv__stream_close((uv_stream_t*)handle);
-#endif
 }
 
 
@@ -281,14 +268,9 @@ int uv_tcp_open(uv_tcp_t* handle, uv_os_sock_t sock) {
   if (err)
     return err;
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
   return uv__stream_open((uv_stream_t*)handle,
                          sock,
                          UV_STREAM_READABLE | UV_STREAM_WRITABLE);
-#else
-  return -EINVAL;
-#endif
 }
 
 
@@ -306,11 +288,8 @@ int uv_tcp_getsockname(const uv_tcp_t* handle,
   /* sizeof(socklen_t) != sizeof(int) on some systems. */
   socklen = (socklen_t) *namelen;
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
-  if (getsockname(uv__stream_fd(handle), name, &socklen))
+  if (tuvp_getsockname(uv__stream_fd(handle), name, &socklen))
     return -get_errno();
-#endif
 
   *namelen = (int) socklen;
   return 0;
@@ -331,11 +310,8 @@ int uv_tcp_getpeername(const uv_tcp_t* handle,
   /* sizeof(socklen_t) != sizeof(int) on some systems. */
   socklen = (socklen_t) *namelen;
 
-#pragma __TUV_MBED__ FIX THIS
-#if 0
-  if (getpeername(uv__stream_fd(handle), name, &socklen))
+  if (tuvp_getpeername(uv__stream_fd(handle), name, &socklen))
     return -get_errno();
-#endif
 
   *namelen = (int) socklen;
   return 0;

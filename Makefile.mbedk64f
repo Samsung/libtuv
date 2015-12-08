@@ -14,9 +14,35 @@
 
 
 TARGET_DIR ?= /media/$(USER)/MBED
+BUILD_TYPE ?= debug
+
+YOTTA_BUILD_OPT = --debug-build
+
+ifneq ($(BUILD_TYPE),debug)
+	YOTTA_BUILD_OPT :=
+	BUILD_TYPE := release
+endif
+
+#
+# please use one of 3 options for building: (none) apiemul flash
+# other options are for sub unit of build but you can use them.
+#
+# make -f Makefile.mbedk64f
+#    build tuv library for mbed k64f and unit function test program
+#    as "tuvtester"
+#
+# make -f Makefile.mbedk64f apiemul
+#    build tuv library for mbed k64f and system api emulation test program
+#    as "tuvtester"
+#
+# make -f Makefile.mbedk64f flash
+#    flash (copy to mount folder) "tuvtester"
+#
+# set "TARGET_DIR" if MBED mount folder is somewhere else.
+# set "BUILD_TYPE" to "release" if you want to build RELEASE build.
+#
 
 .phony: all
-
 
 # tuv and tuvtester
 all: tuv yotta
@@ -29,12 +55,13 @@ apiemul: apiemultester yotta
 #-----------------------------------------------------------------------------
 # libtuv and tuvtester
 tuv:
-	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make
+	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f \
+	 TUV_BUILD_TYPE=$(BUILD_TYPE) make
 
 
 # yotta binary build
 yotta:
-	cd embedding/mbedk64f; yotta build;
+	cd embedding/mbedk64f; yotta build $(YOTTA_BUILD_OPT)
 
 
 # flash to mbed board. binary should be always 'tuvtester'
@@ -47,7 +74,8 @@ flash: check_mbed
 #-----------------------------------------------------------------------------
 # libtuv and api emulator tester
 apiemultester:
-	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f TUV_BUILDTESTER=no \
+	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f \
+	 TUV_BUILD_TYPE=$(BUILD_TYPE) TUV_BUILDTESTER=no \
 	 TUV_BUILDAPIEMULTESTER=yes make
 
 

@@ -60,7 +60,6 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
   handle->close_cb = close_cb;
 
   switch (handle->type) {
-#if !defined(__TUV_MBED__)
   case UV_TTY:
     uv__stream_close((uv_stream_t*)handle);
     break;
@@ -68,9 +67,6 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
   case UV_TCP:
     uv__tcp_close((uv_tcp_t*)handle);
     break;
-#else
-  #pragma message "__TUV_MBED__ FIX THIS"
-#endif
 
   case UV_IDLE:
     uv__idle_close((uv_idle_t*)handle);

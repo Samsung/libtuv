@@ -14,19 +14,9 @@
 
 cmake_minimum_required(VERSION 2.8)
 
-
-set(FLAGS_APIEMUL
-      "-D__TUV_RAW_APIEMUL__"
-      )
-
-foreach(FLAG ${FLAGS_APIEMUL})
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
-endforeach()
-
-
 set(TUVTESTNAME "tuvtester")
 
+add_definitions("-D__TUV_APIEMUL__")
 
 if(DEFINED BUILD_TEST_LIB AND BUILD_TEST_LIB STREQUAL "YES")
   add_library(${TUVTESTNAME} ${TEST_MAINFILE} ${TEST_APIEMULFILES})

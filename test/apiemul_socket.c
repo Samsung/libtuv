@@ -24,8 +24,6 @@
 
 //----------------------------------------------------------------------------
 
-#define DUMP_HEAP_ADDRESS 0
-
 #define SOCKET_TEST_PORT 7777
 #define SOCKET_TEST_CLIENT_MAX 16
 #define SOCKET_TEST_READBUFFER 1024
@@ -187,7 +185,8 @@ static void test_new_connection(int sockserver) {
 
   test_client_add(clisockfd);
 
-  const char* msg = "Hello libtuv echo server!\r\nSend 'Q' to end.\r\n";
+  const char* msg;
+  msg = "Welcome to libtuv api test echo server!\r\nSend 'Q' to end.\r\n";
   tuvp_write(clisockfd, msg, strlen(msg));
 }
 
@@ -230,7 +229,7 @@ static void do_tcp_server_start(void) {
   dump_socket_info(_sock_server);
   printf("\r\n");
 
-  printf(".. use 'telnet' or somekind to test (manually)\r\n");
+  printf(".. use 'telnet' to test, manually\r\n");
 }
 
 static void do_poll_test(void) {

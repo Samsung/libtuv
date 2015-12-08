@@ -132,6 +132,13 @@ int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr) {
 //-----------------------------------------------------------------------------
 
 void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
+  int i;
+  int nfd = loop->npollfds;
+  for (i = 0; i < nfd; ++i) {
+    struct pollfd* pfd = &loop->pollfds[i];
+    if (fd == pfd->fd)
+      pfd->fd = -1;
+  }
 }
 
 
@@ -141,7 +148,22 @@ int uv__nonblock(int fd, int set) {
 
 
 int uv__close(int fd) {
-  return 0;
+  int saved_errno;
+  int rc;
+
+  assert(fd > -1);  /* Catch uninitialized io_watcher.fd bugs. */
+  assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
+
+  saved_errno = get_errno();
+  rc = tuvp_close(fd);
+  if (rc == -1) {
+    rc = -get_errno();
+    if (rc == -EINTR)
+      rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    set_errno(saved_errno);
+  }
+
+  return rc;
 }
 
 

@@ -42,8 +42,8 @@ static void dump_heap_addr(void) {
   delete heap2;
   free(heap1);
 
-  printf(":: heap size: s(%lx), h(%lx) h2(%lx), %ld\r\n",
-         lstack, lheap, lheap2, result);
+  TDDDLOG(":: heap size: s(%lx), h(%lx) h2(%lx), %ld\r\n",
+          lstack, lheap, lheap2, result);
 }
 #endif
 

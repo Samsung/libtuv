@@ -31,6 +31,11 @@ set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS}
 add_definitions("-D__TUV_MBED__")
 add_definitions("-D__TUV_RAW__")
 
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE_L)
+if (${BUILD_TYPE_L} STREQUAL "debug")
+  add_definitions("-DENABLE_DEBUG_LOG")
+endif()
+
 if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/tuv_mbed_ipaddress.h)
   add_definitions("-D__TUV_MBED_IPEXIST__")
 endif()

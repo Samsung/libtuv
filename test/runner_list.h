@@ -124,5 +124,6 @@
 
 #else
 #define HELPER_LIST_ALL(TE)                                                   \
+  TE(tcp4_echo_server, tcp4_echo_server)                                      \
 
 #endif

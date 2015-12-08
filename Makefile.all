@@ -14,6 +14,12 @@
 
 HARMONY ?= $(HOME)/harmony
 
+#
+# Use this makefile to check build all platforms.
+# You may have to set "HARMONY" to a valid folder for NuttX on
+# STM32F4 discovery board.
+#
+
 .phony: all
 
 all: clean linux rpi2 stm32f4 mbedk64f

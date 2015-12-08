@@ -17,6 +17,8 @@
 
 #include "tuv_mbed_port.h"
 
+#include <uv.h>
+
 
 void uv_sleep(int msec) {
   wait_ms(msec);

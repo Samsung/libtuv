@@ -40,12 +40,14 @@ int run_helper(task_entry_t* task) {
 }
 
 int wait_helper(task_entry_t* task) {
+  TDDDLOG("wait_helper... not implemented\r\n");
   (void)task;
   return 0;
 }
 
 static void call_cleanup(void) {
-  tuv_cleanup();
+  TDDDLOG("temporary skip call_cleanup() while uv_connect() implentation\r\n");
+  //tuv_cleanup();
 }
 
 int run_test_one(task_entry_t* task) {
@@ -66,7 +68,7 @@ int run_test_one(task_entry_t* task) {
                         ;
     }
     else {
-      printf("!!! Failed to run [%s]\r\n", task->task_name);
+      TDLOG("!!! Failed to run [%s]\r\n", task->task_name);
     }
   }
   return 0;

@@ -58,15 +58,11 @@ static void uv__finish_close(uv_handle_t* handle) {
     case UV_TIMER:
       break;
 
-#if !defined(__TUV_MBED__)
     case UV_NAMED_PIPE:
     case UV_TCP:
     case UV_TTY:
       uv__stream_destroy((uv_stream_t*)handle);
       break;
-#else
-#pragma message "__TUV_MBED__ FIX THIS"
-#endif
 
     default:
       assert(0);
@@ -167,9 +163,8 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
 
 #if defined(__TUV_RAW__)
     uv__async_check(loop);
-#else
-    uv__io_poll(loop, timeout);
 #endif
+    uv__io_poll(loop, timeout);
     uv__run_closing_handles(loop);
 
     if (mode == UV_RUN_ONCE) {
