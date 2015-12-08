@@ -179,8 +179,6 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
   /* TODO document this */
   assert(server->loop == client->loop);
 
-  printf(">> uv_accept accepted_fd to client\r\n", server->accepted_fd);
-
   if (server->accepted_fd == -1) {
     return -EAGAIN;
   }
@@ -193,7 +191,7 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
                             UV_STREAM_READABLE | UV_STREAM_WRITABLE);
       if (err) {
         /* TODO handle error */
-        printf(">> uv_accept error(%d)\r\n", err);
+        TDLOG("uv_accept stream open error(%d)", err);
         uv__close(server->accepted_fd);
         goto done;
       }
@@ -212,7 +210,6 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
   }
 
 done:
-  printf(">> uv_accept queued_fds(%p)\r\n", server->queued_fds);
   /* Process queued fds */
   if (server->queued_fds != NULL) {
     uv__stream_queued_fds_t* queued_fds;
