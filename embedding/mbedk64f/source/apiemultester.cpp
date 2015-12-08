@@ -24,7 +24,7 @@
 #include "apiemul.h"
 
 
-#if DUMP_HEAP_ADDRESS
+#if APIEMUL_DUMP_HEAP_ADDRESS
 static unsigned long lstack;
 
 static void dump_heap_addr(void) {
@@ -36,20 +36,21 @@ static void dump_heap_addr(void) {
 
   heap1 = malloc(4);
   heap2 = new uint32_t;
-  lheap1 = (unsigned long)heap;
+  lheap1 = (unsigned long)heap1;
   lheap2 = (unsigned long)heap2;
   result = lstack - lheap1;
   delete heap2;
   free(heap1);
 
-  TDDDLOG(":: heap size: s(%lx), h(%lx) h2(%lx), %ld\r\n",
-          lstack, lheap, lheap2, result);
+  TDDDLOG(":: heap info: s(%lx), h(%lx) h2(%lx), %ld",
+          lstack, lheap1, lheap2, result);
 }
 #endif
 
 int apiemultester_entry(void) {
+  InitDebugSettings();
 
-#if DUMP_HEAP_ADDRESS
+#if APIEMUL_DUMP_HEAP_ADDRESS
   char stackVariable;
   lstack = (unsigned long)&stackVariable;
   dump_heap_addr();
@@ -59,9 +60,9 @@ int apiemultester_entry(void) {
                     .delay(minar::milliseconds(500))
                     ;
 
-#if DUMP_HEAP_ADDRESS
+#if APIEMUL_DUMP_HEAP_ADDRESS
   minar::Scheduler::postCallback(dump_heap_addr)
-                    .period(minar::milliseconds(1000))
+                    .period(minar::milliseconds(5000))
                     ;
 #endif
 
