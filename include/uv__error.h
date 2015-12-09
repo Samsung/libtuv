@@ -81,12 +81,17 @@ extern "C" {
 #define UV__EAI_PROTOCOL    (-3014)
 
 
+#if defined(EADDRINUSE) && !defined(_WIN32)
+# define UV__EADDRINUSE (-EADDRINUSE)
+#else
+# define UV__EADDRINUSE (-4091)
+#endif
+
 #if defined(EAFNOSUPPORT)
 # define UV__EAFNOSUPPORT (-EAFNOSUPPORT)
 #else
 # define UV__EAFNOSUPPORT (-4089)
 #endif
-
 
 #if defined(EAGAIN)
 # define UV__EAGAIN (-EAGAIN)
@@ -178,6 +183,7 @@ extern "C" {
 // errno map < uv.h
 
 #define UV_ERRNO_MAP(XX)                                                      \
+  XX(EADDRINUSE, "address already in use")                                    \
   XX(EAFNOSUPPORT, "address family not supported")                            \
   XX(EAI_ADDRFAMILY, "address family not supported")                          \
   XX(EAI_AGAIN, "temporary failure")                                          \

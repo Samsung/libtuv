@@ -58,6 +58,7 @@ static EthernetInterface _eth;
 #define MBED_SOCKET_FLAG_CONNECTION     0x0100
 #define MBED_SOCKET_FLAG_DISCONNECTED   0x0200
 #define MBED_SOCKET_FLAG_READABLE       0x0400
+#define MBED_SOCKET_FLAG_WRITABLE       0x0800
 
 
 /*
@@ -90,6 +91,7 @@ public:
   typedef TCPStream::DisconnectHandler_t on_disconnect_t;
   typedef Socket::ErrorHandler_t on_error_t;
   typedef Socket::ReadableHandler_t on_readable_t;
+  typedef Socket::SentHandler_t on_sent_t;
 
 
 protected:
@@ -98,7 +100,7 @@ protected:
 
   void set_stream(TCPStream *s) {
     tcp_.stream = s;
-    sock_flag_ |= MBED_SOCKET_FLAG_STREAM;
+    sock_flag_ |= MBED_SOCKET_FLAG_STREAM | MBED_SOCKET_FLAG_WRITABLE;
   }
   void clear_stream(TCPStream *s) {
     (void)s;
@@ -117,6 +119,7 @@ protected:
   void on_incoming(TCPListener *s, void *impl);
   void on_error(Socket *s, socket_error_t err);
   void on_readable(Socket *s);
+  void on_sent(Socket *s, uint16_t nbytes);
   void on_connect(TCPStream *s);
   void on_disconnect(TCPStream *s);
 
@@ -352,6 +355,15 @@ void mbed_socket::on_readable(Socket *s) {
 }
 
 
+void mbed_socket::on_sent(Socket *s, uint16_t nbytes) {
+  (void)s;
+  (void)nbytes;
+  TDDDLOG(".. on_sent Socket(%p), stream(%p) nbytes(%d)",
+          s, get_stream(), nbytes);
+  assert(s == get_stream());
+  sock_flag_ |= MBED_SOCKET_FLAG_WRITABLE;
+}
+
 void mbed_socket::on_connect(TCPStream *s) {
   (void)s;
   TDDDLOG(".. on_connect TCPStream(%p), _stream(%p)", s, get_stream());
@@ -520,6 +532,7 @@ int mbed_socket::doaccept(struct sockaddr *addr, socklen_t *addrlen) {
 
   stream->setOnError(on_error_t(socli, &mbed_socket::on_error));
   stream->setOnReadable(on_readable_t(socli, &mbed_socket::on_readable));
+  stream->setOnSent(on_sent_t(socli, &mbed_socket::on_sent));
   stream->setOnDisconnect(on_disconnect_t(socli, &mbed_socket::on_disconnect));
 
   //
@@ -566,6 +579,8 @@ int mbed_socket::doconnect(const struct sockaddr *addr, socklen_t addrlen) {
     return -1;
   }
 
+  set_stream(stream);
+
   sockaddr_in* inaddr = (sockaddr_in*)addr;
   socket_addr s_addr;
   SocketAddr  saddr;
@@ -588,11 +603,13 @@ int mbed_socket::doconnect(const struct sockaddr *addr, socklen_t addrlen) {
 int mbed_socket::dopoll(struct pollfd* fds) {
   assert(fds->fd == get_sock_fd());
 
+  int ret = 0;
+
   // 1) check for new connection
   if (get_listener() != NULL && get_incomming() > 0) {
     if (fds->events & POLLIN) {
       fds->revents |= POLLIN;
-      return 1;
+      ret = 1;
     }
   }
   if (get_stream() != NULL) {
@@ -600,18 +617,36 @@ int mbed_socket::dopoll(struct pollfd* fds) {
     if (fds->events & POLLHUP) {
       if (sock_flag_ & MBED_SOCKET_FLAG_DISCONNECTED) {
         fds->revents |= POLLHUP;
-        return 1;
+        ret = 1;
       }
     }
     // 3) check socket data received
     if (fds->events & POLLIN) {
       if (sock_flag_ & MBED_SOCKET_FLAG_READABLE) {
         fds->revents |= POLLIN;
-        return 1;
+        ret = 1;
+      }
+      if (sock_flag_ & MBED_SOCKET_FLAG_DISCONNECTED) {
+        fds->revents |= POLLHUP;
+        ret = 1;
+      }
+    }
+    // 4) check data send is available
+    if (fds->events & POLLOUT) {
+      if ((sock_flag_ & MBED_SOCKET_FLAG_WRITABLE) == 0) {
+        fds->revents |= POLLOUT;
+        ret = 1;
+      }
+      if (sock_flag_ & MBED_SOCKET_FLAG_DISCONNECTED) {
+        fds->revents |= POLLHUP;
+        ret = 1;
       }
     }
   }
-  return 0;
+  //printf("mbed_socket::dopoll fd(%d): %x : %x\r\n", fds->fd,
+  //       fds->events, fds->revents);
+
+  return ret;
 }
 
 
@@ -638,12 +673,12 @@ void mbed_socket::doclose(void) {
   if (listener != NULL) {
     err = listener->stop_listening();
     if (listener->error_check(err)) {
-      TDLOG(".. doclose 'stop_listening' error: %s (%d)",
+      TDLOG(".. doclose listener 'stop_listening' error: %s (%d)",
             socket_strerror(err), err);
     }
     err = listener->close();
     if (listener->error_check(err)) {
-      TDLOG(".. doclose 'close' error: %s (%d)",
+      TDLOG(".. doclose listener 'close' error: %s (%d)",
             socket_strerror(err), err);
     }
   }
@@ -651,7 +686,7 @@ void mbed_socket::doclose(void) {
   if (stream != NULL) {
     err = stream->close();
     if (stream->error_check(err)) {
-      TDLOG(".. doclose 'close' error: %s (%d)",
+      TDLOG(".. doclose stream 'close' error: %s (%d)",
             socket_strerror(err), err);
     }
   }
@@ -718,10 +753,14 @@ ssize_t mbed_socket::dowrite(const void* buf, size_t count) {
   TCPStream* stream = get_stream();
   socket_error_t err;
 
+  sock_flag_ &= ~MBED_SOCKET_FLAG_WRITABLE;
+
   err = stream->send(buf, count);
   if (stream->error_check(err)) {
     TDLOG(".. socket send error: %s (%d)", socket_strerror(err), err);
     set_errno(EINVAL);
+    // TODO: need to check this... how?
+    sock_flag_ |= MBED_SOCKET_FLAG_WRITABLE;
     return -1;
   }
 
@@ -736,11 +775,11 @@ ssize_t mbed_socket::doread(void *buf, size_t count) {
 
   count2 = count;
   err = stream->recv(buf, &count2);
-  if (stream->error_check(err)) {
+  if (err != SOCKET_ERROR_NONE) {
+    // dont call stream->error_check(err), make it EOF
     TDLOG(".. socket recv error: %s (%d)", socket_strerror(err), err);
     sock_flag_ &= ~MBED_SOCKET_FLAG_READABLE;
-    set_errno(EINVAL);
-    return -1;
+    return 0;
   }
   if (count2 < count) {
     sock_flag_ &= ~MBED_SOCKET_FLAG_READABLE;
@@ -900,10 +939,14 @@ int tuvp_close(int sockfd) {
 
 
 int tuvp_shutdown(int sockfd, int how) {
-  (void)sockfd;
+  mbed_socket* so = mbed_socket::fd_to_so(sockfd);
+  if (so == NULL) {
+    set_errno(EBADF);
+    TDLOG("tuvp_getsockname error: not a valid socket(%d)", sockfd);
+    return -1;
+  }
   (void)how;
   // TODO implement this
-  assert(false);
   return 0;
 }
 
