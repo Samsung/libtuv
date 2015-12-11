@@ -65,7 +65,8 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_threadpool_raw_queue_work_simple.c"
       "${TEST_ROOT}/test_walk_handles_raw.c"
 
-      "${TEST_ROOT}/echo_server_raw.c"
+      "${TEST_ROOT}/test_tcp_open_raw.c"
+      "${TEST_ROOT}/test_shutdown_eof_raw.c"
       )
 
 set(TEST_APIEMULFILES

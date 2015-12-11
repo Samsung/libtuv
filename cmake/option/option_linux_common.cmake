@@ -32,4 +32,12 @@ set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.c"
                        )
 
+set(PLATFORM_HOSTHELPERFILES "${TEST_ROOT}/runner_linux_raw.c"
+                       )
+
+
 set(TUV_LINK_LIBS "pthread")
+
+if(DEFINED BUILD_HOST_HELPER AND BUILD_HOST_HELPER STREQUAL "yes")
+  add_definitions("-D__HOST_HELPER__")
+endif()

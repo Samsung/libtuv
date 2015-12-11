@@ -45,16 +45,21 @@ static int maybe_new_socket(uv_tcp_t* handle, int domain, int flags) {
   int sockfd;
   int err;
 
-  if (uv__stream_fd(handle) != -1)
+  if (uv__stream_fd(handle) != -1) {
     return 0;
+  }
 
   err = uv__socket(domain, SOCK_STREAM, 0);
-  if (err < 0)
+  if (err < 0) {
+    TDLOG("maybe_new_socket uv__socket failed err(%d)", err);
     return err;
+  }
   sockfd = err;
 
   err = uv__stream_open((uv_stream_t*) handle, sockfd, flags);
   if (err) {
+    TDLOG("maybe_new_socket uv__stream_open failed err(%d) fd(%d)",
+          err, sockfd);
     uv__close(sockfd);
     return err;
   }
@@ -126,14 +131,17 @@ int uv__tcp_connect(uv_connect_t* req,
   assert(handle->type == UV_TCP);
 
   if (handle->connect_req != NULL) {
+    TDLOG("uv__tcp_connect EALREADY");
     return -EALREADY;  /* FIXME(bnoordhuis) -EINVAL or maybe -EBUSY. */
   }
 
   err = maybe_new_socket(handle,
                          addr->sa_family,
                          UV_STREAM_READABLE | UV_STREAM_WRITABLE);
-  if (err)
+  if (err) {
+    TDLOG("uv__tcp_connect maybe_new_socket failed err(%d)", err);
     return err;
+  }
 
   handle->delayed_error = 0;
 
@@ -151,8 +159,10 @@ int uv__tcp_connect(uv_connect_t* req,
      * wait.
      */
       handle->delayed_error = -get_errno();
-    else
+    else {
+      TDLOG("uv__tcp_connect tuvp_connect failed");
       return -get_errno();
+    }
   }
 
   uv__req_init(handle->loop, req, UV_CONNECT);
@@ -245,8 +255,10 @@ int uv_tcp_connect(uv_connect_t* req,
                    uv_connect_cb cb) {
   unsigned int addrlen;
 
-  if (handle->type != UV_TCP)
+  if (handle->type != UV_TCP) {
+    TDLOG("uv_tcp_connect handle->type != UV_TCP");
     return UV_EINVAL;
+  }
 
   if (addr->sa_family == AF_INET)
     addrlen = sizeof(struct sockaddr_in);
@@ -254,8 +266,10 @@ int uv_tcp_connect(uv_connect_t* req,
   else if (addr->sa_family == AF_INET6)
     addrlen = sizeof(struct sockaddr_in6);
 */
-  else
+  else {
+    TDLOG("uv_tcp_connect sa_family not AF_INET");
     return UV_EINVAL;
+  }
 
   return uv__tcp_connect(req, handle, addr, addrlen, cb);
 }

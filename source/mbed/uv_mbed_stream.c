@@ -72,7 +72,8 @@ void uv__stream_init(uv_loop_t* loop, uv_stream_t* stream,
 
   if (loop->emfile_fd == -1) {
     err = uv__open_cloexec("/", O_RDONLY);
-    if (err >= 0)
+    //if (err >= 0)
+    if (err > 0)  // 0 is invalid
       loop->emfile_fd = err;
   }
 
@@ -980,8 +981,9 @@ void uv__stream_close(uv_stream_t* handle) {
   /* Close all queued fds */
   if (handle->queued_fds != NULL) {
     queued_fds = (uv__stream_queued_fds_t*)handle->queued_fds;
-    for (i = 0; i < queued_fds->offset; i++)
+    for (i = 0; i < queued_fds->offset; i++) {
       uv__close(queued_fds->fds[i]);
+    }
     free(handle->queued_fds);
     handle->queued_fds = NULL;
   }

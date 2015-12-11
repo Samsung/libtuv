@@ -58,9 +58,15 @@ set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/source")
 
 
 # build tester as library
-set(BUILD_TEST_LIB "YES")
+set(BUILD_TEST_LIB "yes")
 unset(BUILD_TEST_LIB CACHE)
+
 
 # set copy libs to ${TARGET_SYSTEMROOT}/libtiv
 file(MAKE_DIRECTORY "${TARGET_SYSTEMROOT}/libtuv")
 set(COPY_TARGET_LIB "${TARGET_SYSTEMROOT}/libtuv/.")
+
+# to help unittest to give host ip address
+if(EXISTS ${TEST_ROOT}/tuv_host_ipaddress.h)
+  add_definitions("-D__TUV_HOST_IPEXIST__")
+endif()

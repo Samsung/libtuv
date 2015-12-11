@@ -28,6 +28,7 @@ TUV_BOARD       ?= unknown
 TUV_SYSTEMROOT  ?= default
 TUV_BUILDTESTER ?= yes
 TUV_BUILDAPIEMULTESTER ?= no
+TUV_BUILDHOSTHELPER ?= no
 
 OUTPUT_ROOT     := build
 BUILD_FOLDER    := ./$(OUTPUT_ROOT)/$(TUV_PLATFORM)/$(TUV_BUILD_TYPE)
@@ -36,7 +37,8 @@ CMAKE_DEFINES   := \
 	-DCMAKE_TOOLCHAIN_FILE=./cmake/config/config_$(TUV_PLATFORM).cmake \
 	-DCMAKE_BUILD_TYPE=$(TUV_BUILD_TYPE) \
 	-DTARGET_PLATFORM=$(TUV_PLATFORM) \
-	-DBUILDTESTER=${TUV_BUILDTESTER}
+	-DBUILDTESTER=${TUV_BUILDTESTER} \
+	-DBUILD_HOST_HELPER=${TUV_BUILDHOSTHELPER}
 
 ifneq ($(TUV_BOARD),unknown)
 	CMAKE_DEFINES += -DTARGET_BOARD=${TUV_BOARD}
@@ -60,6 +62,12 @@ ifneq (,$(findstring linux,$(TUV_PLATFORM)))
 	@echo '=============================================================='
 	@echo 'to run test,'
 	@echo '$(BUILD_FOLDER)/bin/tuvtester'
+	@echo '=============================================================='
+endif
+ifeq ("$(TUV_BUILDHOSTHELPER)","yes")
+	@echo '=============================================================='
+	@echo 'to run helper in host,'
+	@echo '$(BUILD_FOLDER)/bin/tuvhelper'
 	@echo '=============================================================='
 endif
 

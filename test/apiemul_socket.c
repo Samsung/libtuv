@@ -22,7 +22,27 @@
 #include "apiemul.h"
 
 
+#if defined(__TUV_HOST_IPEXIST__)
+#include "tuv_host_ipaddress.h"
+#else
+#error Please create tuv_host_ipaddress.h. Open this file and read below.
+#endif
+
+// Please create a file with your host IP address like below.
+// This information is use to connect to host that should be running
+// "tuvhelper" prgoram.
+/*
+#ifndef __tuv_host_ipaddress_header__
+#define __tuv_host_ipaddress_header__
+
+#define HOST_IP_ADDRESS   "192.168.1.2"
+
+#endif
+*/
+
 //----------------------------------------------------------------------------
+
+#define HOST_ECHO_PORT 9123
 
 #define SOCKET_TEST_PORT 7777
 #define SOCKET_TEST_CLIENT_MAX 16
@@ -32,14 +52,17 @@
 
 // task for network poll
 static uv_thread_t _thread;
+static uv_thread_t _thread_cli;
 
 static struct sockaddr_in _addr_in;
 static int _sock_server;
+static int _sock_client;
 
 static int sock_clients[SOCKET_TEST_CLIENT_MAX];
 static int sock_client_cnt;
 
 static unsigned char read_buffer[SOCKET_TEST_READBUFFER];
+static unsigned char read_client[SOCKET_TEST_READBUFFER];
 
 
 //----------------------------------------------------------------------------
@@ -240,8 +263,11 @@ static void do_poll_test(void) {
   fds_cnt = 1 + test_client_count();
   fds = (struct pollfd*)malloc(sizeof(struct pollfd) * fds_cnt);
   memset(fds, 0, sizeof(struct pollfd) * fds_cnt);
+
+  // add listener
   fds[0].fd = _sock_server;
   fds[0].events = POLLIN;
+  // add others
   test_client_fillfds(&fds[1]);
 
   // call poll
@@ -268,12 +294,69 @@ static void do_poll_test(void) {
   free(fds);
 }
 
+static void clitest_entry(void* arg) {
+}
+
+static int clitest_loop(void* arg) {
+  int rsend;
+  static int send_count = 0;
+  static int ok_to_send = 1;
+  struct pollfd fds;
+
+  fds.fd = _sock_client;
+  fds.events = POLLIN | POLLOUT;
+  if (tuvp_net_poll(&fds, 1) > 0) {
+    if (fds.revents & POLLOUT) {
+      rsend = rand() % 100;
+      if (rsend == 0 && ok_to_send) {
+        const char* msg = "Hello api emul tester!";
+        tuvp_write(_sock_client, msg, strlen(msg));
+        ok_to_send = 0;
+      }
+    }
+    if (fds.revents & POLLIN) {
+      tuvp_read(_sock_client, read_client, SOCKET_TEST_READBUFFER);
+      printf(":: read [%s]\r\n", read_client);
+      send_count++;
+      ok_to_send = 1;
+    }
+  }
+  if (send_count > 10) {
+    tuvp_close(_sock_client);
+    _sock_client = -1;
+    ok_to_send = 0;
+    printf(":: connect/send ok. close client\r\n");
+    return 0;
+  }
+  return 1;
+}
+
+static void do_tcp_client_connect(void) {
+  _sock_client = tuvp_socket(AF_INET, SOCK_STREAM, 0);
+  if (_sock_client == -1) {
+    printf("!! tuvp_socket failed, err(%d)\r\n", get_errno());
+    return;
+  }
+
+  // connect to http://httpbin.org server
+  struct sockaddr_in server_addr;
+  uv_ip4_addr(HOST_IP_ADDRESS, HOST_ECHO_PORT, &server_addr);
+
+  tuvp_connect(_sock_client, (const sockaddr*)&server_addr,
+               sizeof(server_addr));
+
+  tuv_task_create(&_thread_cli, clitest_entry, clitest_loop, NULL);
+}
+
 static void task_entry(void* arg) {
   test_init_clients();
   do_tcp_server_start();
 }
 
 static int task_loop(void* arg) {
+  if (_sock_client == -2) {
+    do_tcp_client_connect();
+  }
   do_poll_test();
   return 1; /* continue task */
 }
@@ -285,5 +368,7 @@ static int task_loop(void* arg) {
  *  - to close connection, send "Q"
  */
 void apiemul_socket(void) {
+  _sock_client = -2;
+  _sock_server = -1;
   tuv_task_create(&_thread, task_entry, task_loop, NULL);
 }

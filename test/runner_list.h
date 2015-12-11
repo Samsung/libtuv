@@ -90,6 +90,8 @@
   \
   TE(threadpool_queue_work_simple, 5000)                                      \
   TE(walk_handles, 5000)                                                      \
+  TE(tcp_open,5000)                                                           \
+  TE(shutdown_eof,5000)                                                       \
 
 
 #endif
@@ -124,6 +126,5 @@
 
 #else
 #define HELPER_LIST_ALL(TE)                                                   \
-  TE(tcp4_echo_server, tcp4_echo_server)                                      \
 
 #endif

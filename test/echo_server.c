@@ -189,6 +189,20 @@ static void on_connection(uv_stream_t* server, int status) {
 
   r = uv_read_start(stream, echo_alloc, after_read);
   TUV_ASSERT(r == 0);
+
+#if defined(__HOST_HELPER__)
+  struct sockaddr_in tcpname;
+  int namelen;
+  namelen = sizeof(struct sockaddr_in);
+  uv_tcp_getpeername(stream, &tcpname, &namelen);
+  union {
+    uint8_t addr8[4];
+    uint32_t addr32;
+  } c4;
+  c4.addr32 = tcpname.sin_addr.s_addr;
+  TDDDLOG("Client has connected: %d.%d.%d.%d",
+          c4.addr8[0], c4.addr8[1], c4.addr8[2], c4.addr8[3]);
+#endif
 }
 
 

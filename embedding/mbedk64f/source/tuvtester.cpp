@@ -46,8 +46,7 @@ int wait_helper(task_entry_t* task) {
 }
 
 static void call_cleanup(void) {
-  TDDDLOG("temporary skip call_cleanup() while uv_connect() implentation");
-  //tuv_cleanup();
+  tuv_cleanup();
 }
 
 int run_test_one(task_entry_t* task) {

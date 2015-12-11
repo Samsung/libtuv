@@ -53,6 +53,8 @@ void set_errno(int err) {
 //-----------------------------------------------------------------------------
 
 int uv__open_cloexec(const char* path, int flags) {
+#if 0
+  // TODO: fix this after file for mbed is working
   int err;
   int fd;
 
@@ -65,8 +67,10 @@ int uv__open_cloexec(const char* path, int flags) {
     uv__close(fd);
     return err;
   }
-
   return fd;
+#else
+  return -1;
+#endif
 }
 
 
@@ -76,14 +80,17 @@ int uv__socket(int domain, int type, int protocol) {
   int err;
 
   sockfd = tuvp_socket(domain, type, protocol);
-  if (sockfd == -1)
+  if (sockfd == -1) {
+    TDLOG("uv__socket tuvp_socket failed");
     return -errno;
+  }
 
   err = uv__nonblock(sockfd, 1);
   if (err == 0)
     err = uv__cloexec(sockfd, 1);
 
   if (err) {
+    TDLOG("uv__socket failed to set nonblock or cloexec");
     uv__close(sockfd);
     return err;
   }
@@ -151,6 +158,9 @@ int uv__close(int fd) {
   int saved_errno;
   int rc;
 
+  if (fd < STDERR_FILENO) {
+    TDLOG("uv__close fd is invalid descriptor: %d", fd);
+  }
   assert(fd > -1);  /* Catch uninitialized io_watcher.fd bugs. */
   assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
 
@@ -168,6 +178,8 @@ int uv__close(int fd) {
 
 
 int uv__cloexec(int fd, int set) {
+  //set_errno(EINVAL);
+  //return -EINVAL;
   return 0;
 }
 

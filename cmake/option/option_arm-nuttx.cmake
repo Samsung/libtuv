@@ -62,7 +62,7 @@ set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include")
 set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include/cxx")
 
 # build tester as library
-set(BUILD_TEST_LIB "YES")
+set(BUILD_TEST_LIB "yes")
 unset(BUILD_TEST_LIB CACHE)
 
 # set copy libs to ${TARGET_SYSTEMROOT}/lib

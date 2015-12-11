@@ -45,7 +45,7 @@ endif
 .phony: all
 
 # tuv and tuvtester
-all: tuv yotta
+all: hosthelper tuv yotta
 
 
 # api emulation tester: socket, file
@@ -77,6 +77,12 @@ apiemultester:
 	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f \
 	 TUV_BUILD_TYPE=$(BUILD_TYPE) TUV_BUILDTESTER=no \
 	 TUV_BUILDAPIEMULTESTER=yes make
+
+
+#-----------------------------------------------------------------------------
+# host executable helper
+hosthelper:
+	TUV_BUILDHOSTHELPER=yes make
 
 
 #-----------------------------------------------------------------------------
