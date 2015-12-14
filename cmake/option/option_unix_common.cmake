@@ -36,34 +36,38 @@ set(TUV_TEST_INCDIRS
       "${TEST_ROOT}"
       )
 
-set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.c"
-                      "${UNIX_PATH}/uv_unix_async.c"
-                      "${UNIX_PATH}/uv_unix_io.c"
-                      "${UNIX_PATH}/uv_unix_fs.c"
-                      "${UNIX_PATH}/uv_unix_process.c"
-                      "${UNIX_PATH}/uv_unix_threadpool.c"
-                      "${UNIX_PATH}/uv_unix_thread.c"
-                      "${UNIX_PATH}/uv_unix_tcp.c"
-                      "${UNIX_PATH}/uv_unix_stream.c"
-                      "${UNIX_PATH}/uv_unix_getaddrinfo.c"
-                      "${UNIX_PATH}/tuv_unix_port_system.c"
-                      )
+set(PLATFORM_SRCFILES
+      "${UNIX_PATH}/uv_unix.c"
+      "${UNIX_PATH}/uv_unix_async.c"
+      "${UNIX_PATH}/uv_unix_io.c"
+      "${UNIX_PATH}/uv_unix_fs.c"
+      "${UNIX_PATH}/uv_unix_process.c"
+      "${UNIX_PATH}/uv_unix_threadpool.c"
+      "${UNIX_PATH}/uv_unix_thread.c"
+      "${UNIX_PATH}/uv_unix_tcp.c"
+      "${UNIX_PATH}/uv_unix_stream.c"
+      "${UNIX_PATH}/uv_unix_getaddrinfo.c"
+      "${UNIX_PATH}/tuv_unix_port_system.c"
+      )
 
-set(TEST_MAINFILE "${TEST_ROOT}/runner_main.c")
+set(TEST_MAINFILE
+      "${TEST_ROOT}/runner_main.c"
+      )
 
-set(TEST_UNITFILES "${TEST_ROOT}/test_idle.c"
-                   "${TEST_ROOT}/test_timer.c"
-                   "${TEST_ROOT}/test_timer_again.c"
-                   "${TEST_ROOT}/test_fs.c"
-                   "${TEST_ROOT}/test_cwd.c"
-                   "${TEST_ROOT}/test_error.c"
-                   "${TEST_ROOT}/test_tcp_open.c"
-                   "${TEST_ROOT}/test_shutdown_eof.c"
-                   "${TEST_ROOT}/echo_server.c"
-                   "${TEST_ROOT}/test_getaddrinfo.c"
-                   "${TEST_ROOT}/test_threadpool.c"
-                   "${TEST_ROOT}/test_condvar.c"
-                   "${TEST_ROOT}/test_active.c"
-                   "${TEST_ROOT}/test_walk_handles.c"
-                   "${TEST_ROOT}/test_async.c"
-                   )
+set(TEST_UNITFILES
+      "${TEST_ROOT}/test_idle.c"
+      "${TEST_ROOT}/test_timer.c"
+      "${TEST_ROOT}/test_timer_again.c"
+      "${TEST_ROOT}/test_fs.c"
+      "${TEST_ROOT}/test_cwd.c"
+      "${TEST_ROOT}/test_error.c"
+      "${TEST_ROOT}/test_tcp_open.c"
+      "${TEST_ROOT}/test_shutdown_eof.c"
+      "${TEST_ROOT}/echo_server.c"
+      "${TEST_ROOT}/test_getaddrinfo.c"
+      "${TEST_ROOT}/test_threadpool.c"
+      "${TEST_ROOT}/test_condvar.c"
+      "${TEST_ROOT}/test_active.c"
+      "${TEST_ROOT}/test_walk_handles.c"
+      "${TEST_ROOT}/test_async.c"
+      )

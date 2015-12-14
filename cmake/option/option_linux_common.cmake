@@ -20,20 +20,23 @@ set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 # linux specific source files
 set(LINUX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
 
-set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
-                      "${LINUX_PATH}/uv_linux.c"
-                      "${LINUX_PATH}/uv_linux_loop.c"
-                      "${LINUX_PATH}/uv_linux_clock.c"
-                      "${LINUX_PATH}/uv_linux_io.c"
-                      "${LINUX_PATH}/uv_linux_syscall.c"
-                      "${LINUX_PATH}/uv_linux_thread.c"
-                      )
+set(PLATFORM_SRCFILES
+      ${PLATFORM_SRCFILES}
+      "${LINUX_PATH}/uv_linux.c"
+      "${LINUX_PATH}/uv_linux_loop.c"
+      "${LINUX_PATH}/uv_linux_clock.c"
+      "${LINUX_PATH}/uv_linux_io.c"
+      "${LINUX_PATH}/uv_linux_syscall.c"
+      "${LINUX_PATH}/uv_linux_thread.c"
+      )
 
-set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.c"
-                       )
+set(PLATFORM_TESTFILES
+      "${TEST_ROOT}/runner_linux.c"
+      )
 
-set(PLATFORM_HOSTHELPERFILES "${TEST_ROOT}/runner_linux_raw.c"
-                       )
+set(PLATFORM_HOSTHELPERFILES
+      "${TEST_ROOT}/runner_linux_raw.c"
+      )
 
 
 set(TUV_LINK_LIBS "pthread")

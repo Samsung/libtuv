@@ -20,6 +20,6 @@ include("cmake/option/option_linux_common.cmake")
 
 set(FLAGS_COMMON
       ${FLAGS_COMMON}
-      -march=i686
-      -m32
+      "-march=i686"
+      "-m32"
       )

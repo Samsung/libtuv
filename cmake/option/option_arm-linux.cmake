@@ -21,7 +21,7 @@ if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "rpi2")
     # rpi2 specific
     set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
+          ${FLAGS_COMMON}
           "-mcpu=cortex-a7"
           "-mfloat-abi=hard"
           "-mfpu=neon-vfpv4"

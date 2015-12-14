@@ -15,7 +15,7 @@
 include("cmake/option/option_unix_common.cmake")
 
 set(FLAGS_COMMON
-      "${FLAGS_COMMON}"
+      ${FLAGS_COMMON}
       "-D__NUTTX__"
       )
 
@@ -26,20 +26,21 @@ set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 # nuttx source files
 set(NUTTX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
 
-set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
-                      "${NUTTX_PATH}/uv_nuttx.c"
-                      "${NUTTX_PATH}/uv_nuttx_clock.c"
-                      "${NUTTX_PATH}/uv_nuttx_io.c"
-                      "${NUTTX_PATH}/uv_nuttx_loop.c"
-                      "${NUTTX_PATH}/uv_nuttx_thread.c"
-                      )
+set(PLATFORM_SRCFILES
+      ${PLATFORM_SRCFILES}
+      "${NUTTX_PATH}/uv_nuttx.c"
+      "${NUTTX_PATH}/uv_nuttx_clock.c"
+      "${NUTTX_PATH}/uv_nuttx_io.c"
+      "${NUTTX_PATH}/uv_nuttx_loop.c"
+      "${NUTTX_PATH}/uv_nuttx_thread.c"
+      )
 
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.c")
 
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "stm32f4")
     set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
+          ${FLAGS_COMMON}
           "-mcpu=cortex-m4"
           "-mthumb"
           "-march=armv7e-m"
@@ -58,8 +59,11 @@ if(NOT DEFINED TARGET_SYSTEMROOT OR "${TARGET_SYSTEMROOT}" STREQUAL "default")
 endif()
 
 # system include folder
-set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include")
-set(TARGET_INC ${TARGET_INC} "${TARGET_SYSTEMROOT}/include/cxx")
+set(TARGET_INC
+      ${TARGET_INC}
+      "${TARGET_SYSTEMROOT}/include"
+      "${TARGET_SYSTEMROOT}/include/cxx"
+      )
 
 # build tester as library
 set(BUILD_TEST_LIB "yes")

@@ -17,17 +17,18 @@ include("cmake/option/option_raw_common.cmake")
 # mbed common source files
 set(MBED_PATH "${SOURCE_ROOT}/mbed")
 
-set(PLATFORM_SRCFILES ${PLATFORM_SRCFILES}
-                     "${MBED_PATH}/uv_mbed.c"
-                     "${MBED_PATH}/uv_mbed_io.c"
-                     "${MBED_PATH}/uv_mbed_stream.c"
-                     "${MBED_PATH}/uv_mbed_tcp.c"
-                      )
+set(PLATFORM_SRCFILES
+      ${PLATFORM_SRCFILES}
+      "${MBED_PATH}/uv_mbed.c"
+      "${MBED_PATH}/uv_mbed_io.c"
+      "${MBED_PATH}/uv_mbed_stream.c"
+      "${MBED_PATH}/uv_mbed_tcp.c"
+      )
 
 #set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_mbed.c")
 
 set(FLAGS_COMMON
-      "${FLAGS_COMMON}"
+      ${FLAGS_COMMON}
       "-D__TUV_MBED__"
       )
 
@@ -37,7 +38,7 @@ set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "mbedk64f")
     set(FLAGS_COMMON
-          "${FLAGS_COMMON}"
+          ${FLAGS_COMMON}
           "-mcpu=cortex-m4"
           "-mthumb"
           "-mlittle-endian"

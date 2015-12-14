@@ -16,47 +16,49 @@ cmake_minimum_required(VERSION 2.8)
 
 # temporary block to make one file at a time for mbed
 if(${PLATFORM_NAME_L} STREQUAL "mbed")
-set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.c"
-                    "${SOURCE_ROOT}/uv_loop.c"
-                    "${SOURCE_ROOT}/uv_idle.c"
-                    "${SOURCE_ROOT}/uv_run.c"
-                    "${SOURCE_ROOT}/uv_timer.c"
-                    "${SOURCE_ROOT}/uv_req.c"
+  set(COMMON_SRCFILES
+        "${SOURCE_ROOT}/uv_handle.c"
+        "${SOURCE_ROOT}/uv_loop.c"
+        "${SOURCE_ROOT}/uv_idle.c"
+        "${SOURCE_ROOT}/uv_run.c"
+        "${SOURCE_ROOT}/uv_timer.c"
+        "${SOURCE_ROOT}/uv_req.c"
 
-                    "${SOURCE_ROOT}/uv_async.c"
-                    "${SOURCE_ROOT}/uv_util.c"
-                    "${SOURCE_ROOT}/tuv_debuglog.c"
-                    "${SOURCE_ROOT}/uv_error.c"
+        "${SOURCE_ROOT}/uv_async.c"
+        "${SOURCE_ROOT}/uv_util.c"
+        "${SOURCE_ROOT}/tuv_debuglog.c"
+        "${SOURCE_ROOT}/uv_error.c"
 
-                    "${SOURCE_ROOT}/uv_inet.c"
-                    )
+        "${SOURCE_ROOT}/uv_inet.c"
+        )
 else()
-set(COMMON_SRCFILES "${SOURCE_ROOT}/uv_handle.c"
-                    "${SOURCE_ROOT}/uv_loop.c"
-                    "${SOURCE_ROOT}/uv_idle.c"
-                    "${SOURCE_ROOT}/uv_run.c"
-                    "${SOURCE_ROOT}/uv_timer.c"
-                    "${SOURCE_ROOT}/uv_req.c"
-                    "${SOURCE_ROOT}/uv_fs.c"
-                    "${SOURCE_ROOT}/uv_async.c"
-                    "${SOURCE_ROOT}/uv_util.c"
-                    "${SOURCE_ROOT}/tuv_debuglog.c"
-                    "${SOURCE_ROOT}/uv_error.c"
-                    "${SOURCE_ROOT}/uv_dir.c"
-                    "${SOURCE_ROOT}/uv_inet.c"
-                    )
+  set(COMMON_SRCFILES
+        "${SOURCE_ROOT}/uv_handle.c"
+        "${SOURCE_ROOT}/uv_loop.c"
+        "${SOURCE_ROOT}/uv_idle.c"
+        "${SOURCE_ROOT}/uv_run.c"
+        "${SOURCE_ROOT}/uv_timer.c"
+        "${SOURCE_ROOT}/uv_req.c"
+        "${SOURCE_ROOT}/uv_fs.c"
+        "${SOURCE_ROOT}/uv_async.c"
+        "${SOURCE_ROOT}/uv_util.c"
+        "${SOURCE_ROOT}/tuv_debuglog.c"
+        "${SOURCE_ROOT}/uv_error.c"
+        "${SOURCE_ROOT}/uv_dir.c"
+        "${SOURCE_ROOT}/uv_inet.c"
+        )
 endif()
 
 set(LIB_TUV_SRCFILES
-    ${COMMON_SRCFILES}
-    ${PLATFORM_SRCFILES}
-)
+      ${COMMON_SRCFILES}
+      ${PLATFORM_SRCFILES}
+      )
 
 set(LIB_TUV_INCDIRS
-    ${INCLUDE_ROOT}
-    ${SOURCE_ROOT}
-    ${SOURCE_ROOT}/${TUV_PLATFORM_PATH}
-)
+      ${INCLUDE_ROOT}
+      ${SOURCE_ROOT}
+      ${SOURCE_ROOT}/${TUV_PLATFORM_PATH}
+      )
 
 
 # build tuv library
