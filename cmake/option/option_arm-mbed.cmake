@@ -44,7 +44,7 @@ if(DEFINED TARGET_BOARD)
           "-D__MBED_K64F__"
           )
     if(NOT DEFINED TARGET_SYSTEMROOT)
-      set(TARGET_SYSTEMROOT "${CMAKE_SOURCE_DIR}/embedding/mbedk64f")
+      set(TARGET_SYSTEMROOT "${CMAKE_SOURCE_DIR}/targets/mbedk64f")
     endif()
   else()
     message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")

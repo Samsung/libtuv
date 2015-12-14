@@ -61,12 +61,12 @@ tuv:
 
 # yotta binary build
 yotta:
-	cd embedding/mbedk64f; yotta build $(YOTTA_BUILD_OPT)
+	cd targets/mbedk64f; yotta build $(YOTTA_BUILD_OPT)
 
 
 # flash to mbed board. binary should be always 'tuvtester'
 flash: check_mbed
-	cp embedding/mbedk64f/build/frdm-k64f-gcc/source/tuvtester.bin \
+	cp targets/mbedk64f/build/frdm-k64f-gcc/source/tuvtester.bin \
 		"$(TARGET_DIR)/."
 	@echo "Wait till LED flashing stops..."
 
@@ -95,4 +95,4 @@ check_mbed:
 
 clean:
 	TUV_PLATFORM=arm-mbed TUV_BOARD=mbedk64f make clean
-	rm -rf embedding/mbedk64f/build/*
+	rm -rf targets/mbedk64f/build/*

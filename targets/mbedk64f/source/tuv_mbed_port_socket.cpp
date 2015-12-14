@@ -28,7 +28,7 @@
 // tuv_mbed_ipaddress.h file that looks like below. If tuv_mbed_ipaddress.h
 // file exists, __TUV_MBED_IPEXIST__ is defined in maketuvtester.cmake.
 // After you add this header file, you need to do a clean build something like;
-// $ cd embedding/mbedk64f
+// $ cd targets/mbedk64f
 // $ yotta clean
 /*
 #ifndef __tuv_mbed_ipaddress_header__
