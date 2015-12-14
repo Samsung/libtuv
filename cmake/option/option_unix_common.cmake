@@ -31,6 +31,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 # unix common source files
 set(UNIX_PATH "${SOURCE_ROOT}/unix")
 
+# test include
+set(TUV_TEST_INCDIRS
+      "${TEST_ROOT}"
+      )
+
 set(PLATFORM_SRCFILES "${UNIX_PATH}/uv_unix.c"
                       "${UNIX_PATH}/uv_unix_async.c"
                       "${UNIX_PATH}/uv_unix_io.c"

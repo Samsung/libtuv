@@ -44,7 +44,7 @@
 #if defined(__TUV_HOST_IPEXIST__)
 #include "tuv_host_ipaddress.h"
 #else
-#error Please create tuv_host_ipaddress.h. Open this file and read below.
+#pragma message("Please create tuv_host_ipaddress.h for shutdown_eof test.")
 #endif
 
 // Please create a file with your host IP address like below.
@@ -61,6 +61,7 @@
 
 //-----------------------------------------------------------------------------
 
+#if defined(__TUV_HOST_IPEXIST__)
 static uv_tcp_t tcp;
 static uv_connect_t connect_req;
 static uv_write_t write_req;
@@ -164,6 +165,7 @@ static int shutdown_eof_final(void* vparam) {
 
   return 0;
 }
+#endif
 
 /*
  * This test has a client which connects to the echo_server and immediately
@@ -172,6 +174,7 @@ static int shutdown_eof_final(void* vparam) {
  * calling uv_close when the client receives the EOF from echo-server.
  */
 TEST_IMPL(shutdown_eof) {
+#if defined(__TUV_HOST_IPEXIST__)
   shutdown_eof_param_t* param;
   param = (shutdown_eof_param_t*)malloc(sizeof(shutdown_eof_param_t));
   param->loop = uv_default_loop();
@@ -195,6 +198,9 @@ TEST_IMPL(shutdown_eof) {
   TUV_ASSERT(r == 0);
 
   tuv_run(param->loop, shutdown_eof_loop, shutdown_eof_final, param);
-
+#else
+  TDDLOG("'HOST_IP_ADDRESS' not defined. skip test.\r\n");
+  run_tests_continue();
+#endif
   return 0;
 }

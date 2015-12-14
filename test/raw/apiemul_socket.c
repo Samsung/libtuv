@@ -25,7 +25,7 @@
 #if defined(__TUV_HOST_IPEXIST__)
 #include "tuv_host_ipaddress.h"
 #else
-#error Please create tuv_host_ipaddress.h. Open this file and read below.
+#pragma message("Please create tuv_host_ipaddress.h for tcp_open test.")
 #endif
 
 // Please create a file with your host IP address like below.
@@ -294,6 +294,7 @@ static void do_poll_test(void) {
   free(fds);
 }
 
+#if defined(__TUV_HOST_IPEXIST__)
 static void clitest_entry(void* arg) {
 }
 
@@ -338,7 +339,6 @@ static void do_tcp_client_connect(void) {
     return;
   }
 
-  // connect to http://httpbin.org server
   struct sockaddr_in server_addr;
   uv_ip4_addr(HOST_IP_ADDRESS, HOST_ECHO_PORT, &server_addr);
 
@@ -347,6 +347,7 @@ static void do_tcp_client_connect(void) {
 
   tuv_task_create(&_thread_cli, clitest_entry, clitest_loop, NULL);
 }
+#endif
 
 static void task_entry(void* arg) {
   test_init_clients();
@@ -354,9 +355,11 @@ static void task_entry(void* arg) {
 }
 
 static int task_loop(void* arg) {
+#if defined(__TUV_HOST_IPEXIST__)
   if (_sock_client == -2) {
     do_tcp_client_connect();
   }
+#endif
   do_poll_test();
   return 1; /* continue task */
 }

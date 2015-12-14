@@ -67,6 +67,6 @@ file(MAKE_DIRECTORY "${TARGET_SYSTEMROOT}/libtuv")
 set(COPY_TARGET_LIB "${TARGET_SYSTEMROOT}/libtuv/.")
 
 # to help unittest to give host ip address
-if(EXISTS ${TEST_ROOT}/tuv_host_ipaddress.h)
+if(EXISTS ${RAW_TEST}/tuv_host_ipaddress.h)
   add_definitions("-D__TUV_HOST_IPEXIST__")
 endif()

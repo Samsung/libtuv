@@ -21,6 +21,7 @@ include_directories(${TUVROOT}/include)
 include_directories(${TUVROOT}/source)
 include_directories(${TUVROOT}/source/mbed)
 include_directories(${TUVROOT}/test)
+include_directories(${TUVROOT}/test/raw)
 
 # compile flags...
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS}

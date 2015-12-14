@@ -46,7 +46,7 @@
 #if defined(__TUV_HOST_IPEXIST__)
 #include "tuv_host_ipaddress.h"
 #else
-#error Please create tuv_host_ipaddress.h. Open this file and read below.
+#pragma message("Please create tuv_host_ipaddress.h for tcp_open test.")
 #endif
 
 // Please create a file with your host IP address like below.
@@ -60,6 +60,9 @@
 
 #endif
 */
+
+
+#if defined(__TUV_HOST_IPEXIST__)
 
 static int shutdown_cb_called = 0;
 static int connect_cb_called = 0;
@@ -202,6 +205,7 @@ static int tcp_open_loop(void* vparam) {
   return uv_run(param->loop, UV_RUN_ONCE);
 }
 
+
 static int tcp_open_final(void* vparam) {
   tcp_open_param_t* param = (tcp_open_param_t*)vparam;
 
@@ -220,8 +224,11 @@ static int tcp_open_final(void* vparam) {
 
   return 0;
 }
+#endif
+
 
 TEST_IMPL(tcp_open) {
+#if defined(__TUV_HOST_IPEXIST__)
   tcp_open_param_t* param;
   param = (tcp_open_param_t*)malloc(sizeof(tcp_open_param_t));
   param->loop = uv_default_loop();
@@ -252,6 +259,9 @@ TEST_IMPL(tcp_open) {
   TUV_ASSERT(r == 0);
 
   tuv_run(param->loop, tcp_open_loop, tcp_open_final, param);
-
+#else
+  TDDLOG("'HOST_IP_ADDRESS' not defined. skip test.\r\n");
+  run_tests_continue();
+#endif
   return 0;
 }

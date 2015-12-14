@@ -30,6 +30,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # raw common source files
 set(RAW_PATH "${SOURCE_ROOT}/raw")
+set(RAW_TEST "${TEST_ROOT}/raw")
+
+# test include
+set(TUV_TEST_INCDIRS
+      "${TEST_ROOT}"
+      "${TEST_ROOT}/raw"
+      )
 
 set(PLATFORM_SRCFILES
       "${RAW_PATH}/uv_raw.c"
@@ -44,32 +51,32 @@ set(PLATFORM_SRCFILES
       )
 
 set(TEST_MAINFILE
-      "${TEST_ROOT}/raw_main.c"
+      "${RAW_TEST}/raw_main.c"
       )
 
 set(TEST_UNITFILES
-      "${TEST_ROOT}/runner_main_raw.c"
-      "${TEST_ROOT}/test_idle_raw.c"
-      "${TEST_ROOT}/test_active_raw.c"
-      "${TEST_ROOT}/test_timer_raw_init.c"
-      "${TEST_ROOT}/test_timer_raw_norm.c"
-      "${TEST_ROOT}/test_timer_raw_start_twice.c"
-      "${TEST_ROOT}/test_timer_raw_order.c"
-      "${TEST_ROOT}/test_timer_raw_run_once.c"
-      "${TEST_ROOT}/test_timer_raw_run_null_callback.c"
-      "${TEST_ROOT}/test_timer_raw_again.c"
-      "${TEST_ROOT}/test_timer_raw_huge_timeout.c"
-      "${TEST_ROOT}/test_timer_raw_huge_repeat.c"
-      "${TEST_ROOT}/test_condvar_raw.c"
-      "${TEST_ROOT}/test_async_raw.c"
-      "${TEST_ROOT}/test_threadpool_raw_queue_work_simple.c"
-      "${TEST_ROOT}/test_walk_handles_raw.c"
+      "${RAW_TEST}/runner_main_raw.c"
+      "${RAW_TEST}/test_idle_raw.c"
+      "${RAW_TEST}/test_active_raw.c"
+      "${RAW_TEST}/test_timer_raw_init.c"
+      "${RAW_TEST}/test_timer_raw_norm.c"
+      "${RAW_TEST}/test_timer_raw_start_twice.c"
+      "${RAW_TEST}/test_timer_raw_order.c"
+      "${RAW_TEST}/test_timer_raw_run_once.c"
+      "${RAW_TEST}/test_timer_raw_run_null_callback.c"
+      "${RAW_TEST}/test_timer_raw_again.c"
+      "${RAW_TEST}/test_timer_raw_huge_timeout.c"
+      "${RAW_TEST}/test_timer_raw_huge_repeat.c"
+      "${RAW_TEST}/test_condvar_raw.c"
+      "${RAW_TEST}/test_async_raw.c"
+      "${RAW_TEST}/test_threadpool_raw_queue_work_simple.c"
+      "${RAW_TEST}/test_walk_handles_raw.c"
 
-      "${TEST_ROOT}/test_tcp_open_raw.c"
-      "${TEST_ROOT}/test_shutdown_eof_raw.c"
+      "${RAW_TEST}/test_tcp_open_raw.c"
+      "${RAW_TEST}/test_shutdown_eof_raw.c"
       )
 
 set(TEST_APIEMULFILES
-      "${TEST_ROOT}/apiemul_main.c"
-      "${TEST_ROOT}/apiemul_socket.c"
+      "${RAW_TEST}/apiemul_main.c"
+      "${RAW_TEST}/apiemul_socket.c"
       )

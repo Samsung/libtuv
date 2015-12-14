@@ -32,7 +32,8 @@ else()
 endif()
 
 target_include_directories(${TUVTESTNAME} SYSTEM PRIVATE ${TARGET_INC})
-target_include_directories(${TUVTESTNAME} PUBLIC ${LIB_TUV_INCDIRS})
+target_include_directories(${TUVTESTNAME} PUBLIC ${LIB_TUV_INCDIRS}
+                                                 ${TUV_TEST_INCDIRS})
 target_link_libraries(${TUVTESTNAME} LINK_PUBLIC ${TARGETLIBNAME}
                       ${TUV_LINK_LIBS})
 set_target_properties(${TUVTESTNAME} PROPERTIES
