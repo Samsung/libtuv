@@ -41,8 +41,9 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#include "queue.h"
+#include "tuv__config.h"
 
+#include "queue.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 

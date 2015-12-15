@@ -80,3 +80,6 @@ set(TEST_APIEMULFILES
       "${RAW_TEST}/apiemul_main.c"
       "${RAW_TEST}/apiemul_socket.c"
       )
+
+# configuration values
+set(CONFIG_FILESYSTEM 0)

@@ -51,4 +51,10 @@ foreach(FLAG ${FLAGS_CXXONLY})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
 endforeach()
 
+# generate configure file
+configure_file("${SOURCE_ROOT}/tuv__config.h.in"
+               "${CMAKE_BINARY_DIR}/tuv__config.h")
+configure_file("${SOURCE_ROOT}/tuv__config.h.in"
+               "${INCLUDE_ROOT}/tuv__config.h")
+
 message(STATUS "Build Type: [${CMAKE_BUILD_TYPE}]")

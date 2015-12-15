@@ -71,3 +71,6 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_walk_handles.c"
       "${TEST_ROOT}/test_async.c"
       )
+
+# configuration values
+set(CONFIG_FILESYSTEM 1)
