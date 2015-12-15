@@ -42,7 +42,6 @@ if(DEFINED TARGET_BOARD)
           "-mcpu=cortex-m4"
           "-mthumb"
           "-mlittle-endian"
-          "-D__MBED_K64F__"
           )
     if(NOT DEFINED TARGET_SYSTEMROOT)
       set(TARGET_SYSTEMROOT "${CMAKE_SOURCE_DIR}/targets/mbedk64f")
