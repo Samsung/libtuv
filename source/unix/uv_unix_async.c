@@ -83,9 +83,12 @@ static int uv__async_eventfd() {
   if (no_eventfd2)
     goto skip_eventfd2;
 
-  fd = uv__eventfd2(0, UV__EFD_CLOEXEC | UV__EFD_NONBLOCK);
+  fd = uv__eventfd2(0, 0);
   if (fd != -1)
     return fd;
+
+  fcntl(fd, F_SETFL , UV__EFD_NONBLOCK);
+  fcntl(fd, F_SETFD , UV__EFD_CLOEXEC);
 
   if (errno != ENOSYS)
     return -errno;
