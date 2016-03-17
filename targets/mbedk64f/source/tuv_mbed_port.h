@@ -21,8 +21,8 @@
 #define TUV_MAX_FD_COUNT    32    // number of file descriptors to provide
 #define TUV_MAX_SD_COUNT    32    // number of socket descriptors to provide
 
-#define STDIN_FILNO         0
-#define STDOUT_FILNO        1
+#define STDIN_FILENO        0
+#define STDOUT_FILENO       1
 #define STDERR_FILENO       2
 
 #define POLLIN        0x01
