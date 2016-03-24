@@ -101,8 +101,8 @@ void uv_mutex_lock(uv_mutex_t* mutex) {
 
 
 void uv_mutex_unlock(uv_mutex_t* mutex) {
-  if(*mutex > 1)
-    *(mutex)--;
+  if (*mutex > 1)
+    (*mutex)--;
 }
 
 
