@@ -99,4 +99,6 @@ int uv_async_deinit(uv_loop_t* loop, uv_async_t* handle) {
   QUEUE_REMOVE(&handle->queue);
   QUEUE_INIT(&handle->queue);
   uv__handle_deinit(handle);
+
+  return 0;
 }
