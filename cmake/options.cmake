@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # platform name in lower case
 string(TOLOWER ${CMAKE_SYSTEM_NAME} PLATFORM_NAME_L)
