@@ -32,9 +32,9 @@ set(LIBTUV_VERSION_MINOR 1)
 #
 include(cmake/options.cmake)
 include(cmake/libtuv.cmake)
-if (DEFINED BUILDTESTER AND ${BUILDTESTER} STREQUAL "yes")
+if (DEFINED BUILDTESTER AND "${BUILDTESTER}" STREQUAL "yes")
   include(cmake/tuvtest.cmake)
-elseif (DEFINED BUILDAPIEMULTESTER AND ${BUILDAPIEMULTESTER} STREQUAL "yes")
+elseif (DEFINED BUILDAPIEMULTESTER AND "${BUILDAPIEMULTESTER}" STREQUAL "yes")
   include(cmake/apiemultest.cmake)
 endif()
 
