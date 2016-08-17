@@ -38,7 +38,7 @@ set(PLATFORM_SRCFILES
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.c")
 
 if(DEFINED TARGET_BOARD)
-  if(${TARGET_BOARD} STREQUAL "stm32f4")
+  if(${TARGET_BOARD} STREQUAL "stm32f4dis")
     set(FLAGS_COMMON
           ${FLAGS_COMMON}
           "-mcpu=cortex-m4"
