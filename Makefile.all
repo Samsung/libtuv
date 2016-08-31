@@ -38,7 +38,7 @@ rpi2:
 
 
 stm32f4:
-	TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4 \
+	TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4dis \
 	 TUV_SYSTEMROOT=$(HARMONY)/nuttx/nuttx make
 
 
