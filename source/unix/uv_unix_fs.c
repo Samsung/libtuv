@@ -77,9 +77,11 @@
 
 #define PATH                                                                  \
   do {                                                                        \
-    (req)->path = strdup(path);                                               \
-    if ((req)->path == NULL)                                                  \
-      return -ENOMEM;                                                         \
+    if (path != NULL) {                                                       \
+      (req)->path = strdup(path);                                             \
+      if ((req)->path == NULL)                                                \
+        return -ENOMEM;                                                       \
+    }                                                                         \
   }                                                                           \
   while (0)
 
