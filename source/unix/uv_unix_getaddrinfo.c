@@ -118,6 +118,9 @@ static void uv__getaddrinfo_work(struct uv__work* w) {
 #if defined(__NUTTX__)
   err = 0;
 #else
+  /* Only IPv4 is supported now. (Not support IPv6.)*/
+  if (req->hints)
+    req->hints->ai_family = AF_INET;
   err = getaddrinfo(req->hostname, req->service, req->hints, &req->addrinfo);
 #endif
   req->retcode = uv__getaddrinfo_translate_error(err);
