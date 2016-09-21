@@ -71,6 +71,14 @@ ifeq ("$(TUV_BUILDHOSTHELPER)","yes")
 	@echo '=============================================================='
 endif
 
+run_test:
+	make
+ifeq ($(TUV_PLATFORM), $(filter $(TUV_PLATFORM), i686-linux x86_64-linux))
+	$(BUILD_FOLDER)/bin/tuvtester
+else
+	@echo 'Cannot run test for $(TUV_PLATFORM)'
+endif
+
 call:
 	make -C $(CMAKE_FOLDER)
 
