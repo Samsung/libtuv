@@ -1,0 +1,19 @@
+language: cpp
+
+os: linux
+dist: trusty
+sudo: required
+
+before_install:
+  - tools/check-signed-off.sh --travis
+  - tools/apt-get-install-arm.sh
+  - tools/apt-get-install-deps.sh
+
+install:
+
+script: "make run_test $OPT"
+
+env:
+  - OPT="TUV_BUILD_TYPE=debug"
+  - OPT="TUV_BUILD_TYPE=release"
+  - OPT="TUV_PLATFORM=arm-linux TUV_BOARD=rpi2"
