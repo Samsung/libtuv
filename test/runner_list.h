@@ -62,6 +62,7 @@
   TE(fs_open_dir, 5000)                                                       \
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
+  TE(fs_async_dir, 5000)                                                      \
   \
   TE(error_message, 5000)                                                     \
   \

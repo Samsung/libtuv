@@ -454,13 +454,13 @@ static void uv__fs_work(struct uv__work* w) {
     X(FSYNC, fsync(req->file));
     X(FUTIME, uv__fs_futime(req));
     //X(LSTAT, uv__fs_lstat(req->path, &req->statbuf));
-    //X(MKDIR, mkdir(req->path, req->mode));
+    X(MKDIR, mkdir(req->path, req->mode));
     //X(MKDTEMP, uv__fs_mkdtemp(req));
     X(READ, uv__fs_read(req));
     //X(SCANDIR, uv__fs_scandir(req));
     //X(READLINK, uv__fs_readlink(req));
     X(RENAME, rename(req->path, req->new_path));
-    //X(RMDIR, rmdir(req->path));
+    X(RMDIR, rmdir(req->path));
     //X(SENDFILE, uv__fs_sendfile(req));
     X(STAT, uv__fs_stat(req->path, &req->statbuf));
     X(UNLINK, unlink(req->path));
@@ -666,5 +666,21 @@ int uv_fs_utime(uv_loop_t* loop, uv_fs_t* req, const char* path,
   PATH;
   req->atime = atime;
   req->mtime = mtime;
+  POST;
+}
+
+
+int uv_fs_mkdir(uv_loop_t* loop, uv_fs_t* req, const char* path,
+                int mode, uv_fs_cb cb) {
+  INIT(MKDIR);
+  PATH;
+  req->mode = mode;
+  POST;
+}
+
+
+int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb) {
+  INIT(RMDIR);
+  PATH;
   POST;
 }
