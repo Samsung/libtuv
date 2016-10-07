@@ -40,17 +40,31 @@
 #include <unistd.h>
 
 int uv_cwd(char* buffer, size_t* size) {
-  if (buffer == NULL || size == NULL)
+  if (buffer == NULL || size == NULL) {
     return -EINVAL;
+  }
 
-  if (getcwd(buffer, *size) == NULL)
+  if (getcwd(buffer, *size) == NULL) {
     return -errno;
+  }
 
   *size = strlen(buffer);
 
   if (*size > 1 && buffer[*size - 1] == '/') {
     buffer[*size-1] = '\0';
     (*size)--;
+  }
+
+  return 0;
+}
+
+int uv_cd(char* path) {
+  if (path == NULL) {
+      return -EINVAL;
+  }
+
+  if (chdir(path) < 0) {
+    return -errno;
   }
 
   return 0;
