@@ -43,6 +43,7 @@ extern "C" {
 #endif
 
 int uv_cwd(char* buffer, size_t* size);
+int uv_cd(char* path);
 
 #ifdef __cplusplus
 }
