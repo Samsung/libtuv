@@ -57,9 +57,11 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
   nfds = (uintptr_t) loop->watchers[loop->nwatchers + 1];
   if (events != NULL)
     /* Invalidate events with same file descriptor */
-    for (i = 0; i < nfds; i++)
-      if ((int) events[i].data == fd)
+    for (i = 0; i < nfds; i++) {
+      if ((int) events[i].data == fd) {
         events[i].data = -1;
+      }
+    }
 
   /* Remove the file descriptor from the epoll.
    * This avoids a problem where the same file description remains open
@@ -67,8 +69,9 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
    *
    * We pass in a dummy epoll_event, to work around a bug in old kernels.
    */
-  if (loop->backend_fd >= 0)
+  if (loop->backend_fd >= 0) {
     uv__epoll_ctl(loop->backend_fd, UV__EPOLL_CTL_DEL, fd, &dummy);
+  }
 }
 
 
@@ -103,8 +106,9 @@ int uv__close(int fd) {
   rc = close(fd);
   if (rc == -1) {
     rc = -errno;
-    if (rc == -EINTR)
+    if (rc == -EINTR) {
       rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    }
     errno = saved_errno;
   }
 
@@ -115,12 +119,13 @@ int uv__close(int fd) {
 int uv__nonblock(int fd, int set) {
   int r;
 
-  do
+  do {
     r = ioctl(fd, FIONBIO, &set);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
-  if (r)
+  if (r) {
     return -errno;
+  }
 
   return 0;
 }
@@ -129,12 +134,13 @@ int uv__nonblock(int fd, int set) {
 int uv__cloexec(int fd, int set) {
   int r;
 
-  do
+  do {
     r = ioctl(fd, set ? FIOCLEX : FIONCLEX);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
-  if (r)
+  if (r) {
     return -errno;
+  }
 
   return 0;
 }
@@ -149,13 +155,16 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
   static int no_msg_cmsg_cloexec;
   if (no_msg_cmsg_cloexec == 0) {
     rc = recvmsg(fd, msg, flags | 0x40000000);  /* MSG_CMSG_CLOEXEC */
-    if (rc != -1)
+    if (rc != -1) {
       return rc;
-    if (errno != EINVAL)
+    }
+    if (errno != EINVAL) {
       return -errno;
+    }
     rc = recvmsg(fd, msg, flags);
-    if (rc == -1)
+    if (rc == -1) {
       return -errno;
+    }
     no_msg_cmsg_cloexec = 1;
   } else {
     rc = recvmsg(fd, msg, flags);
@@ -163,17 +172,22 @@ ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
 #else
   rc = recvmsg(fd, msg, flags);
 #endif
-  if (rc == -1)
+  if (rc == -1) {
     return -errno;
-  if (msg->msg_controllen == 0)
+  }
+  if (msg->msg_controllen == 0) {
     return rc;
-  for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL; cmsg = CMSG_NXTHDR(msg, cmsg))
-    if (cmsg->cmsg_type == SCM_RIGHTS)
+  }
+  for (cmsg = CMSG_FIRSTHDR(msg); cmsg != NULL; cmsg = CMSG_NXTHDR(msg, cmsg)) {
+    if (cmsg->cmsg_type == SCM_RIGHTS) {
       for (pfd = (int*) CMSG_DATA(cmsg),
            end = (int*) ((char*) cmsg + cmsg->cmsg_len);
            pfd < end;
-           pfd += 1)
+           pfd += 1) {
         uv__cloexec(*pfd, 1);
+      }
+    }
+  }
   return rc;
 }
 

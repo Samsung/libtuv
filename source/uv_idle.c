@@ -53,8 +53,9 @@ int uv_idle_start(uv_idle_t* handle, uv_idle_cb cb) {
     TDDLOG("uv_idle_start, handle(%p) is already active", handle);
     return 0;
   }
-  if (cb == NULL)
+  if (cb == NULL) {
     return -EINVAL;
+  }
   QUEUE_INSERT_HEAD(&handle->loop->idle_handles, &handle->queue);
   handle->idle_cb = cb;
   uv__handle_start(handle);

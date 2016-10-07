@@ -78,20 +78,23 @@ int uv__tcp_bind(uv_tcp_t* tcp,
   int on;
 
   /* Cannot set IPv6-only mode on non-IPv6 socket. */
-  if ((flags & UV_TCP_IPV6ONLY) && addr->sa_family != AF_INET6)
+  if ((flags & UV_TCP_IPV6ONLY) && addr->sa_family != AF_INET6) {
     return -EINVAL;
+  }
 
   err = maybe_new_socket(tcp,
                          addr->sa_family,
                          UV_STREAM_READABLE | UV_STREAM_WRITABLE);
-  if (err)
+  if (err) {
     return err;
+  }
 
   on = 1;
   if (tuvp_setsockopt(tcp->io_watcher.fd,
                       SOL_SOCKET, SO_REUSEADDR,
-                      &on, sizeof(on)))
+                      &on, sizeof(on))) {
     return -get_errno();
+  }
 
 #ifdef IPV6_V6ONLY
   if (addr->sa_family == AF_INET6) {
@@ -105,16 +108,18 @@ int uv__tcp_bind(uv_tcp_t* tcp,
 #endif
 
   set_errno(0);
-  if (tuvp_bind(tcp->io_watcher.fd, addr, addrlen) && get_errno() != EADDRINUSE)
+  if (tuvp_bind(tcp->io_watcher.fd, addr, addrlen) && get_errno() != EADDRINUSE) {
     return -get_errno();
+  }
 
   tcp->delayed_error = -get_errno();
   if (tcp->delayed_error) {
     TDDLOG("uv__tcp_bind delayed_error(%d)", tcp->delayed_error);
   }
 
-  if (addr->sa_family == AF_INET6)
+  if (addr->sa_family == AF_INET6) {
     tcp->flags |= UV_HANDLE_IPV6;
+  }
 
   return 0;
 }
@@ -151,15 +156,15 @@ int uv__tcp_connect(uv_connect_t* req,
   } while (r == -1 && get_errno() == EINTR);
 
   if (r == -1) {
-    if (get_errno() == EINPROGRESS)
-      ; /* not an error */
-    else if (get_errno() == ECONNREFUSED)
+    if (get_errno() == EINPROGRESS) {
+      /* not an error */
+    } else if (get_errno() == ECONNREFUSED) {
     /* If we get a ECONNREFUSED wait until the next tick to report the
      * error. Solaris wants to report immediately--other unixes want to
      * wait.
      */
       handle->delayed_error = -get_errno();
-    else {
+    } else {
       TDLOG("uv__tcp_connect tuvp_connect failed");
       return -get_errno();
     }
@@ -173,8 +178,9 @@ int uv__tcp_connect(uv_connect_t* req,
 
   uv__io_start(handle->loop, &handle->io_watcher, UV__POLLOUT);
 
-  if (handle->delayed_error)
+  if (handle->delayed_error) {
     uv__io_feed(handle->loop, &handle->io_watcher);
+  }
 
   return 0;
 }
@@ -233,17 +239,21 @@ int uv_tcp_bind(uv_tcp_t* handle,
                 unsigned int flags) {
   unsigned int addrlen;
 
-  if (handle->type != UV_TCP)
+  if (handle->type != UV_TCP) {
     return UV_EINVAL;
+  }
 
-  if (addr->sa_family == AF_INET)
+  if (addr->sa_family == AF_INET) {
     addrlen = sizeof(struct sockaddr_in);
+  }
 /*
-  else if (addr->sa_family == AF_INET6)
+  else if (addr->sa_family == AF_INET6) {
     addrlen = sizeof(struct sockaddr_in6);
+  }
 */
-  else
+  else {
     return UV_EINVAL;
+  }
 
   return uv__tcp_bind(handle, addr, addrlen, flags);
 }
@@ -260,11 +270,13 @@ int uv_tcp_connect(uv_connect_t* req,
     return UV_EINVAL;
   }
 
-  if (addr->sa_family == AF_INET)
+  if (addr->sa_family == AF_INET) {
     addrlen = sizeof(struct sockaddr_in);
+  }
 /*
-  else if (addr->sa_family == AF_INET6)
+  else if (addr->sa_family == AF_INET6) {
     addrlen = sizeof(struct sockaddr_in6);
+  }
 */
   else {
     TDLOG("uv_tcp_connect sa_family not AF_INET");
@@ -279,8 +291,9 @@ int uv_tcp_open(uv_tcp_t* handle, uv_os_sock_t sock) {
   int err;
 
   err = uv__nonblock(sock, 1);
-  if (err)
+  if (err) {
     return err;
+  }
 
   return uv__stream_open((uv_stream_t*)handle,
                          sock,
@@ -293,17 +306,20 @@ int uv_tcp_getsockname(const uv_tcp_t* handle,
                        int* namelen) {
   socklen_t socklen;
 
-  if (handle->delayed_error)
+  if (handle->delayed_error) {
     return handle->delayed_error;
+  }
 
-  if (uv__stream_fd(handle) < 0)
+  if (uv__stream_fd(handle) < 0) {
     return -EINVAL;  /* FIXME(bnoordhuis) -EBADF */
+  }
 
   /* sizeof(socklen_t) != sizeof(int) on some systems. */
   socklen = (socklen_t) *namelen;
 
-  if (tuvp_getsockname(uv__stream_fd(handle), name, &socklen))
+  if (tuvp_getsockname(uv__stream_fd(handle), name, &socklen)) {
     return -get_errno();
+  }
 
   *namelen = (int) socklen;
   return 0;
@@ -315,17 +331,20 @@ int uv_tcp_getpeername(const uv_tcp_t* handle,
                        int* namelen) {
   socklen_t socklen;
 
-  if (handle->delayed_error)
+  if (handle->delayed_error) {
     return handle->delayed_error;
+  }
 
-  if (uv__stream_fd(handle) < 0)
+  if (uv__stream_fd(handle) < 0) {
     return -EINVAL;  /* FIXME(bnoordhuis) -EBADF */
+  }
 
   /* sizeof(socklen_t) != sizeof(int) on some systems. */
   socklen = (socklen_t) *namelen;
 
-  if (tuvp_getpeername(uv__stream_fd(handle), name, &socklen))
+  if (tuvp_getpeername(uv__stream_fd(handle), name, &socklen)) {
     return -get_errno();
+  }
 
   *namelen = (int) socklen;
   return 0;
@@ -336,23 +355,27 @@ int uv_tcp_listen(uv_tcp_t* tcp, int backlog, uv_connection_cb cb) {
   static int single_accept = -1;
   int err;
 
-  if (tcp->delayed_error)
+  if (tcp->delayed_error) {
     return tcp->delayed_error;
+  }
 
   if (single_accept == -1) {
     const char* val = getenv("UV_TCP_SINGLE_ACCEPT");
     single_accept = (val != NULL && atoi(val) != 0);  /* Off by default. */
   }
 
-  if (single_accept)
+  if (single_accept) {
     tcp->flags |= UV_TCP_SINGLE_ACCEPT;
+  }
 
   err = maybe_new_socket(tcp, AF_INET, UV_STREAM_READABLE);
-  if (err)
+  if (err) {
     return err;
+  }
 
-  if (tuvp_listen(tcp->io_watcher.fd, backlog))
+  if (tuvp_listen(tcp->io_watcher.fd, backlog)) {
     return -get_errno();
+  }
 
   tcp->connection_cb = cb;
 
@@ -369,14 +392,16 @@ int uv_tcp_nodelay(uv_tcp_t* handle, int on) {
 
   if (uv__stream_fd(handle) != -1) {
     err = uv__tcp_nodelay(uv__stream_fd(handle), on);
-    if (err)
+    if (err) {
       return err;
+    }
   }
 
-  if (on)
+  if (on) {
     handle->flags |= UV_TCP_NODELAY;
-  else
+  } else {
     handle->flags &= ~UV_TCP_NODELAY;
+  }
 
   return 0;
 }
@@ -387,14 +412,16 @@ int uv_tcp_keepalive(uv_tcp_t* handle, int on, unsigned int delay) {
 
   if (uv__stream_fd(handle) != -1) {
     err =uv__tcp_keepalive(uv__stream_fd(handle), on, delay);
-    if (err)
+    if (err) {
       return err;
+    }
   }
 
-  if (on)
+  if (on) {
     handle->flags |= UV_TCP_KEEPALIVE;
-  else
+  } else {
     handle->flags &= ~UV_TCP_KEEPALIVE;
+  }
 
   /* TODO Store delay if uv__stream_fd(handle) == -1 but don't want to enlarge
    *      uv_tcp_t with an int that's almost never used...
@@ -405,9 +432,10 @@ int uv_tcp_keepalive(uv_tcp_t* handle, int on, unsigned int delay) {
 
 
 int uv_tcp_simultaneous_accepts(uv_tcp_t* handle, int enable) {
-  if (enable)
+  if (enable) {
     handle->flags &= ~UV_TCP_SINGLE_ACCEPT;
-  else
+  } else {
     handle->flags |= UV_TCP_SINGLE_ACCEPT;
+  }
   return 0;
 }

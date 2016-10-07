@@ -52,12 +52,14 @@ static void uv__async_event(uv_loop_t* loop, struct uv__async* w,
   QUEUE_FOREACH(q, &loop->async_handles) {
     h = QUEUE_DATA(q, uv_async_t, queue);
 
-    if (h->pending == 0)
+    if (h->pending == 0) {
       continue;
+    }
     h->pending = 0;
 
-    if (h->async_cb == NULL)
+    if (h->async_cb == NULL) {
       continue;
+    }
     h->async_cb(h);
   }
 }
@@ -78,16 +80,18 @@ int uv_async_init(uv_loop_t* loop, uv_async_t* handle, uv_async_cb async_cb) {
   uv__handle_start(handle);
 
   err = uv__async_start(loop, &loop->async_watcher, uv__async_event);
-  if (err)
+  if (err) {
     return err;
+  }
 
   return 0;
 }
 
 
 int uv_async_send(uv_async_t* handle) {
-  if (uv__async_make_pending(&handle->pending) == 0)
+  if (uv__async_make_pending(&handle->pending) == 0) {
     uv__async_send(&handle->loop->async_watcher);
+  }
 
   return 0;
 }

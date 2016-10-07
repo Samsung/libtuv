@@ -45,8 +45,9 @@
 
 int uv__async_make_pending(int* pending) {
   /* Do a cheap read first. */
-  if (ACCESS_ONCE(int, *pending) != 0)
+  if (ACCESS_ONCE(int, *pending) != 0) {
     return 1;
+  }
 
   /* Micro-optimization: use atomic memory operations to detect if we've been
    * preempted by another thread and don't have to make an expensive syscall.
@@ -80,22 +81,26 @@ static int uv__async_eventfd() {
   static int no_eventfd;
   int fd;
 
-  if (no_eventfd2)
+  if (no_eventfd2) {
     goto skip_eventfd2;
+  }
 
   fd = uv__eventfd2(0, UV__EFD_CLOEXEC | UV__EFD_NONBLOCK);
-  if (fd != -1)
+  if (fd != -1) {
     return fd;
+  }
 
-  if (errno != ENOSYS)
+  if (errno != ENOSYS) {
     return -errno;
+  }
 
   no_eventfd2 = 1;
 
 skip_eventfd2:
 
-  if (no_eventfd)
+  if (no_eventfd) {
     goto skip_eventfd;
+  }
 
   fd = uv__eventfd(0);
   if (fd != -1) {
@@ -104,8 +109,9 @@ skip_eventfd2:
     return fd;
   }
 
-  if (errno != ENOSYS)
+  if (errno != ENOSYS) {
     return -errno;
+  }
 
   no_eventfd = 1;
 
@@ -131,18 +137,22 @@ static void uv__async_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     if (r > 0)
       n += r;
 
-    if (r == sizeof(buf))
+    if (r == sizeof(buf)) {
       continue;
+    }
 
-    if (r != -1)
+    if (r != -1) {
       break;
+    }
 
     err = get_errno();
-    if (err == EAGAIN || err == EWOULDBLOCK)
+    if (err == EAGAIN || err == EWOULDBLOCK) {
       break;
+    }
 
-    if (err == EINTR)
+    if (err == EINTR) {
       continue;
+    }
 
     TDLOG("uv__async_io abort for errno(%d)", err);
     ABORT();
@@ -182,8 +192,9 @@ void uv__async_close(uv_async_t* handle) {
 
 
 void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
-  if (wa->io_watcher.fd == -1)
+  if (wa->io_watcher.fd == -1) {
     return;
+  }
 
   if (wa->wfd != -1) {
     if (wa->wfd != wa->io_watcher.fd)
@@ -201,8 +212,9 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
   int pipefd[2];
   int err;
 
-  if (wa->io_watcher.fd != -1)
+  if (wa->io_watcher.fd != -1) {
     return 0;
+  }
 
   err = uv__async_eventfd();
   if (err >= 0) {
@@ -232,8 +244,9 @@ int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
 #endif
   }
 
-  if (err < 0)
+  if (err < 0) {
     return err;
+  }
 
   uv__io_init(&wa->io_watcher, uv__async_io, pipefd[0]);
   uv__io_start(loop, &wa->io_watcher, UV__POLLIN);
@@ -263,17 +276,19 @@ void uv__async_send(struct uv__async* wa) {
   }
 #endif
 
-  do
+  do {
     r = write(fd, buf, len);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
-  if (r == len)
+  if (r == len) {
     return;
+  }
 
   if (r == -1) {
     int err = get_errno();
-    if (err == EAGAIN || err == EWOULDBLOCK)
+    if (err == EAGAIN || err == EWOULDBLOCK) {
       return;
+    }
   }
 
   TDLOG("uv__async_send abort");

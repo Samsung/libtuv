@@ -54,11 +54,13 @@ int uv__open_cloexec(const char* path, int flags) {
 
   if (!no_cloexec) {
     fd = open(path, flags | UV__O_CLOEXEC);
-    if (fd != -1)
+    if (fd != -1) {
       return fd;
+    }
 
-    if (errno != EINVAL)
+    if (errno != EINVAL) {
       return -errno;
+    }
 
     /* O_CLOEXEC not supported. */
     no_cloexec = 1;
@@ -66,8 +68,9 @@ int uv__open_cloexec(const char* path, int flags) {
 #endif
 
   fd = open(path, flags);
-  if (fd == -1)
+  if (fd == -1) {
     return -errno;
+  }
 
   err = uv__cloexec(fd, 1);
   if (err) {
@@ -86,20 +89,24 @@ int uv__socket(int domain, int type, int protocol) {
 
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
   sockfd = socket(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, protocol);
-  if (sockfd != -1)
+  if (sockfd != -1) {
     return sockfd;
+  }
 
-  if (errno != EINVAL)
+  if (errno != EINVAL) {
     return -errno;
+  }
 #endif
 
   sockfd = socket(domain, type, protocol);
-  if (sockfd == -1)
+  if (sockfd == -1) {
     return -errno;
+  }
 
   err = uv__nonblock(sockfd, 1);
-  if (err == 0)
+  if (err == 0) {
     err = uv__cloexec(sockfd, 1);
+  }
 
   if (err) {
     uv__close(sockfd);
@@ -127,21 +134,25 @@ int uv__accept(int sockfd) {
 #if defined(__linux__) || __FreeBSD__ >= 10
     static int no_accept4 = 0;
 
-    if (no_accept4)
+    if (no_accept4) {
       goto skip;
+    }
 
     peerfd = uv__accept4(sockfd,
                          NULL,
                          NULL,
                          UV__SOCK_NONBLOCK|UV__SOCK_CLOEXEC);
-    if (peerfd != -1)
+    if (peerfd != -1) {
       return peerfd;
+    }
 
-    if (errno == EINTR)
+    if (errno == EINTR) {
       continue;
+    }
 
-    if (errno != ENOSYS)
+    if (errno != ENOSYS) {
       return -errno;
+    }
 
     no_accept4 = 1;
 skip:
@@ -150,14 +161,16 @@ skip:
     peerfd = accept(sockfd, NULL, NULL);
     if (peerfd == -1) {
       err = get_errno();
-      if (err == EINTR)
+      if (err == EINTR) {
         continue;
+      }
       return -err;
     }
 
     err = uv__cloexec(peerfd, 1);
-    if (err == 0)
+    if (err == 0) {
       err = uv__nonblock(peerfd, 1);
+    }
 
     if (err) {
       uv__close(peerfd);

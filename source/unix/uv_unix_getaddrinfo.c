@@ -119,8 +119,9 @@ static void uv__getaddrinfo_work(struct uv__work* w) {
   err = 0;
 #else
   /* Only IPv4 is supported now. (Not support IPv6.)*/
-  if (req->hints)
+  if (req->hints) {
     req->hints->ai_family = AF_INET;
+  }
   err = getaddrinfo(req->hostname, req->service, req->hints, &req->addrinfo);
 #endif
   req->retcode = uv__getaddrinfo_translate_error(err);
@@ -134,14 +135,15 @@ static void uv__getaddrinfo_done(struct uv__work* w, int status) {
   uv__req_unregister(req->loop, req);
 
   /* See initialization in uv_getaddrinfo(). */
-  if (req->hints)
+  if (req->hints) {
     free(req->hints);
-  else if (req->service)
+  } else if (req->service) {
     free(req->service);
-  else if (req->hostname)
+  } else if (req->hostname) {
     free(req->hostname);
-  else
+  } else {
     assert(0);
+  }
 
   req->hints = NULL;
   req->service = NULL;
@@ -152,8 +154,9 @@ static void uv__getaddrinfo_done(struct uv__work* w, int status) {
     req->retcode = UV_EAI_CANCELED;
   }
 
-  if (req->cb)
+  if (req->cb) {
     req->cb(req, req->retcode, req->addrinfo);
+  }
 }
 
 
@@ -169,16 +172,18 @@ int uv_getaddrinfo(uv_loop_t* loop,
   size_t len;
   char* buf;
 
-  if (req == NULL || (hostname == NULL && service == NULL))
+  if (req == NULL || (hostname == NULL && service == NULL)) {
     return -EINVAL;
+  }
 
   hostname_len = hostname ? strlen(hostname) + 1 : 0;
   service_len = service ? strlen(service) + 1 : 0;
   hints_len = hints ? sizeof(*hints) : 0;
   buf = (char*)malloc(hostname_len + service_len + hints_len);
 
-  if (buf == NULL)
+  if (buf == NULL) {
     return -ENOMEM;
+  }
 
   uv__req_init(loop, req, UV_GETADDRINFO);
   req->loop = loop;
@@ -202,8 +207,9 @@ int uv_getaddrinfo(uv_loop_t* loop,
     len += service_len;
   }
 
-  if (hostname)
+  if (hostname) {
     req->hostname = (char*)memcpy(buf + len, hostname, hostname_len);
+  }
 
   if (cb) {
     uv__work_submit(loop,

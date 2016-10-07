@@ -118,8 +118,9 @@ void uv_walk(uv_loop_t* loop, uv_walk_cb walk_cb, void* arg) {
 
   QUEUE_FOREACH(q, &loop->handles_queue) {
     h = QUEUE_DATA(q, uv_handle_t, handle_queue);
-    if (h->flags & UV__HANDLE_INTERNAL)
+    if (h->flags & UV__HANDLE_INTERNAL) {
       continue;
+    }
     walk_cb(h, arg);
   }
 }

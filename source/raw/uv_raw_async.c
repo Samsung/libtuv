@@ -45,8 +45,9 @@
 
 int uv__async_make_pending(int* pending) {
   /* Do a cheap read first. */
-  if (ACCESS_ONCE(int, *pending) != 0)
+  if (ACCESS_ONCE(int, *pending) != 0) {
     return 1;
+  }
 
 #if defined(__GNUC__) && (__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ > 0)
   return __sync_val_compare_and_swap(pending, 0, 1) != 0;
@@ -77,8 +78,9 @@ void uv__async_stop(uv_loop_t* loop, struct uv__async* wa) {
 
 
 int uv__async_start(uv_loop_t* loop, struct uv__async* wa, uv__async_cb cb) {
-  if (wa->wfd >=0)
+  if (wa->wfd >=0) {
     return 0;
+  }
 
   wa->wfd = 0;
   wa->cb = cb;

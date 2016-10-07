@@ -53,8 +53,9 @@ size_t uv__count_bufs(const uv_buf_t bufs[], unsigned int nbufs) {
   size_t bytes;
 
   bytes = 0;
-  for (i = 0; i < nbufs; i++)
+  for (i = 0; i < nbufs; i++) {
     bytes += (size_t) bufs[i].len;
+  }
 
   return bytes;
 }

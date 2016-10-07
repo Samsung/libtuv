@@ -121,17 +121,21 @@ static int uv__run_pending(uv_loop_t* loop) {
 //-----------------------------------------------------------------------------
 
 int uv_backend_timeout(const uv_loop_t* loop) {
-  if (loop->stop_flag != 0)
+  if (loop->stop_flag != 0) {
     return 0;
+  }
 
-  if (!uv__has_active_handles(loop) && !uv__has_active_reqs(loop))
+  if (!uv__has_active_handles(loop) && !uv__has_active_reqs(loop)) {
     return 0;
+  }
 
-  if (!QUEUE_EMPTY(&loop->idle_handles))
+  if (!QUEUE_EMPTY(&loop->idle_handles)) {
     return 0;
+  }
 
-  if (loop->closing_handles)
+  if (loop->closing_handles) {
     return 0;
+  }
 
   return uv__next_timeout(loop);
 }
@@ -158,8 +162,9 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
     uv__run_idle(loop);
 
     timeout = 0;
-    if ((mode == UV_RUN_ONCE && !ran_pending) || mode == UV_RUN_DEFAULT)
+    if ((mode == UV_RUN_ONCE && !ran_pending) || mode == UV_RUN_DEFAULT) {
       timeout = uv_backend_timeout(loop);
+    }
 
 #if defined(__TUV_RAW__)
     uv__async_check(loop);
@@ -174,13 +179,15 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
     }
 
     r = uv__loop_alive(loop);
-    if (mode == UV_RUN_ONCE || mode == UV_RUN_NOWAIT)
+    if (mode == UV_RUN_ONCE || mode == UV_RUN_NOWAIT) {
       break;
+    }
   }
   uv__run_closing_handles(loop);
 
-  if (loop->stop_flag != 0)
+  if (loop->stop_flag != 0) {
     loop->stop_flag = 0;
+  }
 
   //TDDDLOG(":: time: %lu", loop->time);
 
