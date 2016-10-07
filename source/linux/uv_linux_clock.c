@@ -66,11 +66,13 @@ uint64_t uv__hrtime(uv_clocktype_t type) {
   }
 
   clock_id = CLOCK_MONOTONIC;
-  if (type == UV_CLOCK_FAST)
+  if (type == UV_CLOCK_FAST) {
     clock_id = fast_clock_id;
+  }
 
-  if (clock_gettime(clock_id, &t))
+  if (clock_gettime(clock_id, &t)) {
     return 0;  /* Not really possible. */
+  }
 
   return t.tv_sec * (uint64_t) 1e9 + t.tv_nsec;
 }

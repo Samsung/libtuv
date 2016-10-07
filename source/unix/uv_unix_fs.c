@@ -73,17 +73,18 @@
     (req)->new_path = NULL;                                                   \
     (req)->cb = (cb);                                                         \
   }                                                                           \
-  while (0)
+  while (0);
 
 #define PATH                                                                  \
   do {                                                                        \
     if (path != NULL) {                                                       \
       (req)->path = strdup(path);                                             \
-      if ((req)->path == NULL)                                                \
+      if ((req)->path == NULL) {                                              \
         return -ENOMEM;                                                       \
+      }                                                                       \
     }                                                                         \
   }                                                                           \
-  while (0)
+  while (0);
 
 #define PATH2                                                                 \
   do {                                                                        \
@@ -92,13 +93,14 @@
     path_len = strlen((path)) + 1;                                            \
     new_path_len = strlen((new_path)) + 1;                                    \
     (req)->path = (char*)malloc(path_len + new_path_len);                     \
-    if ((req)->path == NULL)                                                  \
+    if ((req)->path == NULL) {                                                \
       return -ENOMEM;                                                         \
+    }                                                                         \
     (req)->new_path = (req)->path + path_len;                                 \
     memcpy((void*) (req)->path, (path), path_len);                            \
     memcpy((void*) (req)->new_path, (new_path), new_path_len);                \
   }                                                                           \
-  while (0)
+  while (0);
 
 #define POST                                                                  \
   do {                                                                        \
@@ -112,7 +114,7 @@
       return (req)->result;                                                   \
     }                                                                         \
   }                                                                           \
-  while (0)
+  while (0);
 
 
 //-----------------------------------------------------------------------------
@@ -196,11 +198,13 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
   ssize_t result;
 
   if (req->off < 0) {
-    if (req->nbufs == 1)
+    if (req->nbufs == 1) {
       result = read(req->file, req->bufs[0].base, req->bufs[0].len);
+    }
 #if defined(__linux__)
-    else
+    else {
       result = readv(req->file, (struct iovec*) req->bufs, req->nbufs);
+    }
 #endif
   } else {
     if (req->nbufs == 1) {
@@ -227,13 +231,15 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
                          req->bufs[index].base,
                          req->bufs[index].len,
                          req->off + nread);
-          if (result > 0)
+          if (result > 0) {
             nread += result;
+          }
         }
         index++;
       } while (index < req->nbufs && result > 0);
-      if (nread > 0)
+      if (nread > 0) {
         result = nread;
+      }
     }
 # if defined(__linux__)
     else {
@@ -251,8 +257,9 @@ static ssize_t uv__fs_read(uv_fs_t* req) {
   }
 
 done:
-  if (req->bufs != req->bufsml)
+  if (req->bufs != req->bufsml) {
     free(req->bufs);
+  }
   return result;
 }
 
@@ -264,11 +271,13 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
   ssize_t r;
 
   if (req->off < 0) {
-    if (req->nbufs == 1)
+    if (req->nbufs == 1) {
       r = write(req->file, req->bufs[0].base, req->bufs[0].len);
+    }
 #if defined(__linux__)
-    else
+    else {
       r = writev(req->file, (struct iovec*) req->bufs, req->nbufs);
+    }
 #endif
   } else {
     if (req->nbufs == 1) {
@@ -294,13 +303,15 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
                      req->bufs[index].base,
                      req->bufs[index].len,
                      req->off + written);
-          if (r > 0)
+          if (r > 0) {
             written += r;
+          }
         }
         index++;
       } while (index < req->nbufs && r >= 0);
-      if (written > 0)
+      if (written > 0) {
         r = written;
+      }
     }
 # if defined(__linux__)
     else {
@@ -318,8 +329,9 @@ static ssize_t uv__fs_write(uv_fs_t* req) {
   }
 
 done:
-  if (req->bufs != req->bufsml)
+  if (req->bufs != req->bufsml) {
     free(req->bufs);
+  }
 
   return r;
 }
@@ -336,8 +348,9 @@ static void uv__fs_done(struct uv__work* w, int status) {
     req->result = -ECANCELED;
   }
 
-  if (req->cb != NULL)
+  if (req->cb != NULL) {
     req->cb(req);
+  }
 }
 
 
@@ -352,8 +365,9 @@ static ssize_t uv__fs_futime(uv_fs_t* req) {
   char path[sizeof("/proc/self/fd/") + 3 * sizeof(int)];
   int r;
 
-  if (no_utimesat)
+  if (no_utimesat) {
     goto skip;
+  }
 
   ts[0].tv_sec  = req->atime;
   ts[0].tv_nsec = (unsigned long)(req->atime * 1000000) % 1000000 * 1000;
@@ -361,11 +375,13 @@ static ssize_t uv__fs_futime(uv_fs_t* req) {
   ts[1].tv_nsec = (unsigned long)(req->mtime * 1000000) % 1000000 * 1000;
 
   r = uv__utimesat(req->file, NULL, ts, 0);
-  if (r == 0)
+  if (r == 0) {
     return r;
+  }
 
-  if (errno != ENOSYS)
+  if (errno != ENOSYS) {
     return r;
+  }
 
   no_utimesat = 1;
 
@@ -378,13 +394,15 @@ skip:
   snprintf(path, sizeof(path), "/proc/self/fd/%d", (int) req->file);
 
   r = utimes(path, tv);
-  if (r == 0)
+  if (r == 0) {
     return r;
+  }
 
   switch (errno) {
   case ENOENT:
-    if (fcntl(req->file, F_GETFL) == -1 && errno == EBADF)
+    if (fcntl(req->file, F_GETFL) == -1 && errno == EBADF) {
       break;
+    }
     /* Fall through. */
 
   case EACCES:
@@ -472,15 +490,18 @@ static void uv__fs_work(struct uv__work* w) {
       /* Try O_CLOEXEC before entering locks */
       if (!no_cloexec_support) {
         r = open(req->path, req->flags | O_CLOEXEC, req->mode);
-        if (r >= 0)
+        if (r >= 0) {
           break;
-        if (errno != EINVAL)
+        }
+        if (errno != EINVAL) {
           break;
+        }
         no_cloexec_support = 1;
       }
 #endif  /* O_CLOEXEC */
-      if (req->cb != NULL)
+      if (req->cb != NULL) {
         uv_rwlock_rdlock(&req->loop->cloexec_lock);
+      }
 
       r = open(req->path, req->flags, req->mode);
 
@@ -490,12 +511,14 @@ static void uv__fs_work(struct uv__work* w) {
        */
       if (r >= 0 && uv__cloexec(r, 1) != 0) {
         r = uv__close(r);
-        if (r != 0 && r != -EINPROGRESS)
+        if (r != 0 && r != -EINPROGRESS) {
           ABORT();
+        }
         r = -1;
       }
-      if (req->cb != NULL)
+      if (req->cb != NULL) {
         uv_rwlock_rdunlock(&req->loop->cloexec_lock);
+      }
       break;
 
     default:
@@ -507,10 +530,11 @@ static void uv__fs_work(struct uv__work* w) {
   }
   while (r == -1 && errno == EINTR && retry_on_eintr);
 
-  if (r == -1)
+  if (r == -1) {
     req->result = -get_errno();
-  else
+  } else {
     req->result = r;
+  }
 
   if (r == 0 && (req->fs_type == UV_FS_STAT ||
                  req->fs_type == UV_FS_FSTAT ||
@@ -544,11 +568,13 @@ int uv_fs_read(uv_loop_t* loop, uv_fs_t* req,
 
   req->nbufs = nbufs;
   req->bufs = req->bufsml;
-  if (nbufs > ARRAY_SIZE(req->bufsml))
+  if (nbufs > ARRAY_SIZE(req->bufsml)) {
     req->bufs = (uv_buf_t*)malloc(nbufs * sizeof(*bufs));
+  }
 
-  if (req->bufs == NULL)
+  if (req->bufs == NULL) {
     return -ENOMEM;
+  }
 
   memcpy(req->bufs, bufs, nbufs * sizeof(*bufs));
 
@@ -600,11 +626,13 @@ int uv_fs_write(uv_loop_t* loop, uv_fs_t* req, uv_file file,
 
   req->nbufs = nbufs;
   req->bufs = req->bufsml;
-  if (nbufs > ARRAY_SIZE(req->bufsml))
+  if (nbufs > ARRAY_SIZE(req->bufsml)) {
     req->bufs = (uv_buf_t*)malloc(nbufs * sizeof(*bufs));
+  }
 
-  if (req->bufs == NULL)
+  if (req->bufs == NULL) {
     return -ENOMEM;
+  }
 
   memcpy(req->bufs, bufs, nbufs * sizeof(*bufs));
 
@@ -618,11 +646,13 @@ void uv_fs_req_cleanup(uv_fs_t* req) {
   req->path = NULL;
   req->new_path = NULL;
 
-  if (req->fs_type == UV_FS_SCANDIR && req->ptr != NULL)
+  if (req->fs_type == UV_FS_SCANDIR && req->ptr != NULL) {
     uv__fs_scandir_cleanup(req);
+  }
 
-  if (req->ptr != &req->statbuf)
+  if (req->ptr != &req->statbuf) {
     free(req->ptr);
+  }
   req->ptr = NULL;
 }
 

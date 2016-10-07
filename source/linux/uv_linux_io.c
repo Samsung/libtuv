@@ -89,23 +89,26 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     e.events = w->pevents;
     e.data = w->fd;
 
-    if (w->events == 0)
+    if (w->events == 0) {
       op = UV__EPOLL_CTL_ADD;
-    else
+    } else {
       op = UV__EPOLL_CTL_MOD;
+    }
 
     /* XXX Future optimization: do EPOLL_CTL_MOD lazily if we stop watching
      * events, skip the syscall and squelch the events after epoll_wait().
      */
     if (uv__epoll_ctl(loop->backend_fd, op, w->fd, &e)) {
-      if (errno != EEXIST)
+      if (errno != EEXIST) {
         abort();
+      }
 
       assert(op == UV__EPOLL_CTL_ADD);
 
       /* We've reactivated a file descriptor that's been watched before. */
-      if (uv__epoll_ctl(loop->backend_fd, UV__EPOLL_CTL_MOD, w->fd, &e))
+      if (uv__epoll_ctl(loop->backend_fd, UV__EPOLL_CTL_MOD, w->fd, &e)) {
         abort();
+      }
     }
 
     w->events = w->pevents;
@@ -123,9 +126,11 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
   count = 48; /* Benchmarks suggest this gives the best throughput. */
 
   for (;;) {
-    if (sigmask != 0 && no_epoll_pwait != 0)
-      if (pthread_sigmask(SIG_BLOCK, &sigset, NULL))
+    if (sigmask != 0 && no_epoll_pwait != 0) {
+      if (pthread_sigmask(SIG_BLOCK, &sigset, NULL)) {
         abort();
+      }
+    }
 
     if (sigmask != 0 && no_epoll_pwait == 0) {
       nfds = uv__epoll_pwait(loop->backend_fd,
@@ -133,20 +138,24 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
                              ARRAY_SIZE(events),
                              timeout,
                              sigmask);
-      if (nfds == -1 && errno == ENOSYS)
+      if (nfds == -1 && errno == ENOSYS) {
         no_epoll_pwait = 1;
+      }
     } else {
       nfds = uv__epoll_wait(loop->backend_fd,
                             events,
                             ARRAY_SIZE(events),
                             timeout);
-      if (nfds == -1 && errno == ENOSYS)
+      if (nfds == -1 && errno == ENOSYS) {
         no_epoll_wait = 1;
+      }
     }
 
-    if (sigmask != 0 && no_epoll_pwait != 0)
-      if (pthread_sigmask(SIG_UNBLOCK, &sigset, NULL))
+    if (sigmask != 0 && no_epoll_pwait != 0) {
+      if (pthread_sigmask(SIG_UNBLOCK, &sigset, NULL)) {
         abort();
+      }
+    }
 
     /* Update loop->time unconditionally. It's tempting to skip the update when
      * timeout == 0 (i.e. non-blocking poll) but there is no guarantee that the
@@ -166,14 +175,17 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
         continue;
       }
 
-      if (errno != EINTR)
+      if (errno != EINTR) {
         abort();
+      }
 
-      if (timeout == -1)
+      if (timeout == -1) {
         continue;
+      }
 
-      if (timeout == 0)
+      if (timeout == 0) {
         return;
+      }
 
       /* Interrupted by a signal. Update timeout and poll again. */
       goto update_timeout;
@@ -189,8 +201,9 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
       fd = pe->data;
 
       /* Skip invalidated events, see uv__platform_invalidate_fd */
-      if (fd == -1)
+      if (fd == -1) {
         continue;
+      }
 
       assert(fd >= 0);
       assert((unsigned) fd < loop->nwatchers);
@@ -229,8 +242,9 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
        * needs to remember the error/hangup event.  We should get that for
        * free when we switch over to edge-triggered I/O.
        */
-      if (pe->events == UV__EPOLLERR || pe->events == UV__EPOLLHUP)
+      if (pe->events == UV__EPOLLERR || pe->events == UV__EPOLLHUP) {
         pe->events |= w->pevents & (UV__EPOLLIN | UV__EPOLLOUT);
+      }
 
       if (pe->events != 0) {
         w->cb(loop, w, pe->events);
@@ -249,18 +263,21 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
       return;
     }
 
-    if (timeout == 0)
+    if (timeout == 0) {
       return;
+    }
 
-    if (timeout == -1)
+    if (timeout == -1) {
       continue;
+    }
 
 update_timeout:
     assert(timeout > 0);
 
     diff = loop->time - base;
-    if (diff >= (uint64_t) timeout)
+    if (diff >= (uint64_t) timeout) {
       return;
+    }
 
     timeout -= diff;
   }

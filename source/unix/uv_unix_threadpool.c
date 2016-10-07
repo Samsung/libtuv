@@ -80,9 +80,9 @@ static void worker(void* arg) {
 
     q = QUEUE_HEAD(&_wq);
 
-    if (q == &_exit_message)
+    if (q == &_exit_message) {
       uv_cond_signal(&_cond);
-    else {
+    } else {
       QUEUE_REMOVE(q);
       QUEUE_INIT(q);  /* Signal uv_cancel() that the work req is
                              executing. */
@@ -90,8 +90,9 @@ static void worker(void* arg) {
 
     uv_mutex_unlock(&_mutex);
 
-    if (q == &_exit_message)
+    if (q == &_exit_message) {
       break;
+    }
 
     w = QUEUE_DATA(q, struct uv__work, wq);
     w->work(w);
@@ -122,17 +123,21 @@ __attribute__((destructor)) static void cleanup(void) {
 #endif
   unsigned int i;
 
-  if (_initialized == 0)
+  if (_initialized == 0) {
     return;
+  }
 
   post(&_exit_message);
 
-  for (i = 0; i < _nthreads; i++)
-    if (uv_thread_join(_threads + i))
+  for (i = 0; i < _nthreads; i++) {
+    if (uv_thread_join(_threads + i)) {
       ABORT();
+    }
+  }
 
-  if (_threads != _default_threads)
+  if (_threads != _default_threads) {
     free(_threads);
+  }
 
   uv_mutex_destroy(&_mutex);
   uv_cond_destroy(&_cond);
@@ -152,12 +157,15 @@ static void init_once(void) {
 
   _nthreads = ARRAY_SIZE(_default_threads);
   val = getenv("UV_THREADPOOL_SIZE");
-  if (val != NULL)
+  if (val != NULL) {
     _nthreads = atoi(val);
-  if (_nthreads == 0)
+  }
+  if (_nthreads == 0) {
     _nthreads = 1;
-  if (_nthreads > MAX_THREADPOOL_SIZE)
+  }
+  if (_nthreads > MAX_THREADPOOL_SIZE) {
     _nthreads = MAX_THREADPOOL_SIZE;
+  }
 
   _threads = _default_threads;
   if (_nthreads > ARRAY_SIZE(_default_threads)) {
@@ -214,14 +222,16 @@ static int uv__work_cancel(uv_loop_t* loop, uv_req_t* req, struct uv__work* w) {
   uv_mutex_lock(&w->loop->wq_mutex);
 
   cancelled = !QUEUE_EMPTY(&w->wq) && w->work != NULL;
-  if (cancelled)
+  if (cancelled) {
     QUEUE_REMOVE(&w->wq);
+  }
 
   uv_mutex_unlock(&w->loop->wq_mutex);
   uv_mutex_unlock(&_mutex);
 
-  if (!cancelled)
+  if (!cancelled) {
     return UV_EBUSY;
+  }
 
   w->work = uv__cancelled;
   uv_mutex_lock(&loop->wq_mutex);
@@ -276,8 +286,9 @@ static void uv__queue_done(struct uv__work* w, int err) {
   req = container_of(w, uv_work_t, work_req);
   uv__req_unregister(req->loop, req);
 
-  if (req->after_work_cb == NULL)
+  if (req->after_work_cb == NULL) {
     return;
+  }
 
   req->after_work_cb(req, err);
 }
@@ -287,8 +298,9 @@ int uv_queue_work(uv_loop_t* loop,
                   uv_work_t* req,
                   uv_work_cb work_cb,
                   uv_after_work_cb after_work_cb) {
-  if (work_cb == NULL)
+  if (work_cb == NULL) {
     return UV_EINVAL;
+  }
 
   uv__req_init(loop, req, UV_WORK);
   req->loop = loop;

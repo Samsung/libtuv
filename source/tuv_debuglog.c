@@ -49,8 +49,9 @@ void InitDebugSettings() {
   if (dbglogfile) {
     FILE* logstream;
     logstream  = fopen(dbglogfile, "w+");
-    if (logstream != NULL)
+    if (logstream != NULL) {
       tuv_log_stream = logstream;
+    }
   }
   //fprintf(stderr, "DBG LEV = %d\r\n", tuv_debug_level);
   //fprintf(stderr, "DBG OUT = %s\r\n", (dbglogfile==NULL?"(stderr)":dbglogfile));

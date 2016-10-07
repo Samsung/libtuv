@@ -86,8 +86,9 @@ int uv__socket(int domain, int type, int protocol) {
   }
 
   err = uv__nonblock(sockfd, 1);
-  if (err == 0)
+  if (err == 0) {
     err = uv__cloexec(sockfd, 1);
+  }
 
   if (err) {
     TDLOG("uv__socket failed to set nonblock or cloexec");
@@ -109,14 +110,16 @@ int uv__accept(int sockfd) {
     peerfd = tuvp_accept(sockfd, NULL, NULL);
     if (peerfd == -1) {
       err = get_errno();
-      if (err == EINTR)
+      if (err == EINTR) {
         continue;
+      }
       return -err;
     }
 
     err = uv__cloexec(peerfd, 1);
-    if (err == 0)
+    if (err == 0) {
       err = uv__nonblock(peerfd, 1);
+    }
 
     if (err) {
       uv__close(peerfd);
@@ -143,8 +146,9 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
   int nfd = loop->npollfds;
   for (i = 0; i < nfd; ++i) {
     struct pollfd* pfd = &loop->pollfds[i];
-    if (fd == pfd->fd)
+    if (fd == pfd->fd) {
       pfd->fd = -1;
+    }
   }
 }
 
@@ -168,8 +172,9 @@ int uv__close(int fd) {
   rc = tuvp_close(fd);
   if (rc == -1) {
     rc = -get_errno();
-    if (rc == -EINTR)
+    if (rc == -EINTR) {
       rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    }
     set_errno(saved_errno);
   }
 

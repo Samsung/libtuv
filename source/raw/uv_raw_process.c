@@ -43,8 +43,9 @@
 //-----------------------------------------------------------------------------
 
 int uv__make_pipe(int fds[2], int flags) {
-  if (tuvp_pipe(fds))
+  if (tuvp_pipe(fds)) {
     return -errno;
+  }
 
   uv__cloexec(fds[0], 1);
   uv__cloexec(fds[1], 1);

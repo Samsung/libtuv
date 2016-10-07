@@ -48,14 +48,16 @@ int uv_rwlock_init(uv_rwlock_t* rwlock) {
 
 
 void uv_rwlock_destroy(uv_rwlock_t* rwlock) {
-  if (pthread_rwlock_destroy(rwlock))
+  if (pthread_rwlock_destroy(rwlock)) {
     abort();
+  }
 }
 
 
 void uv_rwlock_rdlock(uv_rwlock_t* rwlock) {
-  if (pthread_rwlock_rdlock(rwlock))
+  if (pthread_rwlock_rdlock(rwlock)) {
     abort();
+  }
 }
 
 
@@ -63,22 +65,25 @@ int uv_rwlock_tryrdlock(uv_rwlock_t* rwlock) {
   int err;
 
   err = pthread_rwlock_tryrdlock(rwlock);
-  if (err && err != EBUSY && err != EAGAIN)
+  if (err && err != EBUSY && err != EAGAIN) {
     abort();
+  }
 
   return -err;
 }
 
 
 void uv_rwlock_rdunlock(uv_rwlock_t* rwlock) {
-  if (pthread_rwlock_unlock(rwlock))
+  if (pthread_rwlock_unlock(rwlock)) {
     abort();
+  }
 }
 
 
 void uv_rwlock_wrlock(uv_rwlock_t* rwlock) {
-  if (pthread_rwlock_wrlock(rwlock))
+  if (pthread_rwlock_wrlock(rwlock)) {
     abort();
+  }
 }
 
 
@@ -86,15 +91,17 @@ int uv_rwlock_trywrlock(uv_rwlock_t* rwlock) {
   int err;
 
   err = pthread_rwlock_trywrlock(rwlock);
-  if (err && err != EBUSY && err != EAGAIN)
+  if (err && err != EBUSY && err != EAGAIN) {
     abort();
+  }
 
   return -err;
 }
 
 
 void uv_rwlock_wrunlock(uv_rwlock_t* rwlock) {
-  if (pthread_rwlock_unlock(rwlock))
+  if (pthread_rwlock_unlock(rwlock)) {
     abort();
+  }
 }
 

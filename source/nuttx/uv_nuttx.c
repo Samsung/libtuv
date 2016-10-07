@@ -47,8 +47,9 @@ void uv__platform_invalidate_fd(uv_loop_t* loop, int fd) {
   int nfd = loop->npollfds;
   for (i = 0; i < nfd; ++i) {
     struct pollfd* pfd = &loop->pollfds[i];
-    if (fd == pfd->fd)
+    if (fd == pfd->fd) {
       pfd->fd = -1;
+    }
   }
 }
 
@@ -57,28 +58,32 @@ int uv__nonblock(int fd, int set) {
   int flags;
   int r;
 
-  do
+  do {
     r = fcntl(fd, F_GETFL);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
-  if (r == -1)
+  if (r == -1) {
     return -errno;
+  }
 
   /* Bail out now if already set/clear. */
-  if (!!(r & O_NONBLOCK) == !!set)
+  if (!!(r & O_NONBLOCK) == !!set) {
     return 0;
+  }
 
-  if (set)
+  if (set) {
     flags = r | O_NONBLOCK;
-  else
+  } else {
     flags = r & ~O_NONBLOCK;
+  }
 
-  do
+  do {
     r = fcntl(fd, F_SETFL, flags);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
-  if (r)
+  if (r) {
     return -errno;
+  }
 
   return 0;
 }
@@ -95,8 +100,9 @@ int uv__close(int fd) {
   rc = close(fd);
   if (rc == -1) {
     rc = -errno;
-    if (rc == -EINTR)
+    if (rc == -EINTR) {
       rc = -EINPROGRESS;  /* For platform/libc consistency. */
+    }
     set_errno(saved_errno);
   }
 

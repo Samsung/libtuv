@@ -83,8 +83,9 @@ static void maybe_resize(uv_loop_t* loop, unsigned int len) {
           loop->watchers, len, nwatchers);
     ABORT();
   }
-  for (i = loop->nwatchers; i < nwatchers; i++)
+  for (i = loop->nwatchers; i < nwatchers; i++) {
     watchers[i] = NULL;
+  }
   watchers[nwatchers] = (uv__io_t*)fake_watcher_list;
   watchers[nwatchers + 1] = (uv__io_t*)fake_watcher_count;
 
@@ -128,8 +129,9 @@ void uv__io_start(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
     return;
   }
 
-  if (QUEUE_EMPTY(&w->watcher_queue))
+  if (QUEUE_EMPTY(&w->watcher_queue)) {
     QUEUE_INSERT_TAIL(&loop->watcher_queue, &w->watcher_queue);
+  }
 
   if (loop->watchers[w->fd] == NULL) {
     loop->watchers[w->fd] = w;
@@ -142,14 +144,16 @@ void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
   assert(0 == (events & ~(UV__POLLIN | UV__POLLOUT)));
   assert(0 != events);
 
-  if (w->fd == -1)
+  if (w->fd == -1) {
     return;
+  }
 
   assert(w->fd >= 0);
 
   /* Happens when uv__io_stop() is called on a handle that was never started. */
-  if ((unsigned) w->fd >= loop->nwatchers)
+  if ((unsigned) w->fd >= loop->nwatchers) {
     return;
+  }
 
   w->pevents &= ~events;
 
@@ -165,8 +169,9 @@ void uv__io_stop(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
       w->events = 0;
     }
   }
-  else if (QUEUE_EMPTY(&w->watcher_queue))
+  else if (QUEUE_EMPTY(&w->watcher_queue)) {
     QUEUE_INSERT_TAIL(&loop->watcher_queue, &w->watcher_queue);
+  }
 }
 
 
@@ -180,8 +185,9 @@ void uv__io_close(uv_loop_t* loop, uv__io_t* w) {
 
 
 void uv__io_feed(uv_loop_t* loop, uv__io_t* w) {
-  if (QUEUE_EMPTY(&w->pending_queue))
+  if (QUEUE_EMPTY(&w->pending_queue)) {
     QUEUE_INSERT_TAIL(&loop->pending_queue, &w->pending_queue);
+  }
 }
 
 

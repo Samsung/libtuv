@@ -81,8 +81,9 @@ int uv_loop_init(uv_loop_t* loop) {
   loop->stop_flag = 0;
 
   err = uv__platform_loop_init(loop);
-  if (err)
+  if (err) {
     return err;
+  }
 
   if (uv_rwlock_init(&loop->cloexec_lock)) {
     TDLOG("uv_loop_init rwlock abort");
@@ -142,11 +143,13 @@ void uv__loop_close(uv_loop_t* loop) {
 
 
 uv_loop_t* uv_default_loop(void) {
-  if (default_loop_ptr != NULL)
+  if (default_loop_ptr != NULL) {
     return default_loop_ptr;
+  }
 
-  if (uv_loop_init(&default_loop_struct))
+  if (uv_loop_init(&default_loop_struct)) {
     return NULL;
+  }
 
   default_loop_ptr = &default_loop_struct;
   return default_loop_ptr;
@@ -174,8 +177,9 @@ int uv_loop_close(uv_loop_t* loop) {
 
   uv__loop_close(loop);
 
-  if (loop == default_loop_ptr)
+  if (loop == default_loop_ptr) {
     default_loop_ptr = NULL;
+  }
 
   return 0;
 }

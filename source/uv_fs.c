@@ -43,8 +43,10 @@ void uv__fs_scandir_cleanup(uv_fs_t* req) {
   uv__dirent_t** dents;
 
   dents = (uv__dirent_t**)req->ptr;
-  if (req->nbufs > 0 && req->nbufs != (unsigned int) req->result)
+  if (req->nbufs > 0 && req->nbufs != (unsigned int) req->result) {
     req->nbufs--;
-  for (; req->nbufs < (unsigned int) req->result; req->nbufs++)
+  }
+  for (; req->nbufs < (unsigned int) req->result; req->nbufs++) {
     free(dents[req->nbufs]);
+  }
 }

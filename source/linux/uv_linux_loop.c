@@ -49,8 +49,9 @@ int uv__platform_loop_init(uv_loop_t* loop) {
   if (fd == -1 && (errno == ENOSYS || errno == EINVAL)) {
     fd = uv__epoll_create(256);
 
-    if (fd != -1)
+    if (fd != -1) {
       uv__cloexec(fd, 1);
+    }
   }
 
   loop->backend_fd = fd;
@@ -59,8 +60,9 @@ int uv__platform_loop_init(uv_loop_t* loop) {
   QUEUE_INIT(&(loop->inotify_read_watcher.pending_queue));
   QUEUE_INIT(&(loop->inotify_read_watcher.watcher_queue));
 
-  if (fd == -1)
+  if (fd == -1) {
     return -errno;
+  }
 
   uv__io_poll_platform_init();
 

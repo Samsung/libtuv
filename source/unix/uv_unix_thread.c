@@ -69,16 +69,18 @@ int uv_thread_create(uv_thread_t *tid, uv_thread_cb entry, void *arg) {
   int err;
 
   ctx = (struct thread_ctx*)malloc(sizeof(*ctx));
-  if (ctx == NULL)
+  if (ctx == NULL) {
     return UV_ENOMEM;
+  }
 
   ctx->entry = entry;
   ctx->arg = arg;
 
   err = pthread_create(tid, NULL, uv__thread_start, ctx);
 
-  if (err)
+  if (err) {
     free(ctx);
+  }
 
   return err ? -1 : 0;
 }
@@ -175,8 +177,9 @@ int uv_mutex_trylock(uv_mutex_t* mutex) {
 
 
 void uv_mutex_unlock(uv_mutex_t* mutex) {
-  if (pthread_mutex_unlock(mutex))
+  if (pthread_mutex_unlock(mutex)) {
     ABORT();
+  }
 }
 
 
@@ -184,8 +187,9 @@ void uv_mutex_unlock(uv_mutex_t* mutex) {
 // semaphore
 
 int uv_sem_init(uv_sem_t* sem, unsigned int value) {
-  if (sem_init(sem, 0, value))
+  if (sem_init(sem, 0, value)) {
     return -errno;
+  }
   return 0;
 }
 
@@ -209,9 +213,9 @@ void uv_sem_post(uv_sem_t* sem) {
 void uv_sem_wait(uv_sem_t* sem) {
   int r;
 
-  do
+  do {
     r = sem_wait(sem);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
   if (r) {
     TDLOG("uv_sem_wait abort");
@@ -223,13 +227,14 @@ void uv_sem_wait(uv_sem_t* sem) {
 int uv_sem_trywait(uv_sem_t* sem) {
   int r;
 
-  do
+  do {
     r = sem_trywait(sem);
-  while (r == -1 && errno == EINTR);
+  } while (r == -1 && errno == EINTR);
 
   if (r) {
-    if (errno == EAGAIN)
+    if (errno == EAGAIN) {
       return -EAGAIN;
+    }
     ABORT();
   }
 
@@ -245,22 +250,26 @@ int uv_cond_init(uv_cond_t* cond) {
   int err;
 
   err = pthread_condattr_init(&attr);
-  if (err)
+  if (err) {
     return -err;
+  }
 
 #if !(defined(__ANDROID__) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC)) && !defined(__NUTTX__)
   err = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
-  if (err)
+  if (err) {
     goto error2;
+  }
 #endif
 
   err = pthread_cond_init(cond, &attr);
-  if (err)
+  if (err) {
     goto error2;
+  }
 
   err = pthread_condattr_destroy(&attr);
-  if (err)
+  if (err) {
     goto error;
+  }
 
   return 0;
 
@@ -313,11 +322,13 @@ int uv_cond_timedwait(uv_cond_t* cond, uv_mutex_t* mutex, uint64_t timeout) {
   ts.tv_nsec = timeout % NANOSEC;
   r = pthread_cond_timedwait(cond, mutex, &ts);
 
-  if (r == 0)
+  if (r == 0) {
     return 0;
+  }
 
-  if (r == ETIMEDOUT)
+  if (r == ETIMEDOUT) {
     return -ETIMEDOUT;
+  }
 
   TDLOG("uv_cond_timedwait abort");
   ABORT();

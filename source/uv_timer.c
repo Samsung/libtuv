@@ -52,18 +52,22 @@ static int timer_less_than(const struct heap_node* ha,
   a = container_of(ha, const uv_timer_t, heap_node);
   b = container_of(hb, const uv_timer_t, heap_node);
 
-  if (a->timeout < b->timeout)
+  if (a->timeout < b->timeout) {
     return 1;
-  if (b->timeout < a->timeout)
+  }
+  if (b->timeout < a->timeout) {
     return 0;
+  }
 
   /* Compare start_id when both have the same timeout. start_id is
    * allocated with loop->timer_counter in uv_timer_start().
    */
-  if (a->start_id < b->start_id)
+  if (a->start_id < b->start_id) {
     return 1;
-  if (b->start_id < a->start_id)
+  }
+  if (b->start_id < a->start_id) {
     return 0;
+  }
 
   return 0;
 }
@@ -84,15 +88,18 @@ int uv_timer_start(uv_timer_t* handle, uv_timer_cb cb,
                    uint64_t timeout, uint64_t repeat) {
   uint64_t clamped_timeout;
 
-  if (cb == NULL)
+  if (cb == NULL) {
     return -EINVAL;
+  }
 
-  if (uv__is_active(handle))
+  if (uv__is_active(handle)) {
     uv_timer_stop(handle);
+  }
 
   clamped_timeout = handle->loop->time + timeout;
-  if (clamped_timeout < timeout)
+  if (clamped_timeout < timeout) {
     clamped_timeout = (uint64_t)(-1);
+  }
 
   handle->timer_cb = cb;
   handle->timeout = clamped_timeout;
@@ -110,8 +117,9 @@ int uv_timer_start(uv_timer_t* handle, uv_timer_cb cb,
 
 
 int uv_timer_stop(uv_timer_t* handle) {
-  if (!uv__is_active(handle))
+  if (!uv__is_active(handle)) {
     return 0;
+  }
 
   heap_remove((struct heap*)(&handle->loop->timer_heap),
               (struct heap_node*)(&handle->heap_node),
@@ -123,8 +131,9 @@ int uv_timer_stop(uv_timer_t* handle) {
 
 
 int uv_timer_again(uv_timer_t* handle) {
-  if (handle->timer_cb == NULL)
+  if (handle->timer_cb == NULL) {
     return -EINVAL;
+  }
 
   if (handle->repeat) {
     uv_timer_stop(handle);
@@ -153,16 +162,19 @@ int uv__next_timeout(const uv_loop_t* loop) {
   uint64_t diff;
 
   heap_node = heap_min((const struct heap*) &loop->timer_heap);
-  if (heap_node == NULL)
+  if (heap_node == NULL) {
     return -1; /* block indefinitely */
+  }
 
   handle = container_of(heap_node, const uv_timer_t, heap_node);
-  if (handle->timeout <= loop->time)
+  if (handle->timeout <= loop->time) {
     return 0;
+  }
 
   diff = handle->timeout - loop->time;
-  if (diff > INT_MAX)
+  if (diff > INT_MAX) {
     diff = INT_MAX;
+  }
 
   return diff;
 }
