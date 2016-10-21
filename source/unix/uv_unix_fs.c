@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@
 #include <sys/time.h>
 #ifndef __NUTTX__
 # include <sys/uio.h>
+# include <dirent.h>
 #endif
 
 #include <uv.h>
@@ -64,7 +65,8 @@
 
 #define INIT(type)                                                            \
   do {                                                                        \
-    uv__req_init((loop), (req), UV_FS);                                       \
+    if (cb != NULL)                                                           \
+      uv__req_init((loop), (req), UV_FS);                                     \
     (req)->fs_type = UV_FS_ ## type;                                          \
     (req)->result = 0;                                                        \
     (req)->ptr = NULL;                                                        \
@@ -110,7 +112,6 @@
     }                                                                         \
     else {                                                                    \
       uv__fs_work(&(req)->work_req);                                          \
-      uv__fs_done(&(req)->work_req, 0);                                       \
       return (req)->result;                                                   \
     }                                                                         \
   }                                                                           \
@@ -433,6 +434,55 @@ static ssize_t uv__fs_utime(uv_fs_t* req) {
 #endif
 }
 
+
+static int uv__fs_scandir_filter(const struct dirent* dent) {
+  return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
+}
+
+
+static ssize_t uv__fs_scandir(uv_fs_t* req) {
+#if defined(__NUTTX__)
+  // TODO: Not implemented yet.
+  return 0;
+#else
+  uv__dirent_t **dents;
+  int saved_errno;
+  int n;
+
+  dents = NULL;
+  n = scandir(req->path, &dents, uv__fs_scandir_filter, alphasort);
+
+  /* NOTE: We will use nbufs as an index field */
+  req->nbufs = 0;
+
+  if (n == -1)
+    return -1;
+
+  if (n != 0) {
+    req->ptr = dents;
+    return n;
+  }
+
+  /* n == 0 */
+  /* osx still needs to deallocate some memory */
+  saved_errno = errno;
+  if (dents != NULL) {
+    int i;
+
+    /* Memory was allocated using the system allocator, so use free() here. */
+    for (i = 0; i < n; i++)
+      free(dents[i]);
+    free(dents);
+  }
+  errno = saved_errno;
+
+  req->ptr = NULL;
+
+  return 0;
+#endif
+}
+
+
 //-----------------------------------------------------------------------------
 //
 
@@ -475,7 +525,7 @@ static void uv__fs_work(struct uv__work* w) {
     X(MKDIR, mkdir(req->path, req->mode));
     //X(MKDTEMP, uv__fs_mkdtemp(req));
     X(READ, uv__fs_read(req));
-    //X(SCANDIR, uv__fs_scandir(req));
+    X(SCANDIR, uv__fs_scandir(req));
     //X(READLINK, uv__fs_readlink(req));
     X(RENAME, rename(req->path, req->new_path));
     X(RMDIR, rmdir(req->path));
@@ -712,5 +762,14 @@ int uv_fs_mkdir(uv_loop_t* loop, uv_fs_t* req, const char* path,
 int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb) {
   INIT(RMDIR);
   PATH;
+  POST;
+}
+
+
+int uv_fs_scandir(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
+                  uv_fs_cb cb) {
+  INIT(SCANDIR);
+  PATH;
+  req->flags = flags;
   POST;
 }

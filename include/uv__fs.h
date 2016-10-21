@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,11 +97,28 @@ struct uv_fs_s {
   UV_FS_PRIVATE_FIELDS
 };
 
+typedef enum {
+  UV_DIRENT_UNKNOWN,
+  UV_DIRENT_FILE,
+  UV_DIRENT_DIR,
+  UV_DIRENT_LINK,
+  UV_DIRENT_FIFO,
+  UV_DIRENT_SOCKET,
+  UV_DIRENT_CHAR,
+  UV_DIRENT_BLOCK
+} uv_dirent_type_t;
+
+struct uv_dirent_s {
+  const char* name;
+  uv_dirent_type_t type;
+};
+
+typedef struct uv_dirent_s uv_dirent_t;
 
 void uv_fs_req_cleanup(uv_fs_t* req);
 int uv_fs_close(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 int uv_fs_open(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
-                         int mode, uv_fs_cb cb);
+               int mode, uv_fs_cb cb);
 int uv_fs_read(uv_loop_t* loop, uv_fs_t* req, uv_file file,
                const uv_buf_t bufs[], unsigned int nbufs, int64_t offset,
                uv_fs_cb cb);
@@ -118,18 +135,19 @@ int uv_fs_fdatasync(uv_loop_t* loop, uv_fs_t* req, uv_file file, uv_fs_cb cb);
 int uv_fs_unlink(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
 int uv_fs_ftruncate(uv_loop_t* loop, uv_fs_t* req, uv_file file,
                     int64_t offset, uv_fs_cb cb);
-int uv_fs_rename(uv_loop_t* loop, uv_fs_t* req,
-                 const char* path, const char* new_path, uv_fs_cb cb);
+int uv_fs_rename(uv_loop_t* loop, uv_fs_t* req, const char* path,
+                 const char* new_path, uv_fs_cb cb);
 
-int uv_fs_futime(uv_loop_t* loop, uv_fs_t* req, uv_file file,
-                 double atime, double mtime, uv_fs_cb cb);
+int uv_fs_futime(uv_loop_t* loop, uv_fs_t* req, uv_file file, double atime,
+                 double mtime, uv_fs_cb cb);
 int uv_fs_utime(uv_loop_t* loop, uv_fs_t* req, const char* path,
                 double atime, double mtime, uv_fs_cb cb);
 
-int uv_fs_mkdir(uv_loop_t* loop, uv_fs_t* req, const char* path,
-                int mode, uv_fs_cb cb);
-int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path,
+int uv_fs_mkdir(uv_loop_t* loop, uv_fs_t* req, const char* path, int mode,
                 uv_fs_cb cb);
+int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
+int uv_fs_scandir(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
+                  uv_fs_cb cb);
 
 #ifdef __cplusplus
 }

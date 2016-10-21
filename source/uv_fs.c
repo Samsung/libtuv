@@ -37,6 +37,86 @@
 #include <stdlib.h>
 
 #include <uv.h>
+#include <dirent.h>
+
+/* The windows implementation does not have the same structure layout as
+ * the unix implementation (nbufs is not directly inside req but is
+ * contained in a nested union/struct) so this function locates it.
+*/
+static unsigned int* uv__get_nbufs(uv_fs_t* req) {
+#ifdef _WIN32
+  return &req->fs.info.nbufs;
+#else
+  return &req->nbufs;
+#endif
+}
+
+/* uv_fs_scandir() uses the system allocator to allocate memory on non-Windows
+ * systems. So, the memory should be released using free(). On Windows,
+ * uv__malloc() is used, so use uv__free() to free memory.
+*/
+#ifdef _WIN32
+# define uv__fs_scandir_free uv__free
+#else
+# define uv__fs_scandir_free free
+#endif
+
+typedef struct dirent uv__dirent_t;
+
+int uv_fs_scandir_next(uv_fs_t* req, uv_dirent_t* ent) {
+  uv__dirent_t** dents;
+  uv__dirent_t* dent;
+
+  unsigned int* nbufs = uv__get_nbufs(req);
+
+  dents = req->ptr;
+
+  /* Free previous entity */
+  if (*nbufs > 0)
+    uv__fs_scandir_free(dents[*nbufs - 1]);
+
+  /* End was already reached */
+  if (*nbufs == (unsigned int) req->result) {
+    uv__fs_scandir_free(dents);
+    req->ptr = NULL;
+    return UV_EOF;
+  }
+
+  dent = dents[(*nbufs)++];
+
+  ent->name = dent->d_name;
+#ifdef HAVE_DIRENT_TYPES
+  switch (dent->d_type) {
+    case UV__DT_DIR:
+      ent->type = UV_DIRENT_DIR;
+      break;
+    case UV__DT_FILE:
+      ent->type = UV_DIRENT_FILE;
+      break;
+    case UV__DT_LINK:
+      ent->type = UV_DIRENT_LINK;
+      break;
+    case UV__DT_FIFO:
+      ent->type = UV_DIRENT_FIFO;
+      break;
+    case UV__DT_SOCKET:
+      ent->type = UV_DIRENT_SOCKET;
+      break;
+    case UV__DT_CHAR:
+      ent->type = UV_DIRENT_CHAR;
+      break;
+    case UV__DT_BLOCK:
+      ent->type = UV_DIRENT_BLOCK;
+      break;
+    default:
+      ent->type = UV_DIRENT_UNKNOWN;
+  }
+#else
+  ent->type = UV_DIRENT_UNKNOWN;
+#endif
+
+  return 0;
+}
 
 
 void uv__fs_scandir_cleanup(uv_fs_t* req) {
@@ -47,6 +127,6 @@ void uv__fs_scandir_cleanup(uv_fs_t* req) {
     req->nbufs--;
   }
   for (; req->nbufs < (unsigned int) req->result; req->nbufs++) {
-    free(dents[req->nbufs]);
+    uv__fs_scandir_free(dents[req->nbufs]);
   }
 }
