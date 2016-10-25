@@ -58,7 +58,7 @@ int uv_cwd(char* buffer, size_t* size) {
   return 0;
 }
 
-int uv_cd(char* path) {
+int uv_cd(const char* path) {
   if (path == NULL) {
       return -EINVAL;
   }
