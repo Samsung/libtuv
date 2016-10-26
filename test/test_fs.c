@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h> /* unlink, rmdir, etc. */
+#include <dirent.h> /* scandir */
 
 #include <uv.h>
 
@@ -442,8 +443,27 @@ static void rmdir_cb(uv_fs_t* req) {
   uv_fs_req_cleanup(req);
 }
 
+static void assert_is_file_type(uv_dirent_t dent) {
+#ifdef HAVE_DIRENT_TYPES
+  /*
+   * For Apple and Windows, we know getdents is expected to work but for other
+   * environments, the filesystem dictates whether or not getdents supports
+   * returning the file type.
+   *
+   *   See:
+   *     http://man7.org/linux/man-pages/man2/getdents.2.html
+   *     https://github.com/libuv/libuv/issues/501
+   */
+  #if defined(__APPLE__) || defined(_WIN32)
+    TUV_ASSERT(dent.type == UV_DIRENT_FILE);
+  #else
+    TUV_ASSERT(dent.type == UV_DIRENT_FILE || dent.type == UV_DIRENT_UNKNOWN);
+  #endif
+#else
+  TUV_ASSERT(dent.type == UV_DIRENT_UNKNOWN);
+#endif
+}
 
-/*
 static void scandir_cb(uv_fs_t* req) {
   uv_dirent_t dent;
   TUV_ASSERT(req == &scandir_req);
@@ -461,10 +481,8 @@ static void scandir_cb(uv_fs_t* req) {
   uv_fs_req_cleanup(req);
   TUV_ASSERT(!req->ptr);
 }
-*/
 
 
-/*
 static void empty_scandir_cb(uv_fs_t* req) {
   uv_dirent_t dent;
 
@@ -476,7 +494,6 @@ static void empty_scandir_cb(uv_fs_t* req) {
   uv_fs_req_cleanup(req);
   scandir_cb_count++;
 }
-*/
 
 
 static void file_scandir_cb(uv_fs_t* req) {
@@ -587,7 +604,7 @@ TEST_IMPL(fs_file_noent) {
 
   loop = uv_default_loop();
 
-  r = uv_fs_open(loop, &req, "/does_not_exist", O_RDONLY, 0, NULL);
+  r = uv_fs_open(NULL, &req, "/does_not_exist", O_RDONLY, 0, NULL);
   TUV_ASSERT(r == UV_ENOENT);
   TUV_ASSERT(req.result == UV_ENOENT);
   uv_fs_req_cleanup(&req);
@@ -1121,6 +1138,66 @@ TEST_IMPL(fs_stat_missing_path) {
 }
 
 
+TEST_IMPL(fs_scandir_empty_dir) {
+  const char* path;
+  uv_fs_t req;
+  uv_dirent_t dent;
+  int r;
+
+  path = "./empty_dir/";
+  loop = uv_default_loop();
+
+  uv_fs_mkdir(NULL, &req, path, 0777, NULL);
+  uv_fs_req_cleanup(&req);
+
+  /* Fill the req to ensure that required fields are cleaned up */
+  memset(&req, 0xdb, sizeof(req));
+
+  scandir_cb_count = 0;
+  r = uv_fs_scandir(NULL, &req, path, 0, NULL);
+  TUV_ASSERT(r == 0);
+  TUV_ASSERT(req.result == 0);
+  TUV_ASSERT(req.ptr == NULL);
+  TUV_ASSERT(UV_EOF == uv_fs_scandir_next(&req, &dent));
+  uv_fs_req_cleanup(&req);
+
+  r = uv_fs_scandir(loop, &scandir_req, path, 0, empty_scandir_cb);
+  TUV_ASSERT(r == 0);
+
+  TUV_ASSERT(scandir_cb_count == 0);
+  uv_run(loop, UV_RUN_DEFAULT);
+  TUV_ASSERT(scandir_cb_count == 1);
+
+  uv_fs_rmdir(NULL, &req, path, NULL);
+  uv_fs_req_cleanup(&req);
+
+  return 0;
+}
+
+
+TEST_IMPL(fs_scandir_file) {
+  const char* path;
+  int r;
+
+  path = "test/resources/empty_file";
+  loop = uv_default_loop();
+
+  scandir_cb_count = 0;
+  r = uv_fs_scandir(NULL, &scandir_req, path, 0, NULL);
+  TUV_ASSERT(r == UV_ENOTDIR);
+  uv_fs_req_cleanup(&scandir_req);
+
+  r = uv_fs_scandir(loop, &scandir_req, path, 0, file_scandir_cb);
+  TUV_ASSERT(r == 0);
+
+  TUV_ASSERT(scandir_cb_count == 0);
+  uv_run(loop, UV_RUN_DEFAULT);
+  TUV_ASSERT(scandir_cb_count == 1);
+
+  return 0;
+}
+
+
 TEST_IMPL(fs_open_dir) {
   const char* path;
   uv_fs_t req;
@@ -1286,8 +1363,10 @@ TEST_IMPL(fs_read_file_eof) {
 
 TEST_IMPL(fs_async_dir) {
   int r;
+  uv_dirent_t dent;
 
   /* Setup */
+  scandir_cb_count = 0;
   unlink("test_dir/file1");
   unlink("test_dir/file2");
   rmdir("test_dir");
@@ -1316,6 +1395,25 @@ TEST_IMPL(fs_async_dir) {
   r = uv_fs_close(loop, &close_req, open_req1.result, NULL);
   TUV_ASSERT(r == 0);
   uv_fs_req_cleanup(&close_req);
+
+  r = uv_fs_scandir(loop, &scandir_req, "test_dir", 0, scandir_cb);
+  TUV_ASSERT(r == 0);
+
+  TUV_ASSERT(scandir_cb_count == 0);
+  uv_run(loop, UV_RUN_DEFAULT);
+  TUV_ASSERT(scandir_cb_count == 1);
+
+  /* sync uv_fs_scandir */
+  r = uv_fs_scandir(NULL, &scandir_req, "test_dir", 0, NULL);
+  TUV_ASSERT(r == 2);
+  TUV_ASSERT(scandir_req.result == 2);
+  TUV_ASSERT(scandir_req.ptr);
+  while (UV_EOF != uv_fs_scandir_next(&scandir_req, &dent)) {
+    TUV_ASSERT(strcmp(dent.name, "file1") == 0 || strcmp(dent.name, "file2") == 0);
+    assert_is_file_type(dent);
+  }
+  uv_fs_req_cleanup(&scandir_req);
+  TUV_ASSERT(!scandir_req.ptr);
 
   r = uv_fs_stat(loop, &stat_req, "test_dir", stat_cb);
   TUV_ASSERT(r == 0);

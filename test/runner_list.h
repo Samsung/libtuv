@@ -59,6 +59,8 @@
   TE(fs_file_async, 5000)                                                     \
   TE(fs_file_write_null_buffer, 5000)                                         \
   TE(fs_stat_missing_path, 5000)                                              \
+  TE(fs_scandir_empty_dir, 5000)                                              \
+  TE(fs_scandir_file, 5000)                                                   \
   TE(fs_open_dir, 5000)                                                       \
   TE(fs_file_open_append, 5000)                                               \
   TE(fs_read_file_eof, 5000)                                                  \
