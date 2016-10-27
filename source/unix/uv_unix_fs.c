@@ -49,9 +49,9 @@
 #include <sys/types.h>
 #include <utime.h>
 #include <sys/time.h>
+#include <dirent.h>
 #ifndef __NUTTX__
 # include <sys/uio.h>
-# include <dirent.h>
 #endif
 
 #include <uv.h>
