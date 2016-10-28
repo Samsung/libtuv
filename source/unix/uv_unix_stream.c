@@ -409,14 +409,9 @@ static void uv__drain(uv_stream_t* stream) {
     uv__req_unregister(stream->loop, req);
 
     err = 0;
-#if defined(__NUTTX__)
-    TDLOG("uv__drain, shutdown() is not supported in NuttX");
-    assert(false);
-#else
     if (shutdown(uv__stream_fd(stream), SHUT_WR)) {
       err = -errno;
     }
-#endif
 
     if (err == 0) {
       stream->flags |= UV_STREAM_SHUT;
@@ -1007,6 +1002,10 @@ static void uv__stream_connect(uv_stream_t* stream) {
     stream->delayed_error = 0;
   } else {
     /* Normal situation: we need to get the socket error from the kernel. */
+#ifdef __NUTTX__
+    // getsockopt for SO_ERROR is not supported in NuttX
+    error = 0;
+#else
     assert(uv__stream_fd(stream) >= 0);
     getsockopt(uv__stream_fd(stream),
                SOL_SOCKET,
@@ -1014,6 +1013,7 @@ static void uv__stream_connect(uv_stream_t* stream) {
                &error,
                &errorsize);
     error = -error;
+#endif
   }
 
   if (error == -EINPROGRESS) {
