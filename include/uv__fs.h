@@ -148,6 +148,7 @@ int uv_fs_mkdir(uv_loop_t* loop, uv_fs_t* req, const char* path, int mode,
 int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
 int uv_fs_scandir(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
                   uv_fs_cb cb);
+int uv_fs_scandir_next(uv_fs_t* req, uv_dirent_t* ent);
 
 #ifdef __cplusplus
 }
