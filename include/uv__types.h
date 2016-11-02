@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ typedef struct uv_idle_s uv_idle_t;
 typedef struct uv_async_s uv_async_t;
 typedef struct uv_stream_s uv_stream_t;
 typedef struct uv_tcp_s uv_tcp_t;
+typedef struct uv_udp_s uv_udp_t;
 typedef struct uv_pipe_s uv_pipe_t;
 
 // request types
@@ -67,6 +68,7 @@ typedef struct uv_connect_s uv_connect_t;
 typedef struct uv_write_s uv_write_t;
 typedef struct uv_shutdown_s uv_shutdown_t;
 typedef struct uv_getaddrinfo_s uv_getaddrinfo_t;
+typedef struct uv_udp_send_s uv_udp_send_t;
 typedef struct uv_work_s uv_work_t;
 
 // ext types

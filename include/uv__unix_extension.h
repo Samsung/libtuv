@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,13 @@ extern "C" {
 
 #define UV_TCP_PRIVATE_FIELDS /* empty */
 
+#define UV_UDP_PRIVATE_FIELDS                                                 \
+  uv_alloc_cb alloc_cb;                                                       \
+  uv_udp_recv_cb recv_cb;                                                     \
+  uv__io_t io_watcher;                                                        \
+  void* write_queue[2];                                                       \
+  void* write_completed_queue[2];                                             \
+
 
 #define UV_CONNECT_PRIVATE_FIELDS                                             \
   void* queue[2];                                                             \
@@ -125,6 +132,15 @@ extern "C" {
 
 
 #define UV_SHUTDOWN_PRIVATE_FIELDS /* empty */
+
+#define UV_UDP_SEND_PRIVATE_FIELDS                                            \
+  void* queue[2];                                                             \
+  struct sockaddr_storage addr;                                               \
+  unsigned int nbufs;                                                         \
+  uv_buf_t* bufs;                                                             \
+  ssize_t status;                                                             \
+  uv_udp_send_cb send_cb;                                                     \
+  uv_buf_t bufsml[4];                                                         \
 
 
 //-----------------------------------------------------------------------------

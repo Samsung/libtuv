@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@
 #include "uv__fd.h"
 #include "uv__stream.h"
 #include "uv__tcp.h"
+#include "uv__udp.h"
 #include "uv__pipe.h"
 #include "uv__thread.h"
 
