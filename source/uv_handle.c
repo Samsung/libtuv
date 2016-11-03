@@ -68,6 +68,10 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
     uv__tcp_close((uv_tcp_t*)handle);
     break;
 
+  case UV_UDP:
+    uv__udp_close((uv_udp_t*)handle);
+    break;
+
   case UV_IDLE:
     uv__idle_close((uv_idle_t*)handle);
     break;
