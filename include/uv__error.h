@@ -99,6 +99,12 @@ extern "C" {
 # define UV__EAGAIN (-4088)
 #endif
 
+#if defined(EALREADY)
+# define UV__EALREADY (-EALREADY)
+#else
+# define UV__EALREADY (-4084)
+#endif
+
 #if defined(EBUSY)
 # define UV__EBUSY (-EBUSY)
 #else
@@ -199,6 +205,7 @@ extern "C" {
   XX(EAI_PROTOCOL, "resolved protocol is unknown")                            \
   XX(EAI_SERVICE, "service not available for socket type")                    \
   XX(EAI_SOCKTYPE, "socket type not supported")                               \
+  XX(EALREADY, "connection already in progress")                              \
   XX(EAGAIN, "resource temporarily unavailable")                              \
   XX(EBUSY, "resource busy or locked")                                        \
   XX(ECANCELED, "operation canceled")                                         \

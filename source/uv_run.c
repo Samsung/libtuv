@@ -64,6 +64,10 @@ static void uv__finish_close(uv_handle_t* handle) {
       uv__stream_destroy((uv_stream_t*)handle);
       break;
 
+    case UV_UDP:
+      uv__udp_finish_close((uv_udp_t*)handle);
+      break;
+
     default:
       assert(0);
       break;
