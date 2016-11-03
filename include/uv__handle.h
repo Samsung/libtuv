@@ -1,4 +1,4 @@
-/* Copyright 2015 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ extern "C" {
   XX(TCP, tcp)                                                                \
   XX(TIMER, timer)                                                            \
   XX(TTY, tty)                                                                \
+  XX(UDP, udp)                                                                \
 
 /*
   XX(ASYNC, async)                                                            \
@@ -107,7 +108,8 @@ enum {
   UV_TCP_NODELAY          = 0x0400, /* Disable Nagle. */
   UV_TCP_KEEPALIVE        = 0x0800, /* Turn on keep-alive. */
   UV_TCP_SINGLE_ACCEPT    = 0x1000, /* Only accept() when idle. */
-  UV_HANDLE_IPV6          = 0x10000 /* Handle is bound to a IPv6 socket. */
+  UV_HANDLE_IPV6          = 0x10000, /* Handle is bound to a IPv6 socket. */
+  UV_UDP_PROCESSING       = 0x20000  /* Handle is running the send callback queue. */
 };
 
 

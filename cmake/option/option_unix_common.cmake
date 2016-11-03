@@ -45,6 +45,7 @@ set(PLATFORM_SRCFILES
       "${UNIX_PATH}/uv_unix_threadpool.c"
       "${UNIX_PATH}/uv_unix_thread.c"
       "${UNIX_PATH}/uv_unix_tcp.c"
+      "${UNIX_PATH}/uv_unix_udp.c"
       "${UNIX_PATH}/uv_unix_stream.c"
       "${UNIX_PATH}/uv_unix_getaddrinfo.c"
       "${UNIX_PATH}/tuv_unix_port_system.c"
