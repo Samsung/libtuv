@@ -47,6 +47,7 @@ else()
         "${SOURCE_ROOT}/uv_dir.c"
         "${SOURCE_ROOT}/uv_inet.c"
         "${SOURCE_ROOT}/uv_udp.c"
+        "${SOURCE_ROOT}/uv_tcp.c"
         )
 endif()
 
