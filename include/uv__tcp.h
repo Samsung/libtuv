@@ -83,15 +83,10 @@ int uv_tcp_connect(uv_connect_t* req, uv_tcp_t* handle,
 
 int uv_tcp_listen(uv_tcp_t* tcp, int backlog, uv_connection_cb cb);
 
-int uv__tcp_bind(uv_tcp_t* tcp, const struct sockaddr* addr,
-                 unsigned int addrlen, unsigned int flags);
-int uv__tcp_connect(uv_connect_t* req, uv_tcp_t* handle,
-                   const struct sockaddr* addr, unsigned int addrlen,
-                   uv_connect_cb cb);
-
-int uv__tcp_nodelay(int fd, int on);
-int uv__tcp_keepalive(int fd, int on, unsigned int delay);
-void uv__tcp_close(uv_tcp_t* handle);
+int uv_tcp_getsockname(const uv_tcp_t* handle, struct sockaddr* name,
+                       int* namelen);
+int uv_tcp_getpeername(const uv_tcp_t* handle, struct sockaddr* name,
+                       int* namelen);
 
 
 

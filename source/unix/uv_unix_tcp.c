@@ -225,57 +225,6 @@ int uv_tcp_init(uv_loop_t* loop, uv_tcp_t* tcp) {
 }
 
 
-int uv_tcp_bind(uv_tcp_t* handle,
-                const struct sockaddr* addr,
-                unsigned int flags) {
-  unsigned int addrlen;
-
-  if (handle->type != UV_TCP) {
-    return UV_EINVAL;
-  }
-
-  if (addr->sa_family == AF_INET) {
-    addrlen = sizeof(struct sockaddr_in);
-  }
-/*
-  else if (addr->sa_family == AF_INET6) {
-    addrlen = sizeof(struct sockaddr_in6);
-  }
-*/
-  else {
-    return UV_EINVAL;
-  }
-
-  return uv__tcp_bind(handle, addr, addrlen, flags);
-}
-
-
-int uv_tcp_connect(uv_connect_t* req,
-                   uv_tcp_t* handle,
-                   const struct sockaddr* addr,
-                   uv_connect_cb cb) {
-  unsigned int addrlen;
-
-  if (handle->type != UV_TCP) {
-    return UV_EINVAL;
-  }
-
-  if (addr->sa_family == AF_INET) {
-    addrlen = sizeof(struct sockaddr_in);
-  }
-/*
-  else if (addr->sa_family == AF_INET6) {
-    addrlen = sizeof(struct sockaddr_in6);
-  }
-*/
-  else {
-    return UV_EINVAL;
-  }
-
-  return uv__tcp_connect(req, handle, addr, addrlen, cb);
-}
-
-
 int uv_tcp_open(uv_tcp_t* handle, uv_os_sock_t sock) {
   int err;
 
