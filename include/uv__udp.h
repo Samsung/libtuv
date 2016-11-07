@@ -96,6 +96,11 @@ struct uv_udp_send_s {
   UV_UDP_SEND_PRIVATE_FIELDS
 };
 
+typedef enum {
+  UV_LEAVE_GROUP = 0,
+  UV_JOIN_GROUP
+} uv_membership;
+
 int uv_udp_init(uv_loop_t*, uv_udp_t* handle);
 int uv_udp_init_ex(uv_loop_t*, uv_udp_t* handle, unsigned int flags);
 int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock);
@@ -104,6 +109,15 @@ int uv_udp_bind(uv_udp_t* handle, const struct sockaddr* addr,
 
 int uv_udp_getsockname(const uv_udp_t* handle, struct sockaddr* name,
                        int* namelen);
+int uv_udp_set_membership(uv_udp_t* handle, const char* multicast_addr,
+                          const char* interface_addr, uv_membership membership);
+int uv_udp_set_multicast_loop(uv_udp_t* handle, int on);
+int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl);
+int uv_udp_set_multicast_interface(uv_udp_t* handle,
+                                   const char* interface_addr);
+int uv_udp_set_broadcast(uv_udp_t* handle, int on);
+int uv_udp_set_ttl(uv_udp_t* handle, int ttl);
+
 int uv_udp_send(uv_udp_send_t* req, uv_udp_t* handle, const uv_buf_t bufs[],
                 unsigned int nbufs, const struct sockaddr* addr,
                 uv_udp_send_cb send_cb);
