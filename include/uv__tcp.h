@@ -50,7 +50,9 @@ extern "C" {
 
 
 int uv_ip4_addr(const char* ip, int port, struct sockaddr_in* addr);
+int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr);
 int uv_ip4_name(const struct sockaddr_in* src, char* dst, size_t size);
+int uv_ip6_name(const struct sockaddr_in6* src, char* dst, size_t size);
 
 
 /*

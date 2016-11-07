@@ -472,6 +472,94 @@ int uv__udp_try_send(uv_udp_t* handle, const uv_buf_t bufs[],
 }
 
 
+static int uv__udp_set_membership4(uv_udp_t* handle,
+                                   const struct sockaddr_in* multicast_addr,
+                                   const char* interface_addr,
+                                   uv_membership membership) {
+  struct ip_mreq mreq;
+  int optname;
+  int err;
+
+  memset(&mreq, 0, sizeof mreq);
+
+  if (interface_addr) {
+    err = uv_inet_pton(AF_INET, interface_addr, &mreq.imr_interface.s_addr);
+    if (err)
+      return err;
+  } else {
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+  }
+
+  mreq.imr_multiaddr.s_addr = multicast_addr->sin_addr.s_addr;
+
+  switch (membership) {
+  case UV_JOIN_GROUP:
+    optname = IP_ADD_MEMBERSHIP;
+    break;
+  case UV_LEAVE_GROUP:
+    optname = IP_DROP_MEMBERSHIP;
+    break;
+  default:
+    return -EINVAL;
+  }
+
+  if (setsockopt(handle->io_watcher.fd, IPPROTO_IP, optname, &mreq,
+                 sizeof(mreq))) {
+#if defined(__MVS__)
+  if (errno == ENXIO)
+    return -ENODEV;
+#endif
+    return -errno;
+  }
+
+  return 0;
+}
+
+
+static int uv__udp_set_membership6(uv_udp_t* handle,
+                                   const struct sockaddr_in6* multicast_addr,
+                                   const char* interface_addr,
+                                   uv_membership membership) {
+  int optname;
+  struct ipv6_mreq mreq;
+  struct sockaddr_in6 addr6;
+
+  memset(&mreq, 0, sizeof mreq);
+
+  if (interface_addr) {
+    if (uv_ip6_addr(interface_addr, 0, &addr6))
+      return -EINVAL;
+    mreq.ipv6mr_interface = addr6.sin6_scope_id;
+  } else {
+    mreq.ipv6mr_interface = 0;
+  }
+
+  mreq.ipv6mr_multiaddr = multicast_addr->sin6_addr;
+
+  switch (membership) {
+  case UV_JOIN_GROUP:
+    optname = IPV6_ADD_MEMBERSHIP;
+    break;
+  case UV_LEAVE_GROUP:
+    optname = IPV6_DROP_MEMBERSHIP;
+    break;
+  default:
+    return -EINVAL;
+  }
+
+  if (setsockopt(handle->io_watcher.fd, IPPROTO_IPV6, optname, &mreq,
+                 sizeof(mreq))) {
+#if defined(__MVS__)
+  if (errno == ENXIO)
+    return -ENODEV;
+#endif
+    return -errno;
+  }
+
+  return 0;
+}
+
+
 int uv_udp_init_ex(uv_loop_t* loop, uv_udp_t* handle, unsigned int flags) {
   int domain;
   int err;
@@ -531,25 +619,38 @@ int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock) {
 }
 
 
-static int uv__setsockopt(uv_udp_t* handle,
-                         int option4,
-                         int option6,
-                         const void* val,
-                         size_t size) {
+int uv_udp_set_membership(uv_udp_t* handle,
+                          const char* multicast_addr,
+                          const char* interface_addr,
+                          uv_membership membership) {
+  int err;
+  struct sockaddr_in addr4;
+  struct sockaddr_in6 addr6;
+
+  if (uv_ip4_addr(multicast_addr, 0, &addr4) == 0) {
+    err = uv__udp_maybe_deferred_bind(handle, AF_INET, UV_UDP_REUSEADDR);
+    if (err)
+      return err;
+    return uv__udp_set_membership4(handle, &addr4, interface_addr, membership);
+  } else if (uv_ip6_addr(multicast_addr, 0, &addr6) == 0) {
+    err = uv__udp_maybe_deferred_bind(handle, AF_INET6, UV_UDP_REUSEADDR);
+    if (err)
+      return err;
+    return uv__udp_set_membership6(handle, &addr6, interface_addr, membership);
+  }
+
+  return -EINVAL;
+}
+
+
+static int uv__setsockopt(uv_udp_t* handle, int option4, int option6,
+                         const void* val, size_t size) {
   int r;
 
   if (handle->flags & UV_HANDLE_IPV6) {
-    r = setsockopt(handle->io_watcher.fd,
-                   IPPROTO_IPV6,
-                   option6,
-                   val,
-                   size);
+    r = setsockopt(handle->io_watcher.fd, IPPROTO_IPV6, option6, val, size);
   } else {
-    r = setsockopt(handle->io_watcher.fd,
-                   IPPROTO_IP,
-                   option4,
-                   val,
-                   size);
+    r = setsockopt(handle->io_watcher.fd, IPPROTO_IP, option4, val, size);
   }
   if (r)
     return -errno;
@@ -558,10 +659,8 @@ static int uv__setsockopt(uv_udp_t* handle,
 }
 
 
-static int uv__setsockopt_maybe_char(uv_udp_t* handle,
-                                     int option4,
-                                     int option6,
-                                     int val) {
+static int uv__setsockopt_maybe_char(uv_udp_t* handle, int option4,
+                                     int option6, int val) {
 #if defined(__sun) || defined(_AIX)
   char arg = val;
 #elif defined(__OpenBSD__)
@@ -577,8 +676,122 @@ static int uv__setsockopt_maybe_char(uv_udp_t* handle,
 }
 
 
-int uv_udp_getsockname(const uv_udp_t* handle,
-                       struct sockaddr* name,
+int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
+  if (setsockopt(handle->io_watcher.fd, SOL_SOCKET, SO_BROADCAST, &on,
+                 sizeof(on))) {
+    return -errno;
+  }
+
+  return 0;
+}
+
+
+int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
+  if (ttl < 1 || ttl > 255)
+    return -EINVAL;
+
+#if defined(__MVS__)
+  if (!(handle->flags & UV_HANDLE_IPV6))
+    return -ENOTSUP;  /* zOS does not support setting ttl for IPv4 */
+#endif
+
+/*
+ * On Solaris and derivatives such as SmartOS, the length of socket options
+ * is sizeof(int) for IP_TTL and IPV6_UNICAST_HOPS,
+ * so hardcode the size of these options on this platform,
+ * and use the general uv__setsockopt_maybe_char call on other platforms.
+ */
+#if defined(__sun) || defined(_AIX) || defined(__OpenBSD__) || \
+    defined(__MVS__)
+
+  return uv__setsockopt(handle, IP_TTL, IPV6_UNICAST_HOPS, &ttl, sizeof(ttl));
+#endif /* defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
+          defined(__MVS__) */
+
+  return uv__setsockopt_maybe_char(handle, IP_TTL, IPV6_UNICAST_HOPS, ttl);
+}
+
+
+int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl) {
+/*
+ * On Solaris and derivatives such as SmartOS, the length of socket options
+ * is sizeof(int) for IPV6_MULTICAST_HOPS and sizeof(char) for
+ * IP_MULTICAST_TTL, so hardcode the size of the option in the IPv6 case,
+ * and use the general uv__setsockopt_maybe_char call otherwise.
+ */
+#if defined(__sun) || defined(_AIX) || defined(__MVS__)
+  if (handle->flags & UV_HANDLE_IPV6)
+    return uv__setsockopt(handle, IP_MULTICAST_TTL, IPV6_MULTICAST_HOPS, &ttl,
+                          sizeof(ttl));
+#endif /* defined(__sun) || defined(_AIX) || defined(__MVS__) */
+
+  return uv__setsockopt_maybe_char(handle, IP_MULTICAST_TTL,
+                                   IPV6_MULTICAST_HOPS, ttl);
+}
+
+
+int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
+/*
+ * On Solaris and derivatives such as SmartOS, the length of socket options
+ * is sizeof(int) for IPV6_MULTICAST_LOOP and sizeof(char) for
+ * IP_MULTICAST_LOOP, so hardcode the size of the option in the IPv6 case,
+ * and use the general uv__setsockopt_maybe_char call otherwise.
+ */
+#if defined(__sun) || defined(_AIX) || defined(__MVS__)
+  if (handle->flags & UV_HANDLE_IPV6)
+    return uv__setsockopt(handle, IP_MULTICAST_LOOP, IPV6_MULTICAST_LOOP,
+                          &on, sizeof(on));
+#endif /* defined(__sun) || defined(_AIX) || defined(__MVS__) */
+
+  return uv__setsockopt_maybe_char(handle, IP_MULTICAST_LOOP,
+                                   IPV6_MULTICAST_LOOP, on);
+}
+
+int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr) {
+  struct sockaddr_storage addr_st;
+  struct sockaddr_in* addr4;
+  struct sockaddr_in6* addr6;
+
+  addr4 = (struct sockaddr_in*) &addr_st;
+  addr6 = (struct sockaddr_in6*) &addr_st;
+
+  if (!interface_addr) {
+    memset(&addr_st, 0, sizeof addr_st);
+    if (handle->flags & UV_HANDLE_IPV6) {
+      addr_st.ss_family = AF_INET6;
+      addr6->sin6_scope_id = 0;
+    } else {
+      addr_st.ss_family = AF_INET;
+      addr4->sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+  } else if (uv_ip4_addr(interface_addr, 0, addr4) == 0) {
+    /* nothing, address was parsed */
+  } else if (uv_ip6_addr(interface_addr, 0, addr6) == 0) {
+    /* nothing, address was parsed */
+  } else {
+    return -EINVAL;
+  }
+
+  if (addr_st.ss_family == AF_INET) {
+    if (setsockopt(handle->io_watcher.fd, IPPROTO_IP, IP_MULTICAST_IF,
+                   (void*) &addr4->sin_addr, sizeof(addr4->sin_addr)) == -1) {
+      return -errno;
+    }
+  } else if (addr_st.ss_family == AF_INET6) {
+    if (setsockopt(handle->io_watcher.fd, IPPROTO_IPV6, IPV6_MULTICAST_IF,
+                   &addr6->sin6_scope_id,
+                   sizeof(addr6->sin6_scope_id)) == -1) {
+      return -errno;
+    }
+  } else {
+    assert(0 && "unexpected address family");
+    abort();
+  }
+
+  return 0;
+}
+
+int uv_udp_getsockname(const uv_udp_t* handle, struct sockaddr* name,
                        int* namelen) {
   socklen_t socklen;
 
@@ -596,8 +809,7 @@ int uv_udp_getsockname(const uv_udp_t* handle,
 }
 
 
-int uv__udp_recv_start(uv_udp_t* handle,
-                       uv_alloc_cb alloc_cb,
+int uv__udp_recv_start(uv_udp_t* handle, uv_alloc_cb alloc_cb,
                        uv_udp_recv_cb recv_cb) {
   int err;
 
