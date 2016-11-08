@@ -472,6 +472,7 @@ int uv__udp_try_send(uv_udp_t* handle, const uv_buf_t bufs[],
 }
 
 
+#if !defined(__NUTTX__)
 static int uv__udp_set_membership4(uv_udp_t* handle,
                                    const struct sockaddr_in* multicast_addr,
                                    const char* interface_addr,
@@ -558,6 +559,7 @@ static int uv__udp_set_membership6(uv_udp_t* handle,
 
   return 0;
 }
+#endif
 
 
 int uv_udp_init_ex(uv_loop_t* loop, uv_udp_t* handle, unsigned int flags) {
@@ -619,6 +621,7 @@ int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock) {
 }
 
 
+#if !defined(__NUTTX__)
 int uv_udp_set_membership(uv_udp_t* handle,
                           const char* multicast_addr,
                           const char* interface_addr,
@@ -641,6 +644,7 @@ int uv_udp_set_membership(uv_udp_t* handle,
 
   return -EINVAL;
 }
+#endif
 
 
 static int uv__setsockopt(uv_udp_t* handle, int option4, int option6,
@@ -686,6 +690,7 @@ int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
 }
 
 
+#if !defined(__NUTTX__)
 int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return -EINVAL;
@@ -747,6 +752,7 @@ int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
                                    IPV6_MULTICAST_LOOP, on);
 }
 
+
 int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr) {
   struct sockaddr_storage addr_st;
   struct sockaddr_in* addr4;
@@ -790,6 +796,8 @@ int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr)
 
   return 0;
 }
+#endif
+
 
 int uv_udp_getsockname(const uv_udp_t* handle, struct sockaddr* name,
                        int* namelen) {
