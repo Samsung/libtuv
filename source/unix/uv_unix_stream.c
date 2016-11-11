@@ -277,7 +277,7 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
         goto done;
       }
       break;
-/*
+
     case UV_UDP:
       err = uv_udp_open((uv_udp_t*) client, server->accepted_fd);
       if (err) {
@@ -285,7 +285,7 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
         goto done;
       }
       break;
-*/
+
     default:
       return -EINVAL;
   }
@@ -582,10 +582,10 @@ static int uv__handle_fd(uv_handle_t* handle) {
     case UV_NAMED_PIPE:
     case UV_TCP:
       return ((uv_stream_t*) handle)->io_watcher.fd;
-/*
+
     case UV_UDP:
       return ((uv_udp_t*) handle)->io_watcher.fd;
-*/
+
     default:
       return -1;
   }
