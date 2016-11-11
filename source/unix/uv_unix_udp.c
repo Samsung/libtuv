@@ -146,6 +146,8 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
   struct sockaddr_storage peer;
 #if !defined(__NUTTX__)
   struct msghdr h;
+#else
+  socklen_t addrlen;
 #endif
   ssize_t nread;
   uv_buf_t buf;
@@ -180,6 +182,13 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
       nread = recvmsg(handle->io_watcher.fd, &h, 0);
     }
     while (nread == -1 && errno == EINTR);
+#else
+    addrlen = sizeof(peer);
+    do {
+      nread = recvfrom(handle->io_watcher.fd, buf.base, buf.len, 0,
+                       (struct sockaddr*)&peer, &addrlen);
+    }
+    while (nread == -1 && errno == EINTR);
 #endif
 
     if (nread == -1) {
@@ -193,13 +202,21 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
       const struct sockaddr *addr;
 #if !defined(__NUTTX__)
       if (h.msg_namelen == 0) {
+#else
+      if (addrlen == 0) {
+#endif
         addr = NULL;
       } else {
         addr = (const struct sockaddr*) &peer;
       }
 
       flags = 0;
+#if !defined(__NUTTX__)
       if (h.msg_flags & MSG_TRUNC) {
+        flags |= UV_UDP_PARTIAL;
+      }
+#else
+      if (buf.len > nread) {
         flags |= UV_UDP_PARTIAL;
       }
 #endif
@@ -229,16 +246,24 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
 
     req = QUEUE_DATA(q, uv_udp_send_t, queue);
     assert(req != NULL);
+    socklen_t addrlen = (req->addr.ss_family == AF_INET6 ?
+                sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
 #if !defined(__NUTTX__)
     memset(&h, 0, sizeof h);
     h.msg_name = &req->addr;
-    h.msg_namelen = (req->addr.ss_family == AF_INET6 ?
-      sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in));
+    h.msg_namelen = addrlen;
     h.msg_iov = (struct iovec*) req->bufs;
     h.msg_iovlen = req->nbufs;
 
     do {
       size = sendmsg(handle->io_watcher.fd, &h, 0);
+    } while (size == -1 && errno == EINTR);
+#else
+    assert(req->nbufs == 1);
+    do {
+      size = sendto(handle->io_watcher.fd, req->bufs->base,
+                    req->bufs->len, 0, (struct sockaddr*)&req->addr,
+                    addrlen);
     } while (size == -1 && errno == EINTR);
 #endif
     if (size == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
@@ -457,6 +482,12 @@ int uv__udp_try_send(uv_udp_t* handle, const uv_buf_t bufs[],
 
   do {
     size = sendmsg(handle->io_watcher.fd, &h, 0);
+  } while (size == -1 && errno == EINTR);
+#else
+  assert(nbufs == 1);
+  do {
+    size = sendto(handle->io_watcher.fd, bufs->base, bufs->len,
+                  0, addr, addrlen);
   } while (size == -1 && errno == EINTR);
 #endif
 
