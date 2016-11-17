@@ -84,10 +84,11 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
     uv__timer_close((uv_timer_t*)handle);
     break;
 
+#if defined(__NUTTX__)
   case UV_POLL:
     uv__poll_close((uv_poll_t*)handle);
     break;
-
+#endif
   default:
     assert(0);
   }
