@@ -56,6 +56,9 @@ static void uv__finish_close(uv_handle_t* handle) {
     case UV_IDLE:
     case UV_ASYNC:
     case UV_TIMER:
+#if defined(__NUTTX__)
+    case UV_POLL:
+#endif
       break;
 
     case UV_NAMED_PIPE:

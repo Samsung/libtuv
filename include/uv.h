@@ -73,6 +73,9 @@
 #else
 #pragma message "__TUV_RAW__ FIX THESE"
 #endif
+#if defined(__NUTTX__)
+#include "uv__poll.h"
+#endif
 #include "uv__fd.h"
 #include "uv__stream.h"
 #include "uv__tcp.h"

@@ -32,6 +32,7 @@ set(PLATFORM_SRCFILES
       "${NUTTX_PATH}/uv_nuttx_clock.c"
       "${NUTTX_PATH}/uv_nuttx_io.c"
       "${NUTTX_PATH}/uv_nuttx_loop.c"
+      "${NUTTX_PATH}/uv_nuttx_poll.c"
       "${NUTTX_PATH}/uv_nuttx_thread.c"
       )
 
