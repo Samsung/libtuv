@@ -59,6 +59,7 @@ extern "C" {
   XX(TCP, tcp)                                                                \
   XX(TIMER, timer)                                                            \
   XX(TTY, tty)                                                                \
+  XX(POLL, poll)                                                              \
   XX(UDP, udp)                                                                \
 
 /*
