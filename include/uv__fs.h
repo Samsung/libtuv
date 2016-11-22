@@ -97,6 +97,21 @@ struct uv_fs_s {
   UV_FS_PRIVATE_FIELDS
 };
 
+typedef struct uv_poll_s uv_poll_t;
+
+typedef void (*uv_poll_cb)(uv_poll_t* handle, int status, int events);
+
+enum uv_poll_event {
+  UV_READABLE = 1,
+  UV_WRITABLE = 2
+};
+
+struct uv_poll_s {
+  UV_HANDLE_FIELDS
+  uv_poll_cb poll_cb;
+  uv__io_t io_watcher;
+};
+
 typedef enum {
   UV_DIRENT_UNKNOWN,
   UV_DIRENT_FILE,
@@ -149,6 +164,10 @@ int uv_fs_rmdir(uv_loop_t* loop, uv_fs_t* req, const char* path, uv_fs_cb cb);
 int uv_fs_scandir(uv_loop_t* loop, uv_fs_t* req, const char* path, int flags,
                   uv_fs_cb cb);
 int uv_fs_scandir_next(uv_fs_t* req, uv_dirent_t* ent);
+
+int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd);
+int uv_poll_start(uv_poll_t* handle, int pevents, uv_poll_cb poll_cb);
+int uv_poll_stop(uv_poll_t* handle);
 
 #ifdef __cplusplus
 }

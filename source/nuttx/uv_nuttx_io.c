@@ -185,3 +185,78 @@ update_timeout:
   }
 }
 
+static void uv__poll_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
+  uv_poll_t* handle;
+  int pevents;
+
+  handle = container_of(w, uv_poll_t, io_watcher);
+
+  if (events & UV__POLLERR) {
+    uv__io_stop(loop, w, UV__POLLIN | UV__POLLOUT);
+    uv__handle_stop(handle);
+    handle->poll_cb(handle, -EBADF, 0);
+    return;
+  }
+
+  pevents = 0;
+  if (events & UV__POLLIN)
+    pevents |= UV_READABLE;
+  if (events & UV__POLLOUT)
+    pevents |= UV_WRITABLE;
+
+  handle->poll_cb(handle, 0, pevents);
+}
+
+int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd) {
+  int err;
+
+  err = uv__nonblock(fd, 1);
+  if (err)
+    return err;
+
+  uv__handle_init(loop, (uv_handle_t*) handle, UV_POLL);
+  uv__io_init(&handle->io_watcher, uv__poll_io, fd);
+  handle->poll_cb = NULL;
+  return 0;
+}
+
+static void uv__poll_stop(uv_poll_t* handle) {
+  uv__io_stop(handle->loop, &handle->io_watcher, UV__POLLIN | UV__POLLOUT);
+  uv__handle_stop(handle);
+}
+
+int uv_poll_stop(uv_poll_t* handle) {
+  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
+  uv__poll_stop(handle);
+  return 0;
+}
+
+
+int uv_poll_start(uv_poll_t* handle, int pevents, uv_poll_cb poll_cb) {
+  int events;
+
+  assert((pevents & ~(UV_READABLE | UV_WRITABLE)) == 0);
+  assert(!(handle->flags & (UV_CLOSING | UV_CLOSED)));
+
+  uv__poll_stop(handle);
+
+  if (pevents == 0)
+    return 0;
+
+  events = 0;
+  if (pevents & UV_READABLE)
+    events |= UV__POLLIN;
+  if (pevents & UV_WRITABLE)
+    events |= UV__POLLOUT;
+
+  uv__io_start(handle->loop, &handle->io_watcher, events);
+  uv__handle_start(handle);
+  handle->poll_cb = poll_cb;
+
+  return 0;
+}
+
+
+void uv__poll_close(uv_poll_t* handle) {
+  uv__poll_stop(handle);
+}
