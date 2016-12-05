@@ -142,7 +142,7 @@ TEST_IMPL(timer_again) {
   TUV_ASSERT(close_cb_called == 2);
 
   // for platform that needs closing
-  uv_deinit(uv_default_loop(), (uv_handle_t*)&dummy);
+  tuv_timer_deinit(uv_default_loop(), &dummy);
   TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;

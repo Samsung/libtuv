@@ -22,7 +22,7 @@ HARMONY ?= $(HOME)/harmony
 
 .phony: all
 
-all: clean linux rpi2 stm32f4 mbedk64f
+all: clean linux rpi2 stm32f4
 
 
 clean:
@@ -40,7 +40,3 @@ rpi2:
 stm32f4:
 	TUV_PLATFORM=arm-nuttx TUV_BOARD=stm32f4dis \
 	 TUV_SYSTEMROOT=$(HARMONY)/nuttx/nuttx make
-
-
-mbedk64f:
-	make -f Makefile.mbedk64f
