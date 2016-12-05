@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,36 +24,50 @@ set(FLAGS_CXXONLY
       )
 
 set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE   "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # unix common source files
 set(UNIX_PATH "${SOURCE_ROOT}/unix")
 
 # test include
-set(TUV_TEST_INCDIRS
-      "${TEST_ROOT}"
-      )
+set(TUV_TEST_INCDIRS "${TEST_ROOT}")
 
+#
+# { @20161129-sanggyu
+# It corresponds to uv.gyp's section "Not Windows i.e. POSIX" }
+#
 set(PLATFORM_SRCFILES
-      "${UNIX_PATH}/uv_unix.c"
-      "${UNIX_PATH}/uv_unix_async.c"
-      "${UNIX_PATH}/uv_unix_io.c"
-      "${UNIX_PATH}/uv_unix_fs.c"
-      "${UNIX_PATH}/uv_unix_process.c"
-      "${UNIX_PATH}/uv_unix_threadpool.c"
-      "${UNIX_PATH}/uv_unix_thread.c"
-      "${UNIX_PATH}/uv_unix_tcp.c"
-      "${UNIX_PATH}/uv_unix_udp.c"
-      "${UNIX_PATH}/uv_unix_stream.c"
-      "${UNIX_PATH}/uv_unix_getaddrinfo.c"
-      "${UNIX_PATH}/tuv_unix_port_system.c"
-      )
+      ${INCLUDE_ROOT}/uv-unix.h
+      ${INCLUDE_ROOT}/uv-linux.h
+#     ${INCLUDE_ROOT}/uv-sunos.h
+#     ${INCLUDE_ROOT}/uv-darwin.h
+#     ${INCLUDE_ROOT}/uv-bsd.h
+#     ${INCLUDE_ROOT}/uv-aix.h
+      ${UNIX_PATH}/async.c
+      ${UNIX_PATH}/atomic-ops.h
+      ${UNIX_PATH}/core.c
+#     ${UNIX_PATH}/dl.c
+      ${UNIX_PATH}/fs.c
+      ${UNIX_PATH}/getaddrinfo.c
+#     ${UNIX_PATH}/getnameinfo.c
+      ${UNIX_PATH}/internal.h
+      ${UNIX_PATH}/loop.c
+      ${UNIX_PATH}/loop-watcher.c
+#     ${UNIX_PATH}/pipe.c
+      ${UNIX_PATH}/poll.c
+      ${UNIX_PATH}/process.c
+#     ${UNIX_PATH}/proctitle.c
+#     ${UNIX_PATH}/signal.c
+      ${UNIX_PATH}/spinlock.h
+      ${UNIX_PATH}/stream.c
+      ${UNIX_PATH}/tcp.c
+      ${UNIX_PATH}/thread.c
+      ${UNIX_PATH}/timer.c
+#     ${UNIX_PATH}/tty.c
+      ${UNIX_PATH}/udp.c
+    )
 
-set(TEST_MAINFILE
-      "${TEST_ROOT}/runner_main.c"
-      )
+set(TEST_MAINFILE "${TEST_ROOT}/runner_main.c")
 
 set(TEST_UNITFILES
       "${TEST_ROOT}/test_idle.c"

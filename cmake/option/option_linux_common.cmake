@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,27 +17,22 @@
 # use "linux" for Linux platform dependent source files
 set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 
-# linux specific source files
-set(LINUX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
-
+#
+# { @20161129-sanggyu
+#   It corresponds to uv.gyp's `conditions` with OS == `linux` }
+#
 set(PLATFORM_SRCFILES
       ${PLATFORM_SRCFILES}
-      "${LINUX_PATH}/uv_linux.c"
-      "${LINUX_PATH}/uv_linux_loop.c"
-      "${LINUX_PATH}/uv_linux_clock.c"
-      "${LINUX_PATH}/uv_linux_io.c"
-      "${LINUX_PATH}/uv_linux_syscall.c"
-      "${LINUX_PATH}/uv_linux_thread.c"
+#     ${UNIX_PATH}/proctitle.c
+      ${UNIX_PATH}/linux-core.c
+#     ${UNIX_PATH}/linux-inotify.c
+      ${UNIX_PATH}/linux-syscalls.c
+      ${UNIX_PATH}/linux-syscalls.h
       )
 
-set(PLATFORM_TESTFILES
-      "${TEST_ROOT}/runner_linux.c"
-      )
+set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.c")
 
-set(PLATFORM_HOSTHELPERFILES
-      "${TEST_ROOT}/runner_linux_raw.c"
-      )
-
+set(PLATFORM_HOSTHELPERFILES "${TEST_ROOT}/runner_linux_raw.c")
 
 set(TUV_LINK_LIBS "pthread")
 

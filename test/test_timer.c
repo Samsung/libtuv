@@ -38,6 +38,7 @@
 #include <uv.h>
 
 
+#include "uv-common.h"
 #include "runner.h"
 
 
@@ -341,7 +342,7 @@ TEST_IMPL(timer_run_once) {
   TUV_ASSERT(0 == uv_timer_start(&timer_handle, timer_run_once_timer_cb, 1, 0));
   // slow systems may have nano second resolution
   // give some time to sleep so that time tick is changed
-  tuv_usleep(1000);
+  uv_sleep(1);
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_ONCE));
   TUV_ASSERT(2 == timer_run_once_timer_cb_called);
 
@@ -362,7 +363,7 @@ TEST_IMPL(timer_null_callback) {
   TUV_ASSERT(UV_EINVAL == uv_timer_start(&handle, NULL, 100, 100));
 
   // for platform that needs closing
-  uv_deinit(uv_default_loop(), (uv_handle_t*) &handle);
+  tuv_timer_deinit(uv_default_loop(), &handle);
   TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   return 0;

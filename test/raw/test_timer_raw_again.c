@@ -115,7 +115,7 @@ static int timer_final(void* vparam) {
   TUV_ASSERT(close_cb_called == 2);
 
   // for platform that needs closing
-  uv_deinit(param->loop, (uv_handle_t*)&dummy);
+  tuv_timer_deinit(param->loop, (uv_handle_t*)&dummy);
   TUV_ASSERT(0 == uv_loop_close(param->loop));
 
   // cleanup tuv param

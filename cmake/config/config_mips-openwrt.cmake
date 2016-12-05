@@ -18,4 +18,3 @@ set(CMAKE_SYSTEM_NAME Openwrt)
 set(CMAKE_SYSTEM_PROCESSOR mips)
 
 SET(CMAKE_C_COMPILER   mipsel-openwrt-linux-gcc)
-SET(CMAKE_CXX_COMPILER mipsel-openwrt-linux-g++)

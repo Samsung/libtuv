@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,26 +14,18 @@
 
 include("cmake/option/option_unix_common.cmake")
 
-set(FLAGS_COMMON
-      ${FLAGS_COMMON}
-      "-D__NUTTX__"
-      )
+set(FLAGS_COMMON ${FLAGS_COMMON} "-D__NUTTX__")
 
 # override TUV_PLATFORM_PATH for NuttX
 # use "nuttx" for NuttX platform dependent source files
-set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
+# set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 
 # nuttx source files
-set(NUTTX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
+# set(NUTTX_PATH "${SOURCE_ROOT}/${TUV_PLATFORM_PATH}")
 
 set(PLATFORM_SRCFILES
       ${PLATFORM_SRCFILES}
-      "${NUTTX_PATH}/uv_nuttx.c"
-      "${NUTTX_PATH}/uv_nuttx_clock.c"
-      "${NUTTX_PATH}/uv_nuttx_io.c"
-      "${NUTTX_PATH}/uv_nuttx_loop.c"
-      "${NUTTX_PATH}/uv_nuttx_poll.c"
-      "${NUTTX_PATH}/uv_nuttx_thread.c"
+      ${UNIX_PATH}/nuttx.c
       )
 
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_nuttx.c")

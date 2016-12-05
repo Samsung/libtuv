@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ set(CMAKE_SYSTEM_NAME nuttx)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
 SET(CMAKE_C_COMPILER   arm-none-eabi-gcc)
-SET(CMAKE_CXX_COMPILER arm-none-eabi-g++)
 
 # need to force compiler,
 # else it'll try to check and exit with 'unedefined _exit()
 CMAKE_FORCE_C_COMPILER(${CMAKE_C_COMPILER} GNU)
-CMAKE_FORCE_CXX_COMPILER(${CMAKE_CXX_COMPILER} GNU)

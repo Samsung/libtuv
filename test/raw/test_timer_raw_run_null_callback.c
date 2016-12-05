@@ -46,7 +46,7 @@ TEST_IMPL(timer_null_callback) {
   TUV_ASSERT(UV_EINVAL == uv_timer_start(&handle, NULL, 100, 100));
 
   // for platform that needs closing
-  uv_deinit(uv_default_loop(), (uv_handle_t*) &handle);
+  tuv_timer_deinit(uv_default_loop(), (uv_handle_t*) &handle);
   TUV_ASSERT(0 == uv_loop_close(uv_default_loop()));
 
   // jump to next test

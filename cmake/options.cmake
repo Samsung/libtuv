@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ cmake_minimum_required(VERSION 2.8.12)
 # platform name in lower case
 string(TOLOWER ${CMAKE_SYSTEM_NAME} PLATFORM_NAME_L)
 
-#
-set(PATH_ROOT ${CMAKE_SOURCE_DIR})
-
-set(SOURCE_ROOT  ${PATH_ROOT}/source)
+set(PATH_ROOT    ${CMAKE_SOURCE_DIR})
+set(SOURCE_ROOT  ${PATH_ROOT}/src)
 set(INCLUDE_ROOT ${PATH_ROOT}/include)
 set(TEST_ROOT    ${PATH_ROOT}/test)
 

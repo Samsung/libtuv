@@ -21,6 +21,16 @@
 
 #include <stdio.h>
 
+#if defined(DEBUG)
+#define ABORT()                  \
+  do {                           \
+    TDLOG("!!!!! ABORT !!!!!");  \
+    exit(-1);                    \
+  } while(0)
+#else
+#define ABORT() abort()
+#endif
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,14 +47,14 @@ extern const char* tuv_debug_prefix[4];
 
 #define TUV_DLOG(lvl, ...) \
   do { \
-    int errback = get_errno(); \
+    int errback = errno; \
     if (0 <= lvl && lvl <= tuv_debug_level && tuv_log_stream) { \
       fprintf(tuv_log_stream, "[%s] ", tuv_debug_prefix[lvl]); \
       fprintf(tuv_log_stream, __VA_ARGS__); \
       fprintf(tuv_log_stream, "\r\n"); \
       fflush(tuv_log_stream); \
     } \
-    set_errno(errback); \
+    errno = errback; \
   } while (0)
 #define TDLOG(...)   TUV_DLOG(TDBGLEV_ERR, __VA_ARGS__)
 #define TDDLOG(...)  TUV_DLOG(TDBGLEV_WARN, __VA_ARGS__)
@@ -69,7 +79,7 @@ extern const char* tuv_debug_prefix[4];
 extern "C" {
 #endif
 
-
+#define ABORT()
 #define TUV_DLOG(...)
 #define TDLOG(...)
 #define TDDLOG(...)

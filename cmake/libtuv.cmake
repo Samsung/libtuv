@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2016 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,42 +14,30 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-# temporary block to make one file at a time for mbed
-if(${PLATFORM_NAME_L} STREQUAL "mbed")
-  set(COMMON_SRCFILES
-        "${SOURCE_ROOT}/uv_handle.c"
-        "${SOURCE_ROOT}/uv_loop.c"
-        "${SOURCE_ROOT}/uv_idle.c"
-        "${SOURCE_ROOT}/uv_run.c"
-        "${SOURCE_ROOT}/uv_timer.c"
-        "${SOURCE_ROOT}/uv_req.c"
-
-        "${SOURCE_ROOT}/uv_async.c"
-        "${SOURCE_ROOT}/uv_util.c"
-        "${SOURCE_ROOT}/tuv_debuglog.c"
-        "${SOURCE_ROOT}/uv_error.c"
-
-        "${SOURCE_ROOT}/uv_inet.c"
-        )
-else()
-  set(COMMON_SRCFILES
-        "${SOURCE_ROOT}/uv_handle.c"
-        "${SOURCE_ROOT}/uv_loop.c"
-        "${SOURCE_ROOT}/uv_idle.c"
-        "${SOURCE_ROOT}/uv_run.c"
-        "${SOURCE_ROOT}/uv_timer.c"
-        "${SOURCE_ROOT}/uv_req.c"
-        "${SOURCE_ROOT}/uv_fs.c"
-        "${SOURCE_ROOT}/uv_async.c"
-        "${SOURCE_ROOT}/uv_util.c"
-        "${SOURCE_ROOT}/tuv_debuglog.c"
-        "${SOURCE_ROOT}/uv_error.c"
-        "${SOURCE_ROOT}/uv_dir.c"
-        "${SOURCE_ROOT}/uv_inet.c"
-        "${SOURCE_ROOT}/uv_udp.c"
-        "${SOURCE_ROOT}/uv_tcp.c"
-        )
-endif()
+#
+# { @20161129-sanggyu
+#   It corresponds to uv.gyp's `sources` }
+#
+set(COMMON_SRCFILES
+    ${INCLUDE_ROOT}/uv.h
+# { @20161129-sanggyu
+#   Makefile.am include tree.h only in WINNT
+#   But tree.h is used in unix's several files (i.e. loop.c)
+#   But we don't provide unix's the corresponding part.     }
+#   ${INCLUDE_ROOT}/tree.h
+    ${INCLUDE_ROOT}/uv-errno.h
+    ${INCLUDE_ROOT}/uv-threadpool.h
+    ${INCLUDE_ROOT}/uv-version.h
+#   ${SOURCE_ROOT}/fs-poll.c
+    ${SOURCE_ROOT}/heap-inl.h
+    ${SOURCE_ROOT}/inet.c
+    ${SOURCE_ROOT}/queue.h
+    ${SOURCE_ROOT}/threadpool.c
+    ${SOURCE_ROOT}/uv-common.c
+    ${SOURCE_ROOT}/uv-common.h
+#   ${SOURCE_ROOT}/version.c
+    ${SOURCE_ROOT}/tuv_debuglog.c
+    )
 
 set(LIB_TUV_SRCFILES
       ${COMMON_SRCFILES}
@@ -59,9 +47,7 @@ set(LIB_TUV_SRCFILES
 set(LIB_TUV_INCDIRS
       ${INCLUDE_ROOT}
       ${SOURCE_ROOT}
-      ${SOURCE_ROOT}/${TUV_PLATFORM_PATH}
       )
-
 
 # build tuv library
 set(TARGETLIBNAME tuv)
