@@ -74,7 +74,7 @@ TEST_IMPL(timer_run_once) {
                                 timer_run_once_timer_cb, 1, 0));
   // slow systems may have nano second resolution
   // give some time to sleep so that time tick is changed
-  tuv_usleep(1000);
+  uv_sleep(1);
   TUV_ASSERT(0 == uv_run(param->loop, UV_RUN_ONCE));
   TUV_ASSERT(2 == timer_run_once_timer_cb_called);
 
