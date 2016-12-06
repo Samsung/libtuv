@@ -467,7 +467,6 @@ int uv__close(int fd) {
     defined(__FreeBSD__) || \
     defined(__FreeBSD_kernel__) || \
     defined(__linux__)
-
 int uv__nonblock_ioctl(int fd, int set) {
   int r;
 
@@ -494,8 +493,7 @@ int uv__cloexec_ioctl(int fd, int set) {
 
   return 0;
 }
-
-#else
+#endif
 
 int uv__nonblock_fcntl(int fd, int set) {
   int flags;
@@ -528,12 +526,10 @@ int uv__nonblock_fcntl(int fd, int set) {
 }
 
 
-#if defined(__NUTTX__)
-int uv__cloexec(int fd, int set) {
-  return 0;
-}
-#else
 int uv__cloexec_fcntl(int fd, int set) {
+#if defined(__NUTTX__)
+  return 0;
+#endif
   int flags;
   int r;
 
@@ -562,8 +558,6 @@ int uv__cloexec_fcntl(int fd, int set) {
 
   return 0;
 }
-#endif
-#endif
 
 
 #if defined(__NUTTX__)
