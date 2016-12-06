@@ -75,7 +75,7 @@ static uv_write_t write_req;
 
 
 static void startup(void) {
-  tuv_usleep(1000);
+  uv_sleep(1);
 }
 
 

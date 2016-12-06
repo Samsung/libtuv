@@ -77,6 +77,7 @@
 
 #define INIT(subtype)                                                         \
   do {                                                                        \
+    req->type = UV_FS;                                                        \
     if (cb != NULL)                                                           \
       uv__req_init(loop, req, UV_FS);                                         \
     req->fs_type = UV_FS_ ## subtype;                                         \
@@ -91,7 +92,10 @@
 
 #define PATH                                                                  \
   do {                                                                        \
-    if (path != NULL) {                                                       \
+    assert(path != NULL);                                                     \
+    if (cb == NULL) {                                                         \
+      req->path = path;                                                       \
+    } else {                                                                  \
       req->path = strdup(path);                                               \
       if (req->path == NULL) {                                                \
         uv__req_unregister(loop, req);                                        \
@@ -103,18 +107,23 @@
 
 #define PATH2                                                                 \
   do {                                                                        \
-    size_t path_len;                                                          \
-    size_t new_path_len;                                                      \
-    path_len = strlen((path)) + 1;                                            \
-    new_path_len = strlen((new_path)) + 1;                                    \
-    (req)->path = (char*)uv__malloc(path_len + new_path_len);                 \
-    if ((req)->path == NULL) {                                                \
-      uv__req_unregister(loop, req);                                          \
-      return -ENOMEM;                                                         \
+    if (cb == NULL) {                                                         \
+      req->path = path;                                                       \
+      req->new_path = new_path;                                               \
+    } else {                                                                  \
+      size_t path_len;                                                        \
+      size_t new_path_len;                                                    \
+      path_len = strlen(path) + 1;                                            \
+      new_path_len = strlen(new_path) + 1;                                    \
+      req->path = uv__malloc(path_len + new_path_len);                        \
+      if (req->path == NULL) {                                                \
+        uv__req_unregister(loop, req);                                        \
+        return -ENOMEM;                                                       \
+      }                                                                       \
+      req->new_path = req->path + path_len;                                   \
+      memcpy((void*) req->path, path, path_len);                              \
+      memcpy((void*) req->new_path, new_path, new_path_len);                  \
     }                                                                         \
-    (req)->new_path = (req)->path + path_len;                                 \
-    memcpy((void*) req->path, path, path_len);                                \
-    memcpy((void*) req->new_path, new_path, new_path_len);                    \
   }                                                                           \
   while (0)
 
@@ -923,7 +932,7 @@ void uv_fs_req_cleanup(uv_fs_t* req) {
    * req->new_path pointing to user-owned memory.  UV_FS_MKDTEMP is the
    * exception to the rule, it always allocates memory.
    */
-  if (req->path != NULL && req->cb != NULL)
+  if (req->path != NULL && (req->cb != NULL || req->fs_type == UV_FS_MKDTEMP))
     uv__free((void*) req->path);  /* Memory is shared with req->new_path. */
 
   req->path = NULL;
