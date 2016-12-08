@@ -181,8 +181,6 @@ struct uv__stream_queued_fds_s {
     defined(__linux__)
 #define uv__cloexec uv__cloexec_ioctl
 #define uv__nonblock uv__nonblock_ioctl
-#elif defined(__NUTTX__) /* No ioctl in nuttx */
-#define uv__nonblock uv__nonblock_fcntl
 #else
 #define uv__cloexec uv__cloexec_fcntl
 #define uv__nonblock uv__nonblock_fcntl
