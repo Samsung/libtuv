@@ -22,6 +22,7 @@ if(DEFINED TARGET_BOARD)
     # rpi2 specific
     set(FLAGS_COMMON
           ${FLAGS_COMMON}
+              -lrt
           )
   else()
     message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
