@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2017 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,7 @@ include("cmake/option/option_linux_common.cmake")
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "rpi2")
     # rpi2 specific
-    set(FLAGS_COMMON
-          ${FLAGS_COMMON}
-              -lrt
-          )
+    set(FLAGS_COMMON ${FLAGS_COMMON} -lrt)
   else()
     message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
   endif()
