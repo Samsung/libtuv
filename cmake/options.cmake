@@ -32,6 +32,10 @@ endif()
 
 # path for platform depends files, use full name for default
 # (e.g, i686-linux)
+if (NOT DEFINED TARGET_PLATFORM)
+  message(FATAL_ERROR "TARGET_PLATFORM was not specified! (e.g., arm-linux)")
+endif()
+
 set(TUV_PLATFORM_PATH ${TARGET_PLATFORM})
 include("cmake/option/option_${TARGET_PLATFORM}.cmake")
 
