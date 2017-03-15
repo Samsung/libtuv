@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2017 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,8 +239,9 @@ void uv__fs_scandir_cleanup(uv_fs_t* req);
 
 /* Allocator prototypes */
 void *uv__calloc(size_t count, size_t size);
+#if defined(__APPLE__)
 char *uv__strdup(const char* s);
-char *uv__strndup(const char* s, size_t n);
+#endif
 void* uv__malloc(size_t size);
 void uv__free(void* ptr);
 void* uv__realloc(void* ptr, size_t size);

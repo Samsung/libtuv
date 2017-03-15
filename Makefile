@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2017 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ all:
 	mkdir -p $(CMAKE_FOLDER)
 	cmake -B$(CMAKE_FOLDER) -H./ $(CMAKE_DEFINES)
 	make -C $(CMAKE_FOLDER)
-ifneq (,$(findstring linux,$(TUV_PLATFORM)))
+ifeq ($(TUV_PLATFORM), $(filter $(TUV_PLATFORM), i686-linux x86_64-linux x86_64-darwin))
 	@echo '=============================================================='
 	@echo 'to run test,'
 	@echo '$(BUILD_FOLDER)/bin/tuvtester'
@@ -73,7 +73,7 @@ endif
 
 run_test:
 	make
-ifeq ($(TUV_PLATFORM), $(filter $(TUV_PLATFORM), i686-linux x86_64-linux))
+ifeq ($(TUV_PLATFORM), $(filter $(TUV_PLATFORM), i686-linux x86_64-linux x86_64-darwin))
 	$(BUILD_FOLDER)/bin/tuvtester
 else
 	@echo 'Cannot run test for $(TUV_PLATFORM)'

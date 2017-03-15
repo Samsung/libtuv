@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2017 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@
 
 //-----------------------------------------------------------------------------
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 static const char* filename1 = "test_file";
 static const char* filename2 = "test_file2";
 #elif defined(__NUTTX__)
@@ -624,7 +624,7 @@ TEST_IMPL(fs_file_noent) {
 }
 
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__APPLE__)
 #define TOO_LONG_NAME_LENGTH 65536
 #endif
 #if defined(__NUTTX__)
