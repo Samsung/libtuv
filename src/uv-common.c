@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2017 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,16 @@ static uv__allocator_t uv__allocator = {
   free,
 };
 
+#if defined(__APPLE__)
+char* uv__strdup(const char* s) {
+  size_t len = strlen(s) + 1;
+  char* m = uv__malloc(len);
+  if (m == NULL)
+    return NULL;
+  return memcpy(m, s, len);
+}
+#endif
+
 void* uv__malloc(size_t size) {
   return uv__allocator.local_malloc(size);
 }
@@ -102,8 +112,8 @@ uv_buf_t uv_buf_init(char* base, unsigned int len) {
 const char* uv_err_name(int err) {
   switch (err) {
     UV_ERRNO_MAP(UV_ERR_NAME_GEN)
-    default: 
-      assert(0); 
+    default:
+      assert(0);
       return NULL;
   }
 }

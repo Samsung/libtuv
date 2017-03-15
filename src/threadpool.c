@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Samsung Electronics Co., Ltd.
+/* Copyright 2015-2017 Samsung Electronics Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,8 @@ UV_DESTRUCTOR(static void cleanup(void)) {
   // It is very important to initialize once again.
   // Without following once initialization,
   // test/run_pass/test_fs_xxx blocks on second running.
-  once = UV_ONCE_INIT;
+  uv_once_t once_again = UV_ONCE_INIT;
+  once = once_again;
 }
 #endif
 
