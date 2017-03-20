@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2015-2017 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,16 +17,8 @@ set(FLAGS_COMMON
       "-D__TUV_RAW__"
       )
 
-set(FLAGS_CXXONLY
-      "-fpermissive"
-      "-fno-exceptions"
-      "-fno-rtti"
-      )
-
 set(CMAKE_C_FLAGS_DEBUG     "-O0 -g -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE   "-O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 # raw common source files
 set(RAW_PATH "${SOURCE_ROOT}/raw")
