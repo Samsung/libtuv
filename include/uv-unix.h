@@ -44,7 +44,8 @@
 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#if !defined(__NUTTX__) /* No netinet/tcp.h */
+#if !defined(__NUTTX__) && \
+    !defined(__TIZENRT__) /* No netinet/tcp.h */
 #include <netinet/tcp.h>
 #endif
 #include <arpa/inet.h>
@@ -75,6 +76,8 @@
 # include "uv-bsd.h"
 #elif defined(__NUTTX__)
 # include "uv-nuttx.h"
+#elif defined(__TIZENRT__)
+# include "uv-tizenrt.h"
 #endif
 
 #ifndef PTHREAD_BARRIER_SERIAL_THREAD

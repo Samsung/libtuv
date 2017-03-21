@@ -129,7 +129,7 @@ static void post(QUEUE* q) {
 
 
 #ifndef _WIN32
-#ifdef __NUTTX__
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 static void cleanup(void) {
 #else
 UV_DESTRUCTOR(static void cleanup(void)) {
@@ -327,7 +327,7 @@ int uv_cancel(uv_req_t* req) {
   return uv__work_cancel(loop, req, wreq);
 }
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 void tuv_cleanup(void) {
   cleanup();
 }

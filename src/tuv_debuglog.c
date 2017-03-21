@@ -20,7 +20,7 @@
 
 #ifdef ENABLE_DEBUG_LOG
 
-#if defined(__NUTTX__) || defined(__TUV_MBED__)
+#if defined(__NUTTX__) || defined(__TUV_MBED__) || defined(__TIZENRT__)
 int tuv_debug_level = TDBGLEV_INFO;
 #else
 int tuv_debug_level = TDBGLEV_ERR;

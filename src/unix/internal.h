@@ -114,7 +114,7 @@ int uv__pthread_sigmask(int how, const sigset_t* set, sigset_t* oset);
 # define UV_UNUSED(declaration)     declaration
 #endif
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 # undef UV_DESTRUCTOR
 # define UV_DESTRUCTOR(declaration) UV_DESTRUCTOR_not_supported##declaration
 #endif
@@ -195,7 +195,7 @@ int uv__close(int fd);
 int uv__close_nocheckstdio(int fd);
 int uv__socket(int domain, int type, int protocol);
 int uv__dup(int fd);
-#if defined(__NUTTX__) /* No msghdr in nuttx */
+#if defined(__NUTTX__) || defined(__TIZENRT__) /* No msghdr in nuttx */
 struct msghdr;
 #endif
 ssize_t uv__recvmsg(int fd, struct msghdr *msg, int flags);

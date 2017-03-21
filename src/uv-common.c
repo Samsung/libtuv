@@ -162,7 +162,8 @@ int uv_ip6_addr(const char* ip, int port, struct sockaddr_in6* addr) {
     /* NOTE: unknown interface (id=0) is silently ignored */
 #ifdef _WIN32
     addr->sin6_scope_id = atoi(zone_index);
-#elif !defined(__NUTTX__) /* No if_nametoindex in nuttx */
+#elif !defined(__NUTTX__) && !defined(__TIZENRT__)
+    /* No if_nametoindex in nuttx */
     addr->sin6_scope_id = if_nametoindex(zone_index);
 #endif
   }

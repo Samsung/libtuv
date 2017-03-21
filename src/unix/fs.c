@@ -54,7 +54,9 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <sys/uio.h>
+#if !defined(__TIZENRT__)
+# include <sys/uio.h> /* writev */
+#endif
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -363,7 +365,7 @@ done:
 #endif
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 static int uv__fs_scandir_filter(UV_CONST_DIRENT* dent) {
   return strcmp(dent->d_name, ".") != 0 && strcmp(dent->d_name, "..") != 0;
 }
@@ -375,7 +377,7 @@ static int uv__fs_scandir_sort(UV_CONST_DIRENT** a, UV_CONST_DIRENT** b) {
 #endif
 
 static ssize_t uv__fs_scandir(uv_fs_t* req) {
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   return -1;
 #else
   uv__dirent_t **dents;
@@ -417,7 +419,7 @@ out:
 
 
 static ssize_t uv__fs_utime(uv_fs_t* req) {
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   return -1;
 #else
   struct utimbuf buf;
@@ -507,11 +509,11 @@ done:
 }
 
 static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   dst->st_dev = src->st_dev;
 #endif
   dst->st_mode = src->st_mode;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   dst->st_nlink = src->st_nlink;
   dst->st_uid = src->st_uid;
   dst->st_gid = src->st_gid;
@@ -598,7 +600,7 @@ static int uv__fs_stat(const char *path, uv_stat_t *buf) {
 
 
 static int uv__fs_fstat(int fd, uv_stat_t *buf) {
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   return -1;
 #else
   struct stat pbuf;
@@ -680,7 +682,7 @@ static void uv__fs_work(struct uv__work* w) {
     X(FDATASYNC, uv__fs_fdatasync(req));
     X(FSTAT, uv__fs_fstat(req->file, &req->statbuf));
     X(FSYNC, fsync(req->file));
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     X(FTRUNCATE, ftruncate(req->file, req->off));
 #endif
     X(FUTIME, uv__fs_futime(req));

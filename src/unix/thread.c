@@ -163,7 +163,7 @@ void uv_mutex_unlock(uv_mutex_t* mutex) {
     abort();
 }
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 
 // No pthread_rwlock_t. Use pthread_mutex_t
 
@@ -484,7 +484,7 @@ int uv_cond_init(uv_cond_t* cond) {
     return -err;
 
 #if !(defined(__ANDROID__) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC)) \
-    && !defined(__NUTTX__)
+    && !(defined(__NUTTX__) || defined(__TIZENRT__))
   err = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
   if (err)
     goto error2;
