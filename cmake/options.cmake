@@ -1,4 +1,4 @@
-# Copyright 2015-2016 Samsung Electronics Co., Ltd.
+# Copyright 2015-2017 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,11 +46,6 @@ endif()
 
 foreach(FLAG ${FLAGS_COMMON})
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
-endforeach()
-
-foreach(FLAG ${FLAGS_CXXONLY})
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
 endforeach()
 
 # generate configure file

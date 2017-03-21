@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2016 Samsung Electronics Co., Ltd.
+# Copyright 2016-2017 Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,4 +16,4 @@
 
 sudo apt-get update -q
 sudo apt-get install -q -y \
-    g++-arm-linux-gnueabihf libc6-dev-armhf-cross
+    gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
