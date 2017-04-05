@@ -53,7 +53,7 @@
 #if defined(__linux__) || defined(__APPLE__)
 static const char* filename1 = "test_file";
 static const char* filename2 = "test_file2";
-#elif defined(__NUTTX__)
+#elif defined(__NUTTX__) || defined(__TIZENRT__)
 static const char* filename1 = "/mnt/sdcard/test_file";
 static const char* filename2 = "/mnt/sdcard/test_file2";
 #endif
@@ -211,7 +211,7 @@ static void chown_cb(uv_fs_t* req) {
 
 static void chown_root_cb(uv_fs_t* req) {
   TUV_ASSERT(req->fs_type == UV_FS_CHOWN);
-#if defined(_WIN32) || defined(__NUTTX__)
+#if defined(_WIN32) || defined(__NUTTX__) || defined(__TIZENRT__)
   /* On windows, chown is a no-op and always succeeds. */
   TUV_ASSERT(req->result == 0);
 #else
@@ -280,7 +280,7 @@ static void read_cb(uv_fs_t* req) {
   uv_fs_req_cleanup(req);
   if (read_cb_count == 1) {
     TUV_ASSERT(strcmp(buf, test_buf) == 0);
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     r = uv_fs_ftruncate(loop, &ftruncate_req, open_req1.result, 7,
                         ftruncate_cb);
 #else
@@ -288,7 +288,7 @@ static void read_cb(uv_fs_t* req) {
     r = uv_fs_close(loop, &close_req, open_req1.result, close_cb);
 #endif
   } else {
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     TUV_ASSERT(strcmp(buf, "test-bu") == 0);
 #else
     TUV_ASSERT(strcmp(buf, test_buf) == 0);
@@ -627,7 +627,7 @@ TEST_IMPL(fs_file_noent) {
 #if defined(__linux__) || defined(__APPLE__)
 #define TOO_LONG_NAME_LENGTH 65536
 #endif
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 #define TOO_LONG_NAME_LENGTH (256+16)
 #endif
 
@@ -834,7 +834,7 @@ TEST_IMPL(fs_file_sync) {
   TUV_ASSERT(strcmp(buf, test_buf) == 0);
   uv_fs_req_cleanup(&read_req);
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   r = uv_fs_ftruncate(loop, &ftruncate_req, open_req1.result, 7, NULL);
   TUV_ASSERT(r == 0);
   TUV_ASSERT(ftruncate_req.result == 0);
@@ -861,7 +861,7 @@ TEST_IMPL(fs_file_sync) {
   r = uv_fs_read(loop, &read_req, open_req1.result, &iov, 1, -1, NULL);
   TUV_ASSERT(r >= 0);
   TUV_ASSERT(read_req.result >= 0);
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   TUV_ASSERT(strcmp(buf, "test-bu") == 0);
 #else
   TUV_ASSERT(strcmp(buf, test_buf) == 0);
@@ -918,7 +918,7 @@ TEST_IMPL(fs_file_write_null_buffer) {
   return 0;
 }
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 TEST_IMPL(fs_fstat) {
   int r;
   uv_fs_t req;
@@ -1009,7 +1009,7 @@ TEST_IMPL(fs_fstat) {
 #endif // __NUTTX__
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 TEST_IMPL(fs_utime) {
   utime_check_t checkme;
   const char* path = filename1;
@@ -1061,7 +1061,7 @@ TEST_IMPL(fs_utime) {
 }
 #endif
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 TEST_IMPL(fs_futime) {
   utime_check_t checkme;
   const char* path = filename1;
@@ -1205,7 +1205,7 @@ TEST_IMPL(fs_open_dir) {
 
   open_cb_count = 0;
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   path = "/mnt/sdcard";
 #else
   path = ".";
@@ -1214,7 +1214,7 @@ TEST_IMPL(fs_open_dir) {
   loop = uv_default_loop();
 
   r = uv_fs_open(loop, &req, path, O_RDONLY, 0, NULL);
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   TUV_ASSERT(r == -EISDIR);
   uv_fs_req_cleanup(&req);
 #else

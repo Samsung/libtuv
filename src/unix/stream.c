@@ -45,7 +45,10 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/uio.h>
+#if !defined(__TIZENRT__)
+# include <sys/uio.h>
+#endif
+
 #include <sys/un.h>
 #include <unistd.h>
 #include <limits.h> /* IOV_MAX */
@@ -792,7 +795,7 @@ start:
    * inside the iov each time we write. So there is no need to offset it.
    */
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   if (req->send_handle) {
     struct msghdr msg;
     struct cmsghdr *cmsg;
@@ -856,7 +859,7 @@ start:
 #else
     while (n == -1 && errno == EINTR);
 #endif
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   }
 #endif
 
@@ -1017,7 +1020,7 @@ static void uv__stream_eof(uv_stream_t* stream, const uv_buf_t* buf) {
 }
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
   uv__stream_queued_fds_t* queued_fds;
   unsigned int queue_size;
@@ -1062,7 +1065,7 @@ static int uv__stream_queue_fd(uv_stream_t* stream, int fd) {
 #define UV__CMSG_FD_SIZE (UV__CMSG_FD_COUNT * sizeof(int))
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
   struct cmsghdr* cmsg;
 
@@ -1122,7 +1125,7 @@ static int uv__stream_recv_cmsg(uv_stream_t* stream, struct msghdr* msg) {
 static void uv__read(uv_stream_t* stream) {
   uv_buf_t buf;
   ssize_t nread;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   struct msghdr msg;
   char cmsg_space[CMSG_SPACE(UV__CMSG_FD_SIZE)];
 #endif
@@ -1138,7 +1141,7 @@ static void uv__read(uv_stream_t* stream) {
   count = 32;
 
   is_ipc = stream->type == UV_NAMED_PIPE && ((uv_pipe_t*) stream)->ipc;
-#if defined(__NUTTX__) /* No IPC support for now */
+#if defined(__NUTTX__) || defined(__TIZENRT__) /* No IPC support for now */
   assert(!is_ipc);
 #endif
 
@@ -1151,7 +1154,7 @@ static void uv__read(uv_stream_t* stream) {
     assert(stream->alloc_cb != NULL);
 
     buf = uv_buf_init(NULL, 0);
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
     stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
 #else
     stream->alloc_cb((uv_handle_t*)stream, 2 * 1024, &buf);
@@ -1165,14 +1168,14 @@ static void uv__read(uv_stream_t* stream) {
     assert(buf.base != NULL);
     assert(uv__stream_fd(stream) >= 0);
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     if (!is_ipc) {
 #endif
       do {
         nread = read(uv__stream_fd(stream), buf.base, buf.len);
       }
       while (nread < 0 && errno == EINTR);
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     } else {
       /* ipc uses recvmsg */
       msg.msg_flags = 0;
@@ -1219,7 +1222,7 @@ static void uv__read(uv_stream_t* stream) {
       /* Successful read */
       ssize_t buflen = buf.len;
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
       if (is_ipc) {
         err = uv__stream_recv_cmsg(stream, &msg);
         if (err != 0) {
@@ -1349,7 +1352,7 @@ static void uv__stream_connect(uv_stream_t* stream) {
     stream->delayed_error = 0;
   } else {
     /* Normal situation: we need to get the socket error from the kernel. */
-#ifdef __NUTTX__
+#if defined(__NUTTX__) || defined(__TIZENRT__)
     // getsockopt for SO_ERROR is not supported in NuttX
     error = 0;
 #else

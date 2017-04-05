@@ -954,7 +954,7 @@ UV_EXTERN int uv_queue_work(uv_loop_t* loop,
                             uv_after_work_cb after_work_cb);
 
 UV_EXTERN int uv_cancel(uv_req_t* req);
-#if defined(__NUTTX__) || defined(__TUV_RAW__)
+#if defined(__NUTTX__) || defined(__TUV_RAW__) || defined(__TIZENRT__)
 // For embed systems that need cleanup before exit
 UV_EXTERN void tuv_cleanup(void);
 #endif

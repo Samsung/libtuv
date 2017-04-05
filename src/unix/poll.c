@@ -70,7 +70,7 @@ static void uv__poll_io(uv_loop_t* loop, uv__io_t* w, unsigned int events) {
 int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd) {
   int err;
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   err = uv__io_check_fd(loop, fd);
   if (err)
     return err;
@@ -80,7 +80,7 @@ int uv_poll_init(uv_loop_t* loop, uv_poll_t* handle, int fd) {
    * Workaround for e.g. kqueue fds not supporting ioctls.
    */
   err = uv__nonblock(fd, 1);
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   if (err == -ENOTTY)
     if (uv__nonblock == uv__nonblock_ioctl)
       err = uv__nonblock_fcntl(fd, 1);

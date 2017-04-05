@@ -16,7 +16,7 @@
 #include <uv.h>
 #include "runner.h"
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 # define DIR_BUFF_LENGTH 64
 #else
 # define DIR_BUFF_LENGTH 512

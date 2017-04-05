@@ -180,7 +180,7 @@ static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents) {
 
 static void uv__udp_recvmsg(uv_udp_t* handle) {
   struct sockaddr_storage peer;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   struct msghdr h;
 #else
   socklen_t addrlen;
@@ -198,7 +198,7 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
    */
   count = 32;
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   memset(&h, 0, sizeof(h));
   h.msg_name = &peer;
 #endif
@@ -212,7 +212,7 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
     }
     assert(buf.base != NULL);
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     h.msg_namelen = sizeof(peer);
     h.msg_iov = (void*) &buf;
     h.msg_iovlen = 1;
@@ -238,7 +238,7 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
     }
     else {
       const struct sockaddr *addr;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
       if (h.msg_namelen == 0)
 #else
       if (addrlen == 0)
@@ -248,7 +248,7 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
         addr = (const struct sockaddr*) &peer;
 
       flags = 0;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
       if (h.msg_flags & MSG_TRUNC)
 #else
       if (buf.len > nread)
@@ -269,7 +269,7 @@ static void uv__udp_recvmsg(uv_udp_t* handle) {
 static void uv__udp_sendmsg(uv_udp_t* handle) {
   uv_udp_send_t* req;
   QUEUE* q;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   struct msghdr h;
 #else
   socklen_t addrlen;
@@ -283,7 +283,7 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
     req = QUEUE_DATA(q, uv_udp_send_t, queue);
     assert(req != NULL);
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
     memset(&h, 0, sizeof h);
     h.msg_name = &req->addr;
     h.msg_namelen = (req->addr.ss_family == AF_INET6 ?
@@ -508,7 +508,7 @@ int uv__udp_try_send(uv_udp_t* handle,
                      const struct sockaddr* addr,
                      unsigned int addrlen) {
   int err;
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   struct msghdr h;
 #endif
   ssize_t size;
@@ -523,7 +523,7 @@ int uv__udp_try_send(uv_udp_t* handle,
   if (err)
     return err;
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
   memset(&h, 0, sizeof h);
   h.msg_name = (struct sockaddr*) addr;
   h.msg_namelen = addrlen;
@@ -552,7 +552,7 @@ int uv__udp_try_send(uv_udp_t* handle,
 }
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 static int uv__udp_set_membership4(uv_udp_t* handle,
                                    const struct sockaddr_in* multicast_addr,
                                    const char* interface_addr,
@@ -707,7 +707,7 @@ int uv_udp_open(uv_udp_t* handle, uv_os_sock_t sock) {
 }
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 int uv_udp_set_membership(uv_udp_t* handle,
                           const char* multicast_addr,
                           const char* interface_addr,
@@ -789,7 +789,7 @@ int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
 }
 
 
-#if !defined(__NUTTX__)
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return -EINVAL;

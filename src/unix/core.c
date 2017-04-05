@@ -52,7 +52,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <limits.h> /* INT_MAX, PATH_MAX, IOV_MAX */
-#include <sys/uio.h> /* writev */
+#if !defined(__TIZENRT__)
+# include <sys/uio.h> /* writev */
+#endif
 #include <pwd.h>
 
 #ifdef __sun
@@ -450,7 +452,7 @@ int uv__close_nocheckstdio(int fd) {
 
 
 int uv__close(int fd) {
-#if !defined(__NUTTX__) /* No STDERR_FILENO in nuttx */
+#if !defined(__NUTTX__) && !defined(__TIZENRT__) /* No STDERR_FILENO in nuttx */
   assert(fd > STDERR_FILENO);  /* Catch stdio close bugs. */
 #endif
   return uv__close_nocheckstdio(fd);
@@ -523,7 +525,7 @@ int uv__nonblock_fcntl(int fd, int set) {
 
 
 int uv__cloexec_fcntl(int fd, int set) {
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
   return 0;
 #endif
   int flags;
@@ -556,7 +558,7 @@ int uv__cloexec_fcntl(int fd, int set) {
 }
 
 
-#if defined(__NUTTX__)
+#if defined(__NUTTX__) || defined(__TIZENRT__)
 ssize_t uv__recvmsg(int fd, struct msghdr* msg, int flags) {
   return -1;
 }
