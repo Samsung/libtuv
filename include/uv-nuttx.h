@@ -57,7 +57,10 @@
 
 //---------------------------------------------------------------------------
 // @20161130-sanggyu: nuttx does not provide ENOTSUP.
+// @20170407-galpeter: nuttx started to provide ENOTSUP.
+#ifndef ENOTSUP
 #define ENOTSUP       EOPNOTSUPP
+#endif
 
 // @20171130-sanggyu:
 // Not defined macro. Copied from x86-64 linux system header
