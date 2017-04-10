@@ -381,7 +381,6 @@ static ssize_t uv__fs_scandir(uv_fs_t* req) {
   return -1;
 #else
   uv__dirent_t **dents;
-  int saved_errno;
   int n;
 
   dents = NULL;
@@ -390,28 +389,17 @@ static ssize_t uv__fs_scandir(uv_fs_t* req) {
   /* NOTE: We will use nbufs as an index field */
   req->nbufs = 0;
 
-  if (n == 0)
-    goto out; /* osx still needs to deallocate some memory */
+  if (n == 0) {
+    /* Memory was allocated using the system allocator, so use free() here. */
+    if (dents != NULL) {
+      free(dents);
+      dents = NULL;
+    }
+  }
   else if (n == -1)
     return n;
 
   req->ptr = dents;
-
-  return n;
-
-out:
-  saved_errno = errno;
-  if (dents != NULL) {
-    int i;
-
-    /* Memory was allocated using the system allocator, so use free() here. */
-    for (i = 0; i < n; i++)
-      free(dents[i]);
-    free(dents);
-  }
-  errno = saved_errno;
-
-  req->ptr = NULL;
 
   return n;
 #endif
