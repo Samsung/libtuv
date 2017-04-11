@@ -47,12 +47,12 @@
 #if !defined(__NUTTX__) && \
     !defined(__TIZENRT__) /* No netinet/tcp.h */
 #include <netinet/tcp.h>
+#include <pwd.h>
 #endif
 #include <arpa/inet.h>
 #include <netdb.h>
 
 #include <termios.h>
-#include <pwd.h>
 
 #include <semaphore.h>
 #include <pthread.h>
@@ -61,39 +61,39 @@
 #include "uv-threadpool.h"
 
 #if defined(__linux__)
-# include "uv-linux.h"
+  #include "uv-linux.h"
 #elif defined(_AIX)
-# include "uv-aix.h"
+  #include "uv-aix.h"
 #elif defined(__sun)
-# include "uv-sunos.h"
+  #include "uv-sunos.h"
 #elif defined(__APPLE__)
-# include "uv-darwin.h"
+  #include "uv-darwin.h"
 #elif defined(__DragonFly__)       || \
       defined(__FreeBSD__)         || \
       defined(__FreeBSD_kernel__)  || \
       defined(__OpenBSD__)         || \
       defined(__NetBSD__)
-# include "uv-bsd.h"
+  #include "uv-bsd.h"
 #elif defined(__NUTTX__)
-# include "uv-nuttx.h"
+  #include "uv-nuttx.h"
 #elif defined(__TIZENRT__)
-# include "uv-tizenrt.h"
+  #include "uv-tizenrt.h"
 #endif
 
 #ifndef PTHREAD_BARRIER_SERIAL_THREAD
-# include "pthread-barrier.h"
+  #include "pthread-barrier.h"
 #endif
 
 #ifndef NI_MAXHOST
-# define NI_MAXHOST 1025
+  #define NI_MAXHOST 1025
 #endif
 
 #ifndef NI_MAXSERV
-# define NI_MAXSERV 32
+  #define NI_MAXSERV 32
 #endif
 
 #ifndef UV_IO_PRIVATE_PLATFORM_FIELDS
-# define UV_IO_PRIVATE_PLATFORM_FIELDS /* empty */
+  #define UV_IO_PRIVATE_PLATFORM_FIELDS /* empty */
 #endif
 
 struct uv__io_s;
