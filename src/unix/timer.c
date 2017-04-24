@@ -91,7 +91,11 @@ void tuv_timer_deinit(uv_loop_t* loop, uv_timer_t* handle) {
 int uv_timer_start(uv_timer_t* handle,
                    uv_timer_cb cb,
                    uint64_t timeout,
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+                   uint32_t repeat) {
+#else /* original libuv code */
                    uint64_t repeat) {
+#endif
   uint64_t clamped_timeout;
 
   if (cb == NULL)
@@ -145,12 +149,20 @@ int uv_timer_again(uv_timer_t* handle) {
 }
 
 
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+void uv_timer_set_repeat(uv_timer_t* handle, uint32_t repeat) {
+#else /* original libuv code */
 void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat) {
+#endif
   handle->repeat = repeat;
 }
 
 
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+uint32_t uv_timer_get_repeat(const uv_timer_t* handle) {
+#else /* original libuv code */
 uint64_t uv_timer_get_repeat(const uv_timer_t* handle) {
+#endif
   return handle->repeat;
 }
 
