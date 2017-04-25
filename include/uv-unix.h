@@ -370,10 +370,9 @@ typedef struct {
 #ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
 # define UV_TIMER_PRIVATE_FIELDS                                              \
   uv_timer_cb timer_cb;                                                       \
-  void* heap_node[3];                                                         \
+  void* heap_node[1];                                                         \
   uint64_t timeout;                                                           \
-  uint32_t repeat;                                                            \
-  uint32_t start_id;
+  uint64_t repeat;
 #else /* original libuv code */
 # define UV_TIMER_PRIVATE_FIELDS                                              \
   uv_timer_cb timer_cb;                                                       \
