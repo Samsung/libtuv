@@ -118,6 +118,7 @@ uint64_t uv__hrtime(uv_clocktype_t type) {
 static void uv__add_pollfd(uv_loop_t* loop, struct pollfd* pe) {
   int i;
   bool exist = false;
+  int free_idx = -1;
   for (i = 0; i < loop->npollfds; ++i) {
     struct pollfd* cur = &loop->pollfds[i];
     if (cur->fd == pe->fd) {
@@ -125,9 +126,21 @@ static void uv__add_pollfd(uv_loop_t* loop, struct pollfd* pe) {
       exist = true;
       break;
     }
+    if (cur->fd == -1) {
+      free_idx = i;
+    }
   }
   if (!exist) {
-    struct pollfd* cur = &loop->pollfds[loop->npollfds++];
+    if (free_idx == -1) {
+      free_idx = loop->npollfds++;
+      if (free_idx >= TUV_POLL_EVENTS_SIZE)
+      {
+        TDLOG("uv__add_pollfd abort, because loop->npollfds (%d) reached maximum size", free_idx);
+        ABORT();
+      }
+    }
+    struct pollfd* cur = &loop->pollfds[free_idx];
+
     cur->fd = pe->fd;
     cur->events = pe->events;
     cur->revents = 0;
