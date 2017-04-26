@@ -310,7 +310,11 @@ TEST_IMPL(timer_huge_repeat) {
   TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &tiny_timer));
   TUV_ASSERT(0 == uv_timer_init(uv_default_loop(), &huge_timer1));
   TUV_ASSERT(0 == uv_timer_start(&tiny_timer, huge_repeat_cb, 2, 2));
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+  TUV_ASSERT(0 == uv_timer_start(&huge_timer1, huge_repeat_cb, 1, (uint32_t) -1));
+#else /* original libuv code */
   TUV_ASSERT(0 == uv_timer_start(&huge_timer1, huge_repeat_cb, 1, (uint64_t) -1));
+#endif
   TUV_ASSERT(0 == uv_run(uv_default_loop(), UV_RUN_DEFAULT));
 
   // for platforms that needs cleaning

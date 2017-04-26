@@ -96,6 +96,12 @@
 # define UV_IO_PRIVATE_PLATFORM_FIELDS /* empty */
 #endif
 
+/*
+ * Enables memory optimizations for low memory systems.
+ * This might hurt the performance of the library.
+ */
+#define TUV_ENABLE_MEMORY_CONSTRAINTS /* empty */
+
 struct uv__io_s;
 struct uv__async;
 struct uv_loop_s;
@@ -221,7 +227,39 @@ typedef struct {
   char* errmsg;
 } uv_lib_t;
 
-#define UV_LOOP_PRIVATE_FIELDS                                                \
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+# define UV_LOOP_PRIVATE_FIELDS                                               \
+  unsigned long flags;                                                        \
+  int backend_fd;                                                             \
+  void* pending_queue[2];                                                     \
+  void* watcher_queue[2];                                                     \
+  uv__io_t** watchers;                                                        \
+  unsigned int nwatchers;                                                     \
+  unsigned int nfds;                                                          \
+  void* wq[2];                                                                \
+  uv_mutex_t wq_mutex;                                                        \
+  uv_async_t wq_async;                                                        \
+  uv_rwlock_t cloexec_lock;                                                   \
+  uv_handle_t* closing_handles;                                               \
+  void* process_handles[2];                                                   \
+  void* prepare_handles[2];                                                   \
+  void* check_handles[2];                                                     \
+  void* idle_handles[2];                                                      \
+  void* async_handles[2];                                                     \
+  struct uv__async async_watcher;                                             \
+  struct {                                                                    \
+    void* min;                                                                \
+    unsigned int nelts;                                                       \
+  } timer_heap;                                                               \
+  uint32_t timer_counter;                                                     \
+  uint64_t time;                                                              \
+  int signal_pipefd[2];                                                       \
+  uv__io_t signal_io_watcher;                                                 \
+  uv_signal_t child_watcher;                                                  \
+  int emfile_fd;                                                              \
+  UV_PLATFORM_LOOP_FIELDS
+#else /* original libuv code */
+# define UV_LOOP_PRIVATE_FIELDS                                               \
   unsigned long flags;                                                        \
   int backend_fd;                                                             \
   void* pending_queue[2];                                                     \
@@ -250,7 +288,8 @@ typedef struct {
   uv__io_t signal_io_watcher;                                                 \
   uv_signal_t child_watcher;                                                  \
   int emfile_fd;                                                              \
-  UV_PLATFORM_LOOP_FIELDS                                                     \
+  UV_PLATFORM_LOOP_FIELDS
+#endif
 
 #define UV_REQ_TYPE_PRIVATE /* empty */
 
@@ -328,12 +367,21 @@ typedef struct {
   void* queue[2];                                                             \
   int pending;                                                                \
 
-#define UV_TIMER_PRIVATE_FIELDS                                               \
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+# define UV_TIMER_PRIVATE_FIELDS                                              \
+  uv_timer_cb timer_cb;                                                       \
+  void* heap_node[3];                                                         \
+  uint64_t timeout;                                                           \
+  uint32_t repeat;                                                            \
+  uint32_t start_id;
+#else /* original libuv code */
+# define UV_TIMER_PRIVATE_FIELDS                                              \
   uv_timer_cb timer_cb;                                                       \
   void* heap_node[3];                                                         \
   uint64_t timeout;                                                           \
   uint64_t repeat;                                                            \
   uint64_t start_id;
+#endif
 
 #define UV_GETADDRINFO_PRIVATE_FIELDS                                         \
   struct uv__work work_req;                                                   \

@@ -344,7 +344,17 @@ UV_EXTERN const char* uv_strerror(int err);
 UV_EXTERN const char* uv_err_name(int err);
 
 
-#define UV_REQ_FIELDS                                                         \
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+# define UV_REQ_FIELDS                                                        \
+  /* public */                                                                \
+  void* data;                                                                 \
+  /* read-only */                                                             \
+  uv_req_type type;                                                           \
+  /* private */                                                               \
+  void* active_queue[2];                                                      \
+  UV_REQ_PRIVATE_FIELDS
+#else /* original libuv code */
+# define UV_REQ_FIELDS                                                        \
   /* public */                                                                \
   void* data;                                                                 \
   /* read-only */                                                             \
@@ -352,7 +362,8 @@ UV_EXTERN const char* uv_err_name(int err);
   /* private */                                                               \
   void* active_queue[2];                                                      \
   void* reserved[4];                                                          \
-  UV_REQ_PRIVATE_FIELDS                                                       \
+  UV_REQ_PRIVATE_FIELDS
+#endif
 
 /* Abstract base class of all requests. */
 struct uv_req_s {
@@ -376,7 +387,22 @@ struct uv_shutdown_s {
 };
 
 
-#define UV_HANDLE_FIELDS                                                      \
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+# define UV_HANDLE_FIELDS                                                     \
+  /* public */                                                                \
+  void* data;                                                                 \
+  /* read-only */                                                             \
+  uv_loop_t* loop;                                                            \
+  uv_handle_type type;                                                        \
+  /* private */                                                               \
+  uv_close_cb close_cb;                                                       \
+  void* handle_queue[2];                                                      \
+  union {                                                                     \
+    int fd;                                                                   \
+  } u;                                                                        \
+  UV_HANDLE_PRIVATE_FIELDS
+#else /* original libuv code */
+# define UV_HANDLE_FIELDS                                                     \
   /* public */                                                                \
   void* data;                                                                 \
   /* read-only */                                                             \
@@ -389,7 +415,8 @@ struct uv_shutdown_s {
     int fd;                                                                   \
     void* reserved[4];                                                        \
   } u;                                                                        \
-  UV_HANDLE_PRIVATE_FIELDS                                                    \
+  UV_HANDLE_PRIVATE_FIELDS
+#endif
 
 /* The abstract base class of all handles. */
 struct uv_handle_s {
@@ -762,11 +789,20 @@ UV_EXTERN void tuv_timer_deinit(uv_loop_t*, uv_timer_t* handle);
 UV_EXTERN int uv_timer_start(uv_timer_t* handle,
                              uv_timer_cb cb,
                              uint64_t timeout,
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+                             uint32_t repeat);
+#else /* original libuv code */
                              uint64_t repeat);
+#endif
 UV_EXTERN int uv_timer_stop(uv_timer_t* handle);
 UV_EXTERN int uv_timer_again(uv_timer_t* handle);
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+UV_EXTERN void uv_timer_set_repeat(uv_timer_t* handle, uint32_t repeat);
+UV_EXTERN uint32_t uv_timer_get_repeat(const uv_timer_t* handle);
+#else /* original libuv code */
 UV_EXTERN void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat);
 UV_EXTERN uint64_t uv_timer_get_repeat(const uv_timer_t* handle);
+#endif
 
 
 /*
