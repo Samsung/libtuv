@@ -789,20 +789,11 @@ UV_EXTERN void tuv_timer_deinit(uv_loop_t*, uv_timer_t* handle);
 UV_EXTERN int uv_timer_start(uv_timer_t* handle,
                              uv_timer_cb cb,
                              uint64_t timeout,
-#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
-                             uint32_t repeat);
-#else /* original libuv code */
                              uint64_t repeat);
-#endif
 UV_EXTERN int uv_timer_stop(uv_timer_t* handle);
 UV_EXTERN int uv_timer_again(uv_timer_t* handle);
-#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
-UV_EXTERN void uv_timer_set_repeat(uv_timer_t* handle, uint32_t repeat);
-UV_EXTERN uint32_t uv_timer_get_repeat(const uv_timer_t* handle);
-#else /* original libuv code */
 UV_EXTERN void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat);
 UV_EXTERN uint64_t uv_timer_get_repeat(const uv_timer_t* handle);
-#endif
 
 
 /*

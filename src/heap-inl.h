@@ -24,6 +24,102 @@
 # define HEAP_EXPORT(declaration) static declaration
 #endif
 
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+struct heap_node {
+  struct heap_node* next;
+};
+
+struct heap {
+  struct heap_node* min; /* head */
+  unsigned int nelts; /* number of elements */
+};
+
+/* Return non-zero if a < b. */
+typedef int (*heap_compare_fn)(const struct heap_node* a,
+                               const struct heap_node* b);
+
+/* Public functions. */
+HEAP_EXPORT(void heap_init(struct heap* heap));
+HEAP_EXPORT(struct heap_node* heap_min(const struct heap* heap));
+HEAP_EXPORT(void heap_insert(struct heap* heap,
+                             struct heap_node* newnode,
+                             heap_compare_fn less_than));
+HEAP_EXPORT(void heap_remove(struct heap* heap,
+                             struct heap_node* node));
+
+/* Implementation follows. */
+
+HEAP_EXPORT(void heap_init(struct heap* heap)) {
+  heap->min = NULL;
+  heap->nelts = 0;
+}
+
+HEAP_EXPORT(struct heap_node* heap_min(const struct heap* heap)) {
+  return heap->min;
+}
+
+HEAP_EXPORT(void heap_insert(struct heap* heap,
+                             struct heap_node* newnode,
+                             heap_compare_fn less_than)) {
+  struct heap_node* curr = heap->min;
+
+  if (curr == NULL || less_than(newnode, curr))
+  {
+    /* Update head */
+    newnode->next = curr;
+    heap->min = newnode;
+    heap->nelts++;
+    return;
+  }
+
+  while (curr->next != NULL)
+  {
+    if (less_than(newnode, curr->next))
+    {
+      newnode->next = curr->next;
+      curr->next = newnode;
+      heap->nelts++;
+      return;
+    }
+
+    curr = curr->next;
+  }
+
+  /* Insert to the end of the list */
+  curr->next = newnode;
+  newnode->next = NULL;
+  heap->nelts++;
+}
+
+HEAP_EXPORT(void heap_remove(struct heap* heap,
+                             struct heap_node* node)) {
+  struct heap_node* curr = heap->min;
+
+  if (curr == NULL)
+  {
+    return;
+  }
+
+  if (curr == node)
+  {
+    heap->min = heap->min->next;
+    return;
+  }
+
+  while (curr->next != NULL)
+  {
+    if (curr->next == node)
+    {
+      curr->next = curr->next->next;
+      break;
+    }
+
+    curr = curr->next;
+  }
+}
+
+#else /* original libuv code */
+
 struct heap_node {
   struct heap_node* left;
   struct heap_node* right;
@@ -239,6 +335,8 @@ HEAP_EXPORT(void heap_remove(struct heap* heap,
 HEAP_EXPORT(void heap_dequeue(struct heap* heap, heap_compare_fn less_than)) {
   heap_remove(heap, heap->min, less_than);
 }
+
+#endif
 
 #undef HEAP_EXPORT
 

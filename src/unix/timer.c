@@ -54,6 +54,7 @@ static int timer_less_than(const struct heap_node* ha,
   if (b->timeout < a->timeout)
     return 0;
 
+#ifndef TUV_ENABLE_MEMORY_CONSTRAINTS
   /* Compare start_id when both have the same timeout. start_id is
    * allocated with loop->timer_counter in uv_timer_start().
    */
@@ -61,6 +62,7 @@ static int timer_less_than(const struct heap_node* ha,
     return 1;
   if (b->start_id < a->start_id)
     return 0;
+#endif
 
   return 0;
 }
@@ -91,11 +93,7 @@ void tuv_timer_deinit(uv_loop_t* loop, uv_timer_t* handle) {
 int uv_timer_start(uv_timer_t* handle,
                    uv_timer_cb cb,
                    uint64_t timeout,
-#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
-                   uint32_t repeat) {
-#else /* original libuv code */
                    uint64_t repeat) {
-#endif
   uint64_t clamped_timeout;
 
   if (cb == NULL)
@@ -111,8 +109,10 @@ int uv_timer_start(uv_timer_t* handle,
   handle->timer_cb = cb;
   handle->timeout = clamped_timeout;
   handle->repeat = repeat;
+#ifndef TUV_ENABLE_MEMORY_CONSTRAINTS
   /* start_id is the second index to be compared in uv__timer_cmp() */
   handle->start_id = handle->loop->timer_counter++;
+#endif
 
   heap_insert((struct heap*) &handle->loop->timer_heap,
               (struct heap_node*) &handle->heap_node,
@@ -127,9 +127,14 @@ int uv_timer_stop(uv_timer_t* handle) {
   if (!uv__is_active(handle))
     return 0;
 
+#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
+  heap_remove((struct heap*) &handle->loop->timer_heap,
+              (struct heap_node*) &handle->heap_node);
+#else /* original libuv code */
   heap_remove((struct heap*) &handle->loop->timer_heap,
               (struct heap_node*) &handle->heap_node,
               timer_less_than);
+#endif
   uv__handle_stop(handle);
 
   return 0;
@@ -149,20 +154,12 @@ int uv_timer_again(uv_timer_t* handle) {
 }
 
 
-#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
-void uv_timer_set_repeat(uv_timer_t* handle, uint32_t repeat) {
-#else /* original libuv code */
 void uv_timer_set_repeat(uv_timer_t* handle, uint64_t repeat) {
-#endif
   handle->repeat = repeat;
 }
 
 
-#ifdef TUV_ENABLE_MEMORY_CONSTRAINTS
-uint32_t uv_timer_get_repeat(const uv_timer_t* handle) {
-#else /* original libuv code */
 uint64_t uv_timer_get_repeat(const uv_timer_t* handle) {
-#endif
   return handle->repeat;
 }
 
