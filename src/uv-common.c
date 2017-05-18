@@ -113,6 +113,8 @@ const char* uv_err_name(int err) {
   switch (err) {
     UV_ERRNO_MAP(UV_ERR_NAME_GEN)
     default:
+      /* @20170517-sanggyu: To figure out what error number is missing */
+      TDLOG("uv_err_name for (%d) is missing. Add err name string\n", err);
       assert(0);
       return NULL;
   }
