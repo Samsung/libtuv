@@ -15,12 +15,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 
 #
-# { @20161129-sanggyu
-#   It corresponds to uv.gyp's `sources` }
+# { TUV_CHANGES@20161129: It corresponds to uv.gyp's `sources` }
 #
 set(COMMON_SRCFILES
     ${INCLUDE_ROOT}/uv.h
-# { @20161129-sanggyu
+# { TUV_CHANGES@20161129:
 #   Makefile.am include tree.h only in WINNT
 #   But tree.h is used in unix's several files (i.e. loop.c)
 #   But we don't provide unix's the corresponding part.     }

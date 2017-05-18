@@ -18,7 +18,7 @@
 set(TUV_PLATFORM_PATH ${PLATFORM_NAME_L})
 
 #
-# { @20161129-sanggyu
+# { TUV_CHANGES@20161129:
 #   It corresponds to uv.gyp's `conditions` with OS == `linux` }
 #
 set(PLATFORM_SRCFILES
