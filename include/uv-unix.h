@@ -135,7 +135,7 @@ struct uv__async {
 # define UV_PLATFORM_SEM_T sem_t
 #endif
 
-/* @20161128-sanggyu: for nuttx */
+/* TUV_CHANGES@20161128: for NuttX */
 #ifndef UV_PLATFORM_RWLOCK_T
 # define UV_PLATFORM_RWLOCK_T pthread_rwlock_t
 #endif

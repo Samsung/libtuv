@@ -27,8 +27,8 @@ set(UNIX_PATH "${SOURCE_ROOT}/unix")
 set(TUV_TEST_INCDIRS "${TEST_ROOT}")
 
 #
-# { @20161129-sanggyu
-# It corresponds to uv.gyp's section "Not Windows i.e. POSIX" }
+# { TUV_CHANGES@20161129:
+#   It corresponds to uv.gyp's section "Not Windows i.e. POSIX" }
 #
 set(PLATFORM_SRCFILES
       ${INCLUDE_ROOT}/uv-unix.h

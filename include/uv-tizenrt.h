@@ -55,18 +55,17 @@ struct iovec
 #define TUV_POLL_EVENTS_SIZE  32
 #endif
 
-// @20161130-sanggyu: FIXME
-// What is the reasonable nubmer?
+// TUV_CHANGES@20161130: FIXME: What is the reasonable nubmer?
 #ifndef IOV_MAX
 #define IOV_MAX TUV_POLL_EVENTS_SIZE
 #endif
 
 //---------------------------------------------------------------------------
-// @20161130-sanggyu: nuttx does not provide ENOTSUP.
+// TUV_CHANGES@20161130: NuttX doesn't provide ENOTSUP.
 #define ENOTSUP       EOPNOTSUPP
 
-// @20171130-sanggyu:
-// Not defined macro. Copied from x86-64 linux system header
+// TUV_CHANGES@20171130:
+// Not defined macros. Copied from x86-64 linux system header
 #define STDIN_FILENO  0
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
@@ -74,8 +73,7 @@ struct iovec
 #define SIGPROF       27
 
 //-----------------------------------------------------------------------------
-// @20171130-sanggyu:
-// Not used. I believe we can remove those.
+// TUV_CHANGES@20171130: Not used. I believe we can remove those.
 #define _SC_CLK_TCK           0x0006
 #define _SC_NPROCESSORS_ONLN  0x0061
 #define CLOCK_MONOTONIC       1
