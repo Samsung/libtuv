@@ -55,12 +55,12 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #if !defined(__TIZENRT__)
-# include <sys/uio.h> /* writev */
+  #include <sys/uio.h> /* writev */
+  #include <utime.h>
 #endif
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <utime.h>
 #include <poll.h>
 
 #if defined(__DragonFly__)        ||                                      \
@@ -68,13 +68,13 @@
     defined(__FreeBSD_kernel_)    ||                                      \
     defined(__OpenBSD__)          ||                                      \
     defined(__NetBSD__)
-# define HAVE_PREADV 1
+  #define HAVE_PREADV 1
 #else
-# define HAVE_PREADV 0
+  #define HAVE_PREADV 0
 #endif
 
 #if defined(__linux__) || defined(__sun)
-# include <sys/sendfile.h>
+  #include <sys/sendfile.h>
 #endif
 
 #define INIT(subtype)                                                         \
