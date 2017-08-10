@@ -115,8 +115,7 @@ const char* uv_err_name(int err) {
     default:
       /* TUV_CHANGES@20170517: To figure out what error name is missing */
       TDLOG("uv_err_name for (%d) is missing. Add err name string\n", err);
-      assert(0);
-      return NULL;
+      return "uv_err_name: Unknown error";
   }
 }
 #undef UV_ERR_NAME_GEN
