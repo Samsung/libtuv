@@ -1155,9 +1155,9 @@ static void uv__read(uv_stream_t* stream) {
 
     buf = uv_buf_init(NULL, 0);
 #if defined(__NUTTX__) || defined(__TIZENRT__)
-    stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
-#else
     stream->alloc_cb((uv_handle_t*)stream, 2 * 1024, &buf);
+#else
+    stream->alloc_cb((uv_handle_t*)stream, 64 * 1024, &buf);
 #endif
     if (buf.base == NULL || buf.len == 0) {
       /* User indicates it can't or won't handle the read. */
