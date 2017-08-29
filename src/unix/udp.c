@@ -271,8 +271,6 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
   QUEUE* q;
 #if !defined(__NUTTX__) && !defined(__TIZENRT__)
   struct msghdr h;
-#else
-  socklen_t addrlen;
 #endif
   ssize_t size;
 
@@ -299,7 +297,7 @@ static void uv__udp_sendmsg(uv_udp_t* handle) {
     do {
       size = sendto(handle->io_watcher.fd, req->bufs->base,
                     req->bufs->len, 0, (struct sockaddr*)&req->addr,
-                    addrlen);
+                    sizeof(req->addr));
     } while (size == -1 && errno == EINTR);
 #endif
     if (size == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
