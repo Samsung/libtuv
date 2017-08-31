@@ -56,11 +56,11 @@
 #include <sys/time.h>
 #if !defined(__TIZENRT__)
 # include <sys/uio.h> /* writev */
+# include <utime.h>
 #endif
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <utime.h>
 #include <poll.h>
 
 #if defined(__DragonFly__)        ||                                      \
