@@ -54,8 +54,8 @@
 #include <limits.h> /* INT_MAX, PATH_MAX, IOV_MAX */
 #if !defined(__TIZENRT__)
 # include <sys/uio.h> /* writev */
+# include <pwd.h>
 #endif
-#include <pwd.h>
 
 #ifdef __sun
 # include <sys/filio.h>
