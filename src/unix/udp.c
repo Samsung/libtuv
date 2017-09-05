@@ -69,6 +69,15 @@
 # define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
 #endif
 
+#if defined(__TIZENRT__)
+/* Although TizenRT does not support IPv6, in order to minimize
+ * libtuv source change, I added following macro definitions.
+ */
+#define IPV6_UNICAST_HOPS   16
+#define IPV6_MULTICAST_IF   17
+#define IPV6_MULTICAST_HOPS 18
+#define IPV6_MULTICAST_LOOP 19
+#endif
 
 static void uv__udp_run_completed(uv_udp_t* handle);
 static void uv__udp_io(uv_loop_t* loop, uv__io_t* w, unsigned int revents);
@@ -787,7 +796,7 @@ int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
 }
 
 
-#if !defined(__NUTTX__) && !defined(__TIZENRT__)
+#if !defined(__NUTTX__)
 int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return -EINVAL;
