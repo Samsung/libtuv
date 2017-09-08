@@ -797,6 +797,37 @@ int uv_udp_set_broadcast(uv_udp_t* handle, int on) {
 
 
 #if !defined(__NUTTX__)
+
+#if defined(__TIZENRT__)
+/*
+ * These flags are not supported for IPv6 by TizenRT
+ * The uv_set_socckopt expects both IPv6 and IPv4 versions of flag and checks
+ * internally, which flags should be used based on address family.
+ * This solution allows compilation of calls for TizenRT.
+ * An error for not supported flag will occur at runtime instead
+ * of compilation. It is better to be able to set TTL at least one protocol
+ * than not being able to set TTL at all for.
+ */
+static int get_ipv6_unicast_hops() {
+  return -1;
+}
+static int get_ipv6_multicast_hops() {
+  return -1;
+}
+static int get_ipv6_multicast_loop() {
+  return -1;
+}
+#else
+static int get_ipv6_unicast_hops() {
+  return IPV6_UNICAST_HOPS;
+}
+static int get_ipv6_multicast_hops() {
+  return IPV6_MULTICAST_HOPS;
+}
+static int get_ipv6_multicast_loop() {
+  return IPV6_MULTICAST_LOOP;
+}
+#endif /* defined(__TIZENRT__) */
 int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
   if (ttl < 1 || ttl > 255)
     return -EINVAL;
@@ -817,7 +848,7 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
 
   return uv__setsockopt(handle,
                         IP_TTL,
-                        IPV6_UNICAST_HOPS,
+                        get_ipv6_unicast_hops(),
                         &ttl,
                         sizeof(ttl));
 #endif /* defined(__sun) || defined(_AIX) || defined (__OpenBSD__) ||
@@ -825,7 +856,7 @@ int uv_udp_set_ttl(uv_udp_t* handle, int ttl) {
 
   return uv__setsockopt_maybe_char(handle,
                                    IP_TTL,
-                                   IPV6_UNICAST_HOPS,
+                                   get_ipv6_unicast_hops(),
                                    ttl);
 }
 
@@ -841,14 +872,14 @@ int uv_udp_set_multicast_ttl(uv_udp_t* handle, int ttl) {
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_TTL,
-                          IPV6_MULTICAST_HOPS,
+                          get_ipv6_multicast_hops(),
                           &ttl,
                           sizeof(ttl));
 #endif /* defined(__sun) || defined(_AIX) || defined(__MVS__) */
 
   return uv__setsockopt_maybe_char(handle,
                                    IP_MULTICAST_TTL,
-                                   IPV6_MULTICAST_HOPS,
+                                   get_ipv6_multicast_hops(),
                                    ttl);
 }
 
@@ -864,14 +895,14 @@ int uv_udp_set_multicast_loop(uv_udp_t* handle, int on) {
   if (handle->flags & UV_HANDLE_IPV6)
     return uv__setsockopt(handle,
                           IP_MULTICAST_LOOP,
-                          IPV6_MULTICAST_LOOP,
+                          get_ipv6_multicast_loop(),
                           &on,
                           sizeof(on));
 #endif /* defined(__sun) || defined(_AIX) || defined(__MVS__) */
 
   return uv__setsockopt_maybe_char(handle,
                                    IP_MULTICAST_LOOP,
-                                   IPV6_MULTICAST_LOOP,
+                                   get_ipv6_multicast_loop(),
                                    on);
 }
 
@@ -908,6 +939,8 @@ int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr)
                    sizeof(addr4->sin_addr)) == -1) {
       return -errno;
     }
+#if !defined(__TIZENRT__)
+  /* TizenRT doesn't support multicast interface for IPv6 */
   } else if (addr_st.ss_family == AF_INET6) {
     if (setsockopt(handle->io_watcher.fd,
                    IPPROTO_IPV6,
@@ -916,6 +949,7 @@ int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr)
                    sizeof(addr6->sin6_scope_id)) == -1) {
       return -errno;
     }
+#endif
   } else {
     assert(0 && "unexpected address family");
     abort();
@@ -923,7 +957,7 @@ int uv_udp_set_multicast_interface(uv_udp_t* handle, const char* interface_addr)
 
   return 0;
 }
-#endif
+#endif /* #if !defined(__NUTTX__) */
 
 int uv_udp_getsockname(const uv_udp_t* handle,
                        struct sockaddr* name,
