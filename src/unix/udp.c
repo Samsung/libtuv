@@ -559,7 +559,7 @@ int uv__udp_try_send(uv_udp_t* handle,
 }
 
 
-#if !defined(__NUTTX__) && !defined(__TIZENRT__)
+#if !defined(__NUTTX__)
 static int uv__udp_set_membership4(uv_udp_t* handle,
                                    const struct sockaddr_in* multicast_addr,
                                    const char* interface_addr,
@@ -605,8 +605,10 @@ static int uv__udp_set_membership4(uv_udp_t* handle,
 
   return 0;
 }
+#endif /* !defined(__NUTTX__) */
 
 
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
 static int uv__udp_set_membership6(uv_udp_t* handle,
                                    const struct sockaddr_in6* multicast_addr,
                                    const char* interface_addr,
@@ -652,7 +654,7 @@ static int uv__udp_set_membership6(uv_udp_t* handle,
 
   return 0;
 }
-#endif
+#endif /* !defined(__NUTTX__) && !defined(__TIZENRT__) */
 
 
 int uv_udp_init_ex(uv_loop_t* loop, uv_udp_t* handle, unsigned int flags) {
@@ -738,6 +740,26 @@ int uv_udp_set_membership(uv_udp_t* handle,
   }
 }
 #endif
+
+
+#if defined(__TIZENRT__)
+int uv_udp_set_membership(uv_udp_t* handle,
+                          const char* multicast_addr,
+                          const char* interface_addr,
+                          uv_membership membership) {
+  int err;
+  struct sockaddr_in addr4;
+
+  if (uv_ip4_addr(multicast_addr, 0, &addr4) == 0) {
+    err = uv__udp_maybe_deferred_bind(handle, AF_INET, UV_UDP_REUSEADDR);
+    if (err)
+      return err;
+    return uv__udp_set_membership4(handle, &addr4, interface_addr, membership);
+  } else {
+    return -EINVAL;
+  }
+}
+#endif /* defined(__TIZENRT__) */
 
 static int uv__setsockopt(uv_udp_t* handle,
                          int option4,
