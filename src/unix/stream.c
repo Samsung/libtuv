@@ -1590,6 +1590,16 @@ int uv_read_stop(uv_stream_t* stream) {
 }
 
 
+int uv_is_readable(const uv_stream_t* stream) {
+  return !!(stream->flags & UV_STREAM_READABLE);
+}
+
+
+int uv_is_writable(const uv_stream_t* stream) {
+  return !!(stream->flags & UV_STREAM_WRITABLE);
+}
+
+
 #if defined(__APPLE__)
 int uv___stream_fd(const uv_stream_t* handle) {
   const uv__stream_select_t* s;
