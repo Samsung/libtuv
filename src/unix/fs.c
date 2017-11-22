@@ -578,8 +578,8 @@ static void uv__to_stat(struct stat* src, uv_stat_t* dst) {
   dst->st_birthtim.tv_nsec = src->st_ctimensec;
   dst->st_flags = 0;
   dst->st_gen = 0;
-#elif !defined(_AIX) && (       \
-    defined(_GNU_SOURCE)     || \
+#elif !defined(_AIX) && !defined(__NUTTX__) && \
+    (defined(_GNU_SOURCE)    || \
     defined(_BSD_SOURCE)     || \
     defined(_SVID_SOURCE)    || \
     defined(_XOPEN_SOURCE)   || \
