@@ -23,12 +23,14 @@ set(PLATFORM_SRCFILES
       ${INCLUDE_ROOT}/uv-darwin.h
       ${INCLUDE_ROOT}/pthread-barrier.h
 #     ${UNIX_PATH}/bsd-ifaddrs.c
+      ${UNIX_PATH}/loop.c
       ${UNIX_PATH}/darwin.c
 #     ${UNIX_PATH}/darwin-proctitle.c
       ${UNIX_PATH}/fsevents.c
       ${UNIX_PATH}/kqueue.c
 #     ${UNIX_PATH}/proctitle.c
       ${UNIX_PATH}/pthread-barrier.c
+      ${UNIX_PATH}/signal.c
       )
 
 set(PLATFORM_TESTFILES "${TEST_ROOT}/runner_linux.c")
