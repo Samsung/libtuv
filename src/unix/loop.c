@@ -46,6 +46,8 @@ int uv_loop_init(uv_loop_t* loop) {
   void* saved_data;
   int err;
 
+  uv__signal_global_once_init();
+
   saved_data = loop->data;
   memset(loop, 0, sizeof(*loop));
   loop->data = saved_data;
