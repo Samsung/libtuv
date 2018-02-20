@@ -458,7 +458,6 @@ void uv__stream_flush_write_queue(uv_stream_t* stream, int error) {
 
 
 void uv__stream_destroy(uv_stream_t* stream) {
-  assert(!uv__io_active(&stream->io_watcher, POLLIN | POLLOUT));
   assert(stream->flags & UV_CLOSED);
 
   if (stream->connect_req) {
@@ -466,6 +465,9 @@ void uv__stream_destroy(uv_stream_t* stream) {
     stream->connect_req->cb(stream->connect_req, -ECANCELED);
     stream->connect_req = NULL;
   }
+
+  // TUV_CHANGES@20170131: if the stream has connect_req, POLLOUT is set
+  assert(!uv__io_active(&stream->io_watcher, POLLIN | POLLOUT));
 
   uv__stream_flush_write_queue(stream, -ECANCELED);
   uv__write_callbacks(stream);
