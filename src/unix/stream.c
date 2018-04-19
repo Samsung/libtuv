@@ -993,8 +993,11 @@ uv_handle_type uv__handle_type(int fd) {
       return UV_NAMED_PIPE;
 #endif
     switch (ss.ss_family) {
+
+#ifdef AF_UNIX
       case AF_UNIX:
         return UV_NAMED_PIPE;
+#endif
       case AF_INET:
       case AF_INET6:
         return UV_TCP;
