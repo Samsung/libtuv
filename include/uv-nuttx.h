@@ -71,13 +71,6 @@
 #define TCP_NODELAY   1
 
 //-----------------------------------------------------------------------------
-// TUV_CHANGES@20171130:
-// Not used. I believe we can remove those.
-#define _SC_CLK_TCK           0x0006
-#define _SC_NPROCESSORS_ONLN  0x0061
-#define CLOCK_MONOTONIC       1
-
-//-----------------------------------------------------------------------------
 // date time extension
 // uint64_t uv__time_precise();
 
