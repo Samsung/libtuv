@@ -70,6 +70,14 @@
 #define SIGPROF       27
 #define TCP_NODELAY   1
 
+#ifndef _SC_CLK_TCK
+#define _SC_CLK_TCK 0x0006
+#endif
+
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC 1
+#endif
+
 //-----------------------------------------------------------------------------
 // date time extension
 // uint64_t uv__time_precise();
