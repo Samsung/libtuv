@@ -44,11 +44,11 @@
 #include <stdio.h>
 #include <stdlib.h> /* malloc */
 #include <string.h> /* memset */
-#include <unistd.h> /* usleep */
 
 #if defined(_WIN32)
 # include <malloc.h> /* malloc */
 #else
+# include <unistd.h> /* usleep */
 # include <net/if.h> /* if_nametoindex */
 #endif
 
@@ -67,7 +67,7 @@ static uv__allocator_t uv__allocator = {
   free,
 };
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(_WIN32)
 char* uv__strdup(const char* s) {
   size_t len = strlen(s) + 1;
   char* m = uv__malloc(len);
@@ -491,5 +491,9 @@ int uv_loop_close(uv_loop_t* loop) {
 
 /* Pause the calling thread for a number of milliseconds. */
 void uv_sleep(int msec) {
+#ifdef _WIN32
+  Sleep(msec * 1000);
+#else
   usleep(msec * 1000);
+#endif
 }

@@ -27,7 +27,7 @@ set(COMMON_SRCFILES
     ${INCLUDE_ROOT}/uv-errno.h
     ${INCLUDE_ROOT}/uv-threadpool.h
     ${INCLUDE_ROOT}/uv-version.h
-#   ${SOURCE_ROOT}/fs-poll.c
+    ${SOURCE_ROOT}/fs-poll.c
     ${SOURCE_ROOT}/heap-inl.h
     ${SOURCE_ROOT}/inet.c
     ${SOURCE_ROOT}/queue.h
