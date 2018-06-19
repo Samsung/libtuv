@@ -492,7 +492,7 @@ int uv_loop_close(uv_loop_t* loop) {
 /* Pause the calling thread for a number of milliseconds. */
 void uv_sleep(int msec) {
 #ifdef _WIN32
-  Sleep(msec * 1000);
+  Sleep(msec);
 #else
   usleep(msec * 1000);
 #endif
