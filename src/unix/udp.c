@@ -437,6 +437,7 @@ static int uv__udp_maybe_deferred_bind(uv_udp_t* handle,
     addrlen = sizeof *addr;
     break;
   }
+#if !defined(__TIZENRT__) || defined(CONFIG_NET_IPv6)
   case AF_INET6:
   {
     struct sockaddr_in6* addr = (void*)&taddr;
@@ -446,6 +447,7 @@ static int uv__udp_maybe_deferred_bind(uv_udp_t* handle,
     addrlen = sizeof *addr;
     break;
   }
+#endif
   default:
     assert(0 && "unsupported address family");
     abort();
