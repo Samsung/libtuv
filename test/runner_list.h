@@ -114,6 +114,7 @@
   TE(getaddrinfo_basic, 5000)                                                 \
   TE(getaddrinfo_basic_sync, 5000)                                            \
   TE(getaddrinfo_concurrent, 5000)                                            \
+  TE(we_get_signal, 5000)                                                     \
 
 #elif defined(__TUV_RAW__)
 #define TEST_LIST_EXT(TE)                                                     \
