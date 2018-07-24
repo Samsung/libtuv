@@ -114,7 +114,26 @@
   TE(getaddrinfo_basic, 5000)                                                 \
   TE(getaddrinfo_basic_sync, 5000)                                            \
   TE(getaddrinfo_concurrent, 5000)                                            \
+  \
+  TE(pipe_bind_error_addrinuse, 5000)                                         \
+  TE(pipe_bind_error_addrnotavail, 5000)                                      \
+  TE(pipe_bind_error_inval, 5000)                                             \
+  TE(pipe_listen_without_bind, 5000)                                          \
+/*TE(pipe_close_stdout_read_stdin, 5000)*/                                    \
+  TE(pipe_connect_bad_name, 5000)                                             \
+/*TE(pipe_connect_to_file, 5000)*/                                            \
+/*TE(pipe_connect_multiple, 5000)*/                                           \
+/*TE(pipe_connect_on_prepare, 5000)*/                                         \
+  TE(pipe_getsockname, 5000)                                                  \
+  TE(pipe_getsockname_abstract, 5000)                                         \
+  TE(pipe_getsockname_blocking, 5000)                                         \
+  TE(pipe_pending_instances, 5000)                                            \
+  TE(pipe_sendmsg, 5000)                                                      \
+  TE(pipe_server_close, 5000)                                                 \
+  TE(pipe_set_non_blocking, 5000)                                             \
+  \
   TE(we_get_signal, 5000)                                                     \
+  TE(we_get_signals, 5000)
 
 #elif defined(__TUV_RAW__)
 #define TEST_LIST_EXT(TE)                                                     \

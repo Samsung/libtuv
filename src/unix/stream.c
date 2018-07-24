@@ -598,7 +598,9 @@ int uv_accept(uv_stream_t* server, uv_stream_t* client) {
     return -EAGAIN;
 
   switch (client->type) {
+#ifdef TUV_FEATURE_PIPE
     case UV_NAMED_PIPE:
+#endif
     case UV_TCP:
       err = uv__stream_open(client,
                             server->accepted_fd,
@@ -661,6 +663,12 @@ int uv_listen(uv_stream_t* stream, int backlog, uv_connection_cb cb) {
   case UV_TCP:
     err = uv_tcp_listen((uv_tcp_t*)stream, backlog, cb);
     break;
+
+#ifdef TUV_FEATURE_PIPE
+  case UV_NAMED_PIPE:
+    err = uv_pipe_listen((uv_pipe_t*)stream, backlog, cb);
+    break;
+#endif
 
   default:
     err = -EINVAL;
@@ -1673,3 +1681,12 @@ void uv__stream_close(uv_stream_t* handle) {
   assert(!uv__io_active(&handle->io_watcher, POLLIN | POLLOUT));
 }
 
+
+#ifdef TUV_FEATURE_PIPE
+int uv_stream_set_blocking(uv_stream_t* handle, int blocking) {
+  /* Don't need to check the file descriptor, uv__nonblock()
+   * will fail with EBADF if it's not valid.
+   */
+  return uv__nonblock(uv__stream_fd(handle), !blocking);
+}
+#endif
