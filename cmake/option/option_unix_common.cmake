@@ -51,7 +51,6 @@ set(PLATFORM_SRCFILES
       ${UNIX_PATH}/poll.c
       ${UNIX_PATH}/process.c
 #     ${UNIX_PATH}/proctitle.c
-#     ${UNIX_PATH}/signal.c
       ${UNIX_PATH}/spinlock.h
       ${UNIX_PATH}/stream.c
       ${UNIX_PATH}/tcp.c
@@ -60,6 +59,12 @@ set(PLATFORM_SRCFILES
 #     ${UNIX_PATH}/tty.c
       ${UNIX_PATH}/udp.c
     )
+
+if(TUV_FEATURE_SIGNAL)
+      set(PLATFORM_SRCFILES "${PLATFORM_SRCFILES}"
+            ${UNIX_PATH}/signal.c)
+      set(FLAGS_COMMON "${FLAGS_COMMON}" "-DTUV_FEATURE_SIGNAL=1")
+endif()
 
 set(TEST_MAINFILE "${TEST_ROOT}/runner_main.c")
 
@@ -79,6 +84,7 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_active.c"
       "${TEST_ROOT}/test_walk_handles.c"
       "${TEST_ROOT}/test_async.c"
+      "${TEST_ROOT}/test_signal.c"
       )
 
 # configuration values
