@@ -115,6 +115,12 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
   handle->close_cb = close_cb;
 
   switch (handle->type) {
+#ifdef TUV_FEATURE_PIPE
+  case UV_NAMED_PIPE:
+    uv__pipe_close((uv_pipe_t*)handle);
+    break;
+#endif
+
   case UV_TTY:
     uv__stream_close((uv_stream_t*)handle);
     break;

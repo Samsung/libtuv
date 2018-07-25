@@ -67,7 +67,7 @@ static uv__allocator_t uv__allocator = {
   free,
 };
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__) || defined(_WIN32) || defined(TUV_FEATURE_PIPE)
 char* uv__strdup(const char* s) {
   size_t len = strlen(s) + 1;
   char* m = uv__malloc(len);
@@ -327,6 +327,11 @@ void uv_ref(uv_handle_t* handle) {
 
 void uv_unref(uv_handle_t* handle) {
   uv__handle_unref(handle);
+}
+
+
+void uv_stop(uv_loop_t* loop) {
+  loop->stop_flag = 1;
 }
 
 
