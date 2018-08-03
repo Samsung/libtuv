@@ -79,6 +79,18 @@ set(TEST_UNITFILES
       "${TEST_ROOT}/test_async.c"
     )
 
+# { TUV_CHANGES@20180803:
+#   Made signal build time configurable }
+if(TUV_FEATURE_PROCESS)
+      set(TUV_FEATURE_PIPE ON)
+      set(TUV_FEATURE_SIGNAL ON)
+      set(FLAGS_COMMON "${FLAGS_COMMON}" "-DTUV_FEATURE_PROCESS=1")
+      set(TEST_UNITFILES "${TEST_UNITFILES}"
+            "${TEST_ROOT}/test_ipc.c"
+            "${TEST_ROOT}/test_spawn.c")
+endif()
+
+
 # { TUV_CHANGES@20180724:
 #   Made pipe build time configurable }
 if(TUV_FEATURE_PIPE)

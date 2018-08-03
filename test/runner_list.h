@@ -101,20 +101,8 @@
 
 // shutdown_eof should be last of tcp test, it'll stop "echo_sevrer"
 
-#if defined(__linux__)
-#define TEST_LIST_EXT(TE)                                                     \
-  TE(condvar_1, 5000)                                                         \
-  TE(condvar_4, 5000)                                                         \
-  \
-  TE(fs_file_nametoolong, 5000)                                               \
-  TE(fs_fstat, 5000)                                                          \
-  TE(fs_utime, 5000)                                                          \
-  TE(fs_futime, 5000)                                                         \
-  \
-  TE(getaddrinfo_basic, 5000)                                                 \
-  TE(getaddrinfo_basic_sync, 5000)                                            \
-  TE(getaddrinfo_concurrent, 5000)                                            \
-  \
+#if defined(__linux__) && defined(TUV_FEATURE_PIPE)
+#define TEST_LIST_EXT_PIPE(TE)                                                \
   TE(pipe_bind_error_addrinuse, 5000)                                         \
   TE(pipe_bind_error_addrnotavail, 5000)                                      \
   TE(pipe_bind_error_inval, 5000)                                             \
@@ -130,10 +118,73 @@
   TE(pipe_pending_instances, 5000)                                            \
   TE(pipe_sendmsg, 5000)                                                      \
   TE(pipe_server_close, 5000)                                                 \
-  TE(pipe_set_non_blocking, 5000)                                             \
-  \
+  TE(pipe_set_non_blocking, 5000)
+#else
+#define TEST_LIST_EXT_PIPE(TE)
+#endif
+
+#if defined(__linux__) && defined(TUV_FEATURE_SIGNAL)
+#define TEST_LIST_EXT_SIGNAL(TE)                                              \
   TE(we_get_signal, 5000)                                                     \
   TE(we_get_signals, 5000)
+#else
+#define TEST_LIST_EXT_SIGNAL(TE)
+#endif
+
+#if defined(__linux__) && defined(TUV_FEATURE_PROCESS)
+#define TEST_LIST_EXT_PROCESS(TE)                                             \
+/*TE(ipc_listen_before_write, 5000)*/                                         \
+/*TE(ipc_listen_after_write, 5000)*/                                          \
+/*TE(ipc_tcp_connection, 5000)*/                                              \
+/*TE(spawn_fails_check_for_waitpid_cleanup, 5000) */                          \
+/*TE(spawn_exit_code, 5000) */                                                \
+  TE(spawn_stdout, 5000)                                                      \
+/*TE(spawn_stdout_to_file, 5000) */                                           \
+/*TE(spawn_stdout_and_stderr_to_file, 5000) */                                \
+/*TE(spawn_stdout_and_stderr_to_file2, 5000) */                               \
+/*TE(spawn_stdout_and_stderr_to_file_swap, 5000) */                           \
+/*TE(spawn_stdin, 5000) */                                                    \
+/*TE(spawn_stdio_greater_than_3, 5000) */                                     \
+/*TE(spawn_ignored_stdio, 5000) */                                            \
+/*TE(spawn_and_kill, 5000) */                                                 \
+/*TE(spawn_preserve_env, 5000) */                                             \
+/*TE(spawn_detached, 5000) */                                                 \
+/*TE(spawn_and_kill_with_std, 5000) */                                        \
+/*TE(spawn_and_ping, 5000) */                                                 \
+/*TE(spawn_same_stdout_stderr, 5000) */                                       \
+/*TE(spawn_closed_process_io, 5000) */                                        \
+/*TE(spawn_fails, 5000) */                                                    \
+/*TE(kill, 5000) */                                                           \
+/*TE(spawn_setuid_fails, 5000) */                                             \
+/*TE(spawn_setgid_fails, 5000) */                                             \
+/*TE(spawn_setuid_fails, 5000) */                                             \
+/*TE(spawn_setgid_fails, 5000) */                                             \
+/*TE(spawn_auto_unref, 5000) */                                               \
+/*TE(spawn_fs_open, 5000) */                                                  \
+/*TE(closed_fd_events, 5000) */                                               \
+/*TE(spawn_reads_child_path, 5000) */                                         \
+/*TE(spawn_inherit_streams, 5000) */
+#else
+#define TEST_LIST_EXT_PROCESS(TE)
+#endif
+
+#if defined(__linux__)
+#define TEST_LIST_EXT(TE)                                                     \
+  TE(condvar_1, 5000)                                                         \
+  TE(condvar_4, 5000)                                                         \
+  \
+  TE(fs_file_nametoolong, 5000)                                               \
+  TE(fs_fstat, 5000)                                                          \
+  TE(fs_utime, 5000)                                                          \
+  TE(fs_futime, 5000)                                                         \
+  \
+  TE(getaddrinfo_basic, 5000)                                                 \
+  TE(getaddrinfo_basic_sync, 5000)                                            \
+  TE(getaddrinfo_concurrent, 5000)                                            \
+  \
+  TEST_LIST_EXT_PIPE(TE) \
+  TEST_LIST_EXT_PROCESS(TE) \
+  TEST_LIST_EXT_SIGNAL(TE)
 
 #elif defined(__TUV_RAW__)
 #define TEST_LIST_EXT(TE)                                                     \

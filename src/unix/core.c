@@ -145,6 +145,14 @@ void uv_close(uv_handle_t* handle, uv_close_cb close_cb) {
     uv__timer_close((uv_timer_t*)handle);
     break;
 
+// { TUV_CHANGES@20180803:
+//   Made signal build time configurable }
+#if TUV_FEATURE_PROCESS
+  case UV_PROCESS:
+    uv__process_close((uv_process_t*)handle);
+    break;
+#endif
+
   case UV_POLL:
     uv__poll_close((uv_poll_t*)handle);
     break;
@@ -209,7 +217,7 @@ static void uv__finish_close(uv_handle_t* handle) {
     case UV_IDLE:
     case UV_ASYNC:
     case UV_TIMER:
-    // case UV_PROCESS:
+    case UV_PROCESS:
     // case UV_FS_EVENT:
     // case UV_FS_POLL:
     case UV_POLL:
