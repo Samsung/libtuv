@@ -48,6 +48,8 @@
 #include <fcntl.h>
 #include <poll.h>
 
+#if !defined(__NUTTX__) && !defined(__TIZENRT__)
+
 #if defined(__APPLE__) && !TARGET_OS_IPHONE
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
@@ -583,3 +585,22 @@ void uv__process_close(uv_process_t* handle) {
 }
 
 #endif /* TUV_FEATURE_PROCESS */
+
+#else /* defined(__NUTTX__) || defined(__TIZENRT__) */
+
+int uv__make_pipe(int fds[2], int flags) {
+  if (pipe(fds))
+    return -errno;
+
+  uv__cloexec(fds[0], 1);
+  uv__cloexec(fds[1], 1);
+
+  if (flags & UV__F_NONBLOCK) {
+    uv__nonblock(fds[0], 1);
+    uv__nonblock(fds[1], 1);
+  }
+
+  return 0;
+}
+
+#endif /* !defined(__NUTTX__) && !defined(__TIZENRT__) */
