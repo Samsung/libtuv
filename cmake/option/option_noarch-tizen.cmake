@@ -16,6 +16,14 @@
 include("cmake/option/option_unix_common.cmake")
 include("cmake/option/option_linux_common.cmake")
 
+# package config
+SET(prefix "/usr")
+SET(exec_prefix "${prefix}/bin")
+SET(includedir "${prefix}/include/${PROJECT_NAME}")
+SET(libdir "${prefix}/lib")
+SET(libname "${PROJECT_NAME}")
+CONFIGURE_FILE(${libname}.pc.in ${libname}.pc @ONLY)
+
 # gbs-tizen specific
 if(DEFINED TARGET_BOARD)
   if(${TARGET_BOARD} STREQUAL "rpi3")
