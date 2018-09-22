@@ -58,6 +58,19 @@ set_target_properties(${TARGETLIBNAME} PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${LIB_OUT}"
     RUNTIME_OUTPUT_DIRECTORY "${BIN_OUT}")
 
+# build tuv PIC (Position-Independent-Code) library
+if (DEFINED CREATE_PIC_LIB AND CREATE_PIC_LIB STREQUAL "yes")
+  set(TARGETPICLIBNAME tuv_pic)
+  add_library(${TARGETPICLIBNAME} STATIC ${LIB_TUV_SRCFILES})
+  target_include_directories(${TARGETPICLIBNAME} SYSTEM PRIVATE ${TARGET_INC})
+  target_include_directories(${TARGETPICLIBNAME} PUBLIC ${LIB_TUV_INCDIRS})
+  set_target_properties(${TARGETPICLIBNAME} PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${LIB_OUT}"
+    COMPILE_FLAGS -fPIC
+    OUTPUT_NAME tuv
+    SUFFIX ".o")
+endif()
+
 # build tuv shared library
 if (DEFINED CREATE_SHARED_LIB AND CREATE_SHARED_LIB STREQUAL "yes")
   set(TARGETSHAREDLIBNAME tuv_shared)
