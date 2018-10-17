@@ -118,7 +118,7 @@ int process_start(const char* name, const char* part, process_info_t* p,
 
   /* parent */
   p->pid = pid;
-  p->name = strdup(name);
+  p->name = uv__strdup(name);
   p->stdout_file = stdout_file;
 
   return 0;

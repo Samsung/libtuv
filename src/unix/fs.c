@@ -98,7 +98,7 @@
     if (cb == NULL) {                                                         \
       req->path = path;                                                       \
     } else {                                                                  \
-      req->path = strdup(path);                                               \
+      req->path = uv__strdup(path);                                           \
       if (req->path == NULL) {                                                \
         uv__req_unregister(loop, req);                                        \
         return -ENOMEM;                                                       \

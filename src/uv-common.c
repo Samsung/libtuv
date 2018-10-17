@@ -67,15 +67,17 @@ static uv__allocator_t uv__allocator = {
   free,
 };
 
-#if defined(__APPLE__) || defined(_WIN32) || defined(TUV_FEATURE_PIPE)
 char* uv__strdup(const char* s) {
+#if defined(__APPLE__) || defined(_WIN32) || defined(TUV_FEATURE_PIPE)
   size_t len = strlen(s) + 1;
   char* m = uv__malloc(len);
   if (m == NULL)
     return NULL;
   return memcpy(m, s, len);
-}
+#else
+  return strdup(s);
 #endif
+}
 
 void* uv__malloc(size_t size) {
   return uv__allocator.local_malloc(size);
