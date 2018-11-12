@@ -43,7 +43,7 @@
 #include <errno.h>
 
 #include <netdb.h>
-#include <uio.h>
+#include <sys/uio.h>
 
 #ifndef TUV_POLL_EVENTS_SIZE
 #define TUV_POLL_EVENTS_SIZE  32
