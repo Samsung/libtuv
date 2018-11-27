@@ -87,3 +87,6 @@ call:
 
 clean:
 	rm -rf $(OUTPUT_ROOT)
+
+install:
+	make -C $(CMAKE_FOLDER) $@
