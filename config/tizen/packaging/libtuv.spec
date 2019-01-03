@@ -19,7 +19,6 @@ Summary: Asynchronous I/O for embedded system
 Group: Development/System
 License: Apache-2.0 and MIT
 Source:     %{name}-%{version}.tar.gz
-Source1:    %{name}.pc.in
 Source1001: %{name}.manifest
 ExclusiveArch: %arm %ix86 x86_64
 
@@ -43,7 +42,6 @@ Development libraries for %{name}
 
 %prep
 %setup -q -c
-cp %{SOURCE1} .
 cp %{SOURCE1001} .
 
 %build
@@ -51,13 +49,10 @@ TUV_PLATFORM=%{platform} TUV_BOARD=%{board} TUV_BUILD_TYPE=%{build_mode} \
 TUV_BUILDTESTER=no TUV_CREATE_SHARED_LIB=yes make
 
 %install
-mkdir -p %{buildroot}%{_includedir}/libtuv
-mkdir -p %{buildroot}%{_libdir}/pkgconfig
-
-cp ./build/%{platform}/%{build_mode}/lib/* %{buildroot}%{_libdir}/
-cp ./include/*.h %{buildroot}%{_includedir}/libtuv
-cp ./build/%{platform}/%{build_mode}/cmake/libtuv.pc %{buildroot}/%{_libdir}/pkgconfig/%{name}.pc
-
+TUV_PLATFORM=%{platform} TUV_BOARD=%{board} TUV_BUILD_TYPE=%{build_mode} \
+TUV_BUILDTESTER=no TUV_CREATE_SHARED_LIB=yes \
+DESTDIR=%{buildroot} \
+make install V=1
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -71,6 +66,6 @@ cp ./build/%{platform}/%{build_mode}/cmake/libtuv.pc %{buildroot}/%{_libdir}/pkg
 %files devel
 %manifest config/tizen/packaging/%{name}.manifest
 %defattr(-,root,root,-)
-%{_libdir}/libtuv.*
+%{_libdir}/libtuv.a
 %{_libdir}/pkgconfig/%{name}.pc
 %{_includedir}/*
