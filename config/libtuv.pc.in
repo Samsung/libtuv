@@ -6,5 +6,6 @@ includedir=@includedir@
 Name: libtuv
 Description: Asynchronous I/O for embedded system
 Version: 1.0.0
-Libs: -L${libdir} -lpthread
+Libs: -L${libdir} -ltuv
+Libs.private: -lpthread
 Cflags: -I${includedir}/libtuv
