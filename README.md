@@ -1,1 +1,1 @@
-You can find project details in [wiki](https://github.com/Samsung/libtuv/wiki)
+You can find project details in [wiki](https://github.com/pando-project/libtuv/wiki)
