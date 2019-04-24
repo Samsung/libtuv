@@ -40,6 +40,14 @@ if(DEFINED TARGET_BOARD)
           "-mfpu=fpv4-sp-d16"
           "-mfloat-abi=hard"
           )
+  elseif(${TARGET_BOARD} STREQUAL "stm32f7nucleo")
+    set(FLAGS_COMMON
+          ${FLAGS_COMMON}
+          "-mcpu=cortex-m7"
+          "-mthumb"
+          "-march=armv7e-m"
+          "-mfloat-abi=hard"
+         )
   else()
     message(FATAL_ERROR "TARGET_BOARD=`${TARGET_BOARD}` is unknown to make")
   endif()
