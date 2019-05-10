@@ -1,4 +1,4 @@
-# Copyright 2015 Samsung Electronics Co., Ltd.
+# Copyright 2019-present Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# windows common
-include("cmake/option/option_windows_common.cmake")
+set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR x64)
 
-# i686 specific
-
+if(NOT DEFINED CMAKE_C_COMPILER)
+  set(CMAKE_C_COMPILER CL.exe)
+endif()
