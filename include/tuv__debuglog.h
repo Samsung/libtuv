@@ -99,8 +99,8 @@ extern "C" {
 #endif
 
 
-void InitDebugSettings();
-void ReleaseDebugSettings();
+void InitDebugSettings(void);
+void ReleaseDebugSettings(void);
 
 
 #ifdef __cplusplus

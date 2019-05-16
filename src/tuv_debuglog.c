@@ -31,7 +31,7 @@ const char* tuv_debug_prefix[4] = { "", "ERR", "WRN", "INF" };
 #endif // ENABLE_DEBUG_LOG
 
 
-void InitDebugSettings() {
+void InitDebugSettings(void) {
 #ifdef ENABLE_DEBUG_LOG
   const char* dbglevel = NULL;
   const char* dbglogfile = NULL;
@@ -59,7 +59,7 @@ void InitDebugSettings() {
 }
 
 
-void ReleaseDebugSettings() {
+void ReleaseDebugSettings(void) {
 #ifdef ENABLE_DEBUG_LOG
   if (tuv_log_stream != stderr && tuv_log_stream != stdout) {
     fclose(tuv_log_stream);
