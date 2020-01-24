@@ -285,7 +285,7 @@ void spawn_helper(uv_pipe_t* channel,
   TUV_ASSERT(r == 0);
   TUV_ASSERT(channel->ipc);
 
-  exepath_size = sizeof(exepath);
+  exepath_size = sizeof(exepath) - 1;
   r = uv_exepath(exepath, &exepath_size);
   TUV_ASSERT(r == 0);
 
