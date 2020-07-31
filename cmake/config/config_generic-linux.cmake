@@ -1,4 +1,4 @@
-# Copyright 2017 Samsung Electronics Co., Ltd.
+# Copyright 2017-present Samsung Electronics Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file is used for compilation without any compiler flags or 
+# This file is used for compilation without any compiler flags or
 # cross compilation options. Default make always checks for CPU
 # and operating system and tries to find config_cpu_os.cmake.
 #
 # This file you can include using flags:
-# $  TUV_PLATFORM=noarch-linux make
-
+# $  TUV_PLATFORM=generic-linux make

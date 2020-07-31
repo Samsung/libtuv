@@ -30,7 +30,7 @@ Asynchronous I/O for embedded system
 # Initialize the variables
 %{!?build_mode: %define build_mode release}
 %{!?board: %define board None}
-%{!?platform: %define platform noarch-tizen}
+%{!?platform: %define platform generic-tizen}
 
 %package devel
 Summary: Header files for %{name}
